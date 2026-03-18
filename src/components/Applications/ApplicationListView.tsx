@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
 import {
   Bullseye,
   EmptyStateBody,
@@ -12,15 +11,11 @@ import { getErrorState } from '~/shared/utils/error-utils';
 import emptyStateImgUrl from '../../assets/Application.svg';
 import { useApplications } from '../../hooks/useApplications';
 import { useSortedResources } from '../../hooks/useSortedResources';
-import { ApplicationModel, ComponentModel } from '../../models';
-import { IMPORT_PATH } from '../../routes/paths';
 import { Table, useDeepCompareMemoize } from '../../shared';
 import AppEmptyState from '../../shared/components/empty-state/AppEmptyState';
 import FilteredEmptyState from '../../shared/components/empty-state/FilteredEmptyState';
 import { useNamespace } from '../../shared/providers/Namespace';
 import { ApplicationKind } from '../../types';
-import { useAccessReviewForModel } from '../../utils/rbac';
-import { ButtonWithAccessTooltip } from '../ButtonWithAccessTooltip';
 import { FilterContext } from '../Filter/generic/FilterContext';
 import { BaseTextFilterToolbar } from '../Filter/toolbars/BaseTextFIlterToolbar';
 import PageLayout from '../PageLayout/PageLayout';
@@ -33,8 +28,6 @@ const sortPaths: Record<SortableHeaders, string> = {
 
 const ApplicationListView: React.FC<React.PropsWithChildren<unknown>> = () => {
   const namespace = useNamespace();
-  const [canCreateApplication] = useAccessReviewForModel(ApplicationModel, 'create');
-  const [canCreateComponent] = useAccessReviewForModel(ComponentModel, 'create');
   const { filters: unparsedFilters, setFilters, onClearFilters } = React.useContext(FilterContext);
   const filters = useDeepCompareMemoize({
     name: unparsedFilters.name ? (unparsedFilters.name as string) : '',
@@ -100,28 +93,13 @@ const ApplicationListView: React.FC<React.PropsWithChildren<unknown>> = () => {
               className="pf-v5-u-mx-lg"
               isXl
               emptyStateImg={emptyStateImgUrl}
-              title="Easily onboard your applications"
+              title="No applications found"
             >
               <EmptyStateBody>
-                Automate the building, testing, and deploying of your applications with just a few
-                clicks.
-                <br />
-                To get started, create an application.
+                Applications are onboarded via GitOps. Configure your applications, components, and
+                other resources in your GitOps repository, and they will be automatically
+                synchronized to this namespace.
               </EmptyStateBody>
-              <ButtonWithAccessTooltip
-                variant="primary"
-                component={(props) => (
-                  <Link {...props} to={IMPORT_PATH.createPath({ workspaceName: namespace })} />
-                )}
-                isDisabled={!(canCreateApplication && canCreateComponent)}
-                tooltip="You don't have access to create an application"
-                analytics={{
-                  link_name: 'create-application',
-                  namespace,
-                }}
-              >
-                Create application
-              </ButtonWithAccessTooltip>
             </AppEmptyState>
           ) : (
             <>
@@ -131,22 +109,7 @@ const ApplicationListView: React.FC<React.PropsWithChildren<unknown>> = () => {
                 setText={(name) => setFilters({ name })}
                 onClearFilters={onClearFilters}
                 dataTest="application-list-toolbar"
-              >
-                <ButtonWithAccessTooltip
-                  variant="primary"
-                  component={(props) => (
-                    <Link {...props} to={IMPORT_PATH.createPath({ workspaceName: namespace })} />
-                  )}
-                  isDisabled={!(canCreateApplication && canCreateComponent)}
-                  tooltip="You don't have access to create an application"
-                  analytics={{
-                    link_name: 'create-application',
-                    namespace,
-                  }}
-                >
-                  Create application
-                </ButtonWithAccessTooltip>
-              </BaseTextFilterToolbar>
+              />
               {sortedApplications.length !== 0 ? (
                 <Table
                   data={sortedApplications}

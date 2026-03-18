@@ -5,6 +5,7 @@ import { css } from '@patternfly/react-styles';
 import {
   APPLICATION_LIST_PATH,
   COMPONENTS_PATH,
+  GITOPS_LIST_PATH,
   ISSUES_PATH,
   NAMESPACE_LIST_PATH,
   RELEASE_MONITOR_PATH,
@@ -39,6 +40,21 @@ export const AppSideBar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
               })}
             >
               <NavLink to={NAMESPACE_LIST_PATH.createPath({} as never)}>Namespaces</NavLink>
+            </NavItem>
+
+            <NavItem
+              className={css({ 'app-side-bar__nav-item--disabled': disabled })}
+              isActive={isActive(GITOPS_LIST_PATH.path)}
+            >
+              <Link
+                to={
+                  namespace
+                    ? GITOPS_LIST_PATH.createPath({ workspaceName: namespace })
+                    : undefined
+                }
+              >
+                GitOps Registration
+              </Link>
             </NavItem>
 
             <IfFeature flag="components-page">

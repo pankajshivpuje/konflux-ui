@@ -17,6 +17,7 @@ import pipelineRoutes from './page-routes/pipeline';
 import releaseRoutes from './page-routes/release';
 import releaseMonitorRoutes from './page-routes/release-monitor';
 import releaseServiceRoutes from './page-routes/release-service';
+import gitopsRoutes from './page-routes/gitops';
 import resourcesRoutes from './page-routes/resources';
 import secretRoutes from './page-routes/secrets';
 import snapshotRoutes from './page-routes/snapshots';
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
       ...pipelineRoutes,
       ...taskRunRoutes,
       ...userAccessRoutes,
+      ...gitopsRoutes,
       ...resourcesRoutes,
       // '/ns/:ns',
       //   '/ns/:ns/pipelinerun/:pipelineRun',

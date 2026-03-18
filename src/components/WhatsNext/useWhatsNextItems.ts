@@ -1,4 +1,3 @@
-import componentsIcon from '../../assets/Components.svg';
 import editCodeIcon from '../../assets/Edit code.svg';
 import gitAppIcon from '../../assets/git-app.svg';
 import integrationTestIcon from '../../assets/Integration-test.svg';
@@ -8,7 +7,6 @@ import { useApplicationUrl } from '../../hooks/useUIInstance';
 import { ComponentModel, IntegrationTestScenarioModel, ReleasePlanModel } from '../../models';
 import {
   APPLICATION_ACTIVITY_PATH,
-  IMPORT_PATH,
   INTEGRATION_TEST_ADD_PATH,
   RELEASEPLAN_CREATE_PATH,
 } from '../../routes/paths';
@@ -22,7 +20,6 @@ export const useWhatsNextItems = (applicationName: string) => {
   const showModal = useModalLauncher();
   const namespace = useNamespace();
   const githubAppURL = useApplicationUrl();
-  const [canCreateComponent] = useAccessReviewForModel(ComponentModel, 'create');
   const [canPatchComponent] = useAccessReviewForModel(ComponentModel, 'patch');
   const [canCreateIntegrationTest] = useAccessReviewForModel(
     IntegrationTestScenarioModel,
@@ -31,26 +28,6 @@ export const useWhatsNextItems = (applicationName: string) => {
   const [canCreateReleasePlan] = useAccessReviewForModel(ReleasePlanModel, 'create');
 
   const whatsNextItems: WhatsNextItem[] = [
-    {
-      id: 0,
-      title: 'Grow your application',
-      description: 'Grow your application by adding components.',
-      icon: componentsIcon,
-      cta: {
-        label: 'Add component',
-        href: `${IMPORT_PATH.createPath({ workspaceName: namespace })}?application=${applicationName}`,
-        disabled: !canCreateComponent,
-        disabledTooltip: "You don't have access to add a component",
-        testId: 'add-component',
-        analytics: {
-          link_name: 'add-component',
-          link_location: 'whats-next',
-          app_name: applicationName,
-          namespace,
-        },
-      },
-      helpLink: 'https://konflux-ci.dev/docs/building/creating/',
-    },
     {
       id: 1,
       title: 'Add integration tests',

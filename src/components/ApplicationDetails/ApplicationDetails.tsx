@@ -9,7 +9,6 @@ import {
   APPLICATION_DETAILS_PATH,
   APPLICATION_LIST_PATH,
   INTEGRATION_TEST_ADD_PATH,
-  IMPORT_PATH,
 } from '../../routes/paths';
 import useTriggerReleaseAction from '../../shared/hooks/useTriggerReleaseAction';
 import { TrackEvents, useTrackEvent } from '../../utils/analytics';
@@ -28,7 +27,6 @@ export const ApplicationDetails: React.FC<React.PropsWithChildren> = () => {
   const { applicationName } = useParams();
   // const track = useTrackEvent();
   const namespace = useNamespace();
-  const [canCreateComponent] = useAccessReviewForModel(ComponentModel, 'create');
   const [canPatchComponent] = useAccessReviewForModel(ComponentModel, 'patch');
   const [canCreateIntegrationTest] = useAccessReviewForModel(
     IntegrationTestScenarioModel,
@@ -90,26 +88,6 @@ export const ApplicationDetails: React.FC<React.PropsWithChildren> = () => {
             isDisabled: !canPatchComponent,
             key: 'manage-build-pipelines',
             label: 'Manage build pipelines',
-          },
-          {
-            key: 'add-component',
-            label: 'Add component',
-            component: (
-              <Link
-                to={`${IMPORT_PATH.createPath({ workspaceName: namespace })}?application=${applicationName}`}
-                onClick={() => {
-                  track(TrackEvents.ButtonClicked, {
-                    link_name: 'add-component',
-                    link_location: 'application-details-actions',
-                    app_name: applicationName,
-                  });
-                }}
-              >
-                Add component
-              </Link>
-            ),
-            isDisabled: !canCreateComponent,
-            disabledTooltip: "You don't have access to add a component",
           },
           {
             key: 'add-integration-test',

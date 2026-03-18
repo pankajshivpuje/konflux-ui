@@ -1,0 +1,28 @@
+.gitops-registration {
+  &__list {
+    padding: var(--pf-v5-global--spacer--md);
+  }
+
+  &__empty-state {
+    padding: var(--pf-v5-global--spacer--2xl) 0;
+  }
+
+  &__form {
+    max-width: 800px;
+    padding: var(--pf-v5-global--spacer--lg);
+  }
+
+  &__help-text {
+    color: var(--pf-v5-global--Color--200);
+    font-size: var(--pf-v5-global--FontSize--sm);
+    margin-top: var(--pf-v5-global--spacer--xs);
+  }
+
+  &__status-icon {
+    margin-right: var(--pf-v5-global--spacer--sm);
+  }
+
+  &__repo-card {
+    margin-bottom: var(--pf-v5-global--spacer--md);
+  }
+}

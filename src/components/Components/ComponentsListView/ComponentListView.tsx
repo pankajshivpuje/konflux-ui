@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { ButtonWithAccessTooltip } from '../../ButtonWithAccessTooltip';
 import {
   Alert,
   AlertActionCloseButton,
@@ -31,7 +31,6 @@ import { useLatestPushBuildPipelines } from '../../../hooks/useLatestPushBuildPi
 import { PACState } from '../../../hooks/usePACState';
 import usePACStatesForComponents from '../../../hooks/usePACStatesForComponents';
 import { ComponentModel } from '../../../models';
-import { IMPORT_PATH } from '../../../routes/paths';
 import { Table, useDeepCompareMemoize } from '../../../shared';
 import AppEmptyState from '../../../shared/components/empty-state/AppEmptyState';
 import FilteredEmptyState from '../../../shared/components/empty-state/FilteredEmptyState';
@@ -39,7 +38,6 @@ import ExternalLink from '../../../shared/components/links/ExternalLink';
 import { useNamespace } from '../../../shared/providers/Namespace/useNamespaceInfo';
 import { ComponentKind } from '../../../types';
 import { useAccessReviewForModel } from '../../../utils/rbac';
-import { ButtonWithAccessTooltip } from '../../ButtonWithAccessTooltip';
 import { createCustomizeAllPipelinesModalLauncher } from '../../CustomizedPipeline/CustomizePipelinesModal';
 import { GettingStartedCard } from '../../GettingStartedCard/GettingStartedCard';
 import { useModalLauncher } from '../../modal/ModalProvider';
@@ -74,7 +72,6 @@ const ComponentListView: React.FC<React.PropsWithChildren<ComponentListViewProps
     applicationName,
     true,
   );
-  const [canCreateComponent] = useAccessReviewForModel(ComponentModel, 'create');
   const [canPatchComponent] = useAccessReviewForModel(ComponentModel, 'patch');
 
   const showModal = useModalLauncher();
@@ -132,34 +129,14 @@ const ComponentListView: React.FC<React.PropsWithChildren<ComponentListViewProps
   );
 
   const NoDataEmptyMessage = () => (
-    <AppEmptyState emptyStateImg={emptyStateImgUrl} title="Bring your application to life">
+    <AppEmptyState emptyStateImg={emptyStateImgUrl} title="No components found">
       <EmptyStateBody>
         A component is an image built from source code in a repository. One or more components that
         run together form an application.
         <br />
-        To get started, add a component to your application.{' '}
+        Components are managed via your GitOps repository. Add components by committing them to your
+        GitOps configuration.
       </EmptyStateBody>
-      <ButtonWithAccessTooltip
-        variant="primary"
-        component={(props) => (
-          <Link
-            {...props}
-            to={`${IMPORT_PATH.createPath({
-              workspaceName: namespace,
-            })}?application=${applicationName}`}
-          />
-        )}
-        isDisabled={!canCreateComponent}
-        tooltip="You don't have access to add a component"
-        analytics={{
-          link_name: 'add-component',
-          link_location: 'components-list-empty-state',
-          app_name: applicationName,
-          namespace,
-        }}
-      >
-        Add component
-      </ButtonWithAccessTooltip>
     </AppEmptyState>
   );
   const EmptyMessage = () => (
@@ -221,25 +198,6 @@ const ComponentListView: React.FC<React.PropsWithChildren<ComponentListViewProps
         setValues={(status) => setFilters({ ...filters, status })}
         options={statusFilterObj}
       />
-      <ButtonWithAccessTooltip
-        variant="secondary"
-        component={(p) => (
-          <Link
-            {...p}
-            data-test="add-component-button"
-            to={`${IMPORT_PATH.createPath({ workspaceName: namespace })}?application=${applicationName}`}
-          />
-        )}
-        isDisabled={!canCreateComponent}
-        tooltip="You don't have access to add a component"
-        analytics={{
-          link_name: 'add-component',
-          app_name: applicationName,
-          namespace,
-        }}
-      >
-        Add component
-      </ButtonWithAccessTooltip>
     </BaseTextFilterToolbar>
   );
 
