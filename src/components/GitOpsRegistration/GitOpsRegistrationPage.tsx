@@ -5,6 +5,7 @@ import {
   Label,
   PageSection,
   PageSectionVariants,
+  SearchInput,
   Timestamp,
   Toolbar,
   ToolbarContent,
@@ -52,6 +53,15 @@ export const GitOpsRegistrationPage: React.FC = () => {
 
   // Placeholder: In a real implementation, this would fetch from the GitOps Registration Service API
   const [repos, setRepos] = React.useState<GitOpsRepo[]>(USE_MOCK_DATA ? mockGitOpsRepos : []);
+  const [nameFilter, setNameFilter] = React.useState<string>('');
+
+  const filteredRepos = React.useMemo(
+    () =>
+      nameFilter
+        ? repos.filter((r) => r.name.toLowerCase().includes(nameFilter.toLowerCase()))
+        : repos,
+    [repos, nameFilter],
+  );
 
   const handleDelete = React.useCallback(
     (repoName: string) => {
@@ -142,9 +152,24 @@ export const GitOpsRegistrationPage: React.FC = () => {
           </AppEmptyState>
         ) : (
           <div className="gitops-registration__list">
-            <Toolbar>
+            <Toolbar
+              data-test="gitops-list-toolbar"
+              usePageInsets
+              clearAllFilters={() => setNameFilter('')}
+            >
               <ToolbarContent>
-                <ToolbarItem align={{ default: 'alignRight' }}>
+                <ToolbarItem className="pf-v5-u-ml-0">
+                  <SearchInput
+                    name="nameInput"
+                    data-test="name-input-filter"
+                    type="search"
+                    aria-label="name filter"
+                    placeholder="Filter by name..."
+                    onChange={(_, value) => setNameFilter(value)}
+                    value={nameFilter}
+                  />
+                </ToolbarItem>
+                <ToolbarItem>
                   {registerButton}
                 </ToolbarItem>
               </ToolbarContent>
@@ -158,46 +183,56 @@ export const GitOpsRegistrationPage: React.FC = () => {
                   <Th>Sync Status</Th>
                   <Th>Last Synced</Th>
                   <Th>Registered</Th>
-                  <Td />
+                  <Th />
                 </Tr>
               </Thead>
               <Tbody>
-                {repos.map((repo) => (
-                  <Tr key={repo.name}>
-                    <Td dataLabel="Name">
-                      <Link
-                        to={
-                          namespace
-                            ? GITOPS_EDIT_PATH.createPath({
-                                workspaceName: namespace,
-                                gitopsRepoName: repo.name,
-                              })
-                            : '#'
-                        }
-                      >
-                        {repo.name}
-                      </Link>
-                    </Td>
-                    <Td dataLabel="Repository URL">
-                      <a href={repo.repoUrl} target="_blank" rel="noopener noreferrer">
-                        {repo.repoUrl}
-                      </a>
-                    </Td>
-                    <Td dataLabel="Namespace">{repo.namespace}</Td>
-                    <Td dataLabel="Sync Status">
-                      <Label color={statusLabelColor(repo.status)}>{repo.status}</Label>
-                    </Td>
-                    <Td dataLabel="Last Synced">
-                      {repo.lastSynced ? <Timestamp date={new Date(repo.lastSynced)} /> : '—'}
-                    </Td>
-                    <Td dataLabel="Registered">
-                      <Timestamp date={new Date(repo.registeredAt)} />
-                    </Td>
-                    <Td isActionCell>
-                      <ActionsColumn items={getRowActions(repo)} />
+                {filteredRepos.length === 0 ? (
+                  <Tr>
+                    <Td colSpan={7}>
+                      <div className="pf-v5-u-text-align-center pf-v5-u-py-lg">
+                        No repositories match the filter.
+                      </div>
                     </Td>
                   </Tr>
-                ))}
+                ) : (
+                  filteredRepos.map((repo) => (
+                    <Tr key={repo.name}>
+                      <Td dataLabel="Name">
+                        <Link
+                          to={
+                            namespace
+                              ? GITOPS_EDIT_PATH.createPath({
+                                  workspaceName: namespace,
+                                  gitopsRepoName: repo.name,
+                                })
+                              : '#'
+                          }
+                        >
+                          {repo.name}
+                        </Link>
+                      </Td>
+                      <Td dataLabel="Repository URL">
+                        <a href={repo.repoUrl} target="_blank" rel="noopener noreferrer">
+                          {repo.repoUrl}
+                        </a>
+                      </Td>
+                      <Td dataLabel="Namespace">{repo.namespace}</Td>
+                      <Td dataLabel="Sync Status">
+                        <Label color={statusLabelColor(repo.status)}>{repo.status}</Label>
+                      </Td>
+                      <Td dataLabel="Last Synced">
+                        {repo.lastSynced ? <Timestamp date={new Date(repo.lastSynced)} /> : '—'}
+                      </Td>
+                      <Td dataLabel="Registered">
+                        <Timestamp date={new Date(repo.registeredAt)} />
+                      </Td>
+                      <Td isActionCell>
+                        <ActionsColumn items={getRowActions(repo)} />
+                      </Td>
+                    </Tr>
+                  ))
+                )}
               </Tbody>
             </Table>
           </div>
