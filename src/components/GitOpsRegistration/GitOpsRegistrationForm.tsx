@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ActionGroup,
   Alert,
@@ -17,8 +17,10 @@ import { Formik, FormikHelpers, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import PageLayout from '~/components/PageLayout/PageLayout';
 import { useDocumentTitle } from '~/hooks/useDocumentTitle';
+import { USE_MOCK_DATA, mockGitOpsRepos } from '~/hooks/__mock__/mock-data';
 import { useNamespace } from '~/shared/providers/Namespace';
 import { GITOPS_LIST_PATH } from '~/routes/paths';
+import { RouterParams } from '~/routes/utils';
 import './GitOpsRegistration.scss';
 
 interface GitOpsRegistrationFormValues {
@@ -164,13 +166,23 @@ const GitOpsRegistrationFormContent: React.FC = () => {
 };
 
 export const GitOpsRegistrationForm: React.FC = () => {
-  useDocumentTitle('Register GitOps Repository | Konflux');
+  const { gitopsRepoName } = useParams<RouterParams>();
+  const isEditMode = !!gitopsRepoName;
+
+  useDocumentTitle(
+    isEditMode ? `Edit ${gitopsRepoName} | Konflux` : 'Register GitOps Repository | Konflux',
+  );
   const navigate = useNavigate();
   const namespace = useNamespace();
 
+  const existingRepo = React.useMemo(() => {
+    if (!isEditMode || !USE_MOCK_DATA) return null;
+    return mockGitOpsRepos.find((r) => r.name === gitopsRepoName) || null;
+  }, [isEditMode, gitopsRepoName]);
+
   const initialValues: GitOpsRegistrationFormValues = {
-    repoUrl: '',
-    namespace: namespace || '',
+    repoUrl: existingRepo?.repoUrl || '',
+    namespace: existingRepo?.namespace || namespace || '',
     branch: 'main',
     path: '/',
   };
@@ -181,10 +193,8 @@ export const GitOpsRegistrationForm: React.FC = () => {
       formikHelpers: FormikHelpers<GitOpsRegistrationFormValues>,
     ) => {
       // TODO: Call the GitOps Registration Service API
-      // POST /api/v1/gitops/register
-      // { repoUrl, namespace, branch, path }
       // eslint-disable-next-line no-console
-      console.log('Registering GitOps repo:', values);
+      console.log(isEditMode ? 'Updating GitOps repo:' : 'Registering GitOps repo:', values);
 
       // Simulate API call for now
       setTimeout(() => {
@@ -192,7 +202,7 @@ export const GitOpsRegistrationForm: React.FC = () => {
         navigate(GITOPS_LIST_PATH.createPath({ workspaceName: namespace }));
       }, 1000);
     },
-    [namespace, navigate],
+    [namespace, navigate, isEditMode],
   );
 
   const handleCancel = React.useCallback(() => {
@@ -204,16 +214,20 @@ export const GitOpsRegistrationForm: React.FC = () => {
       name: 'GitOps Registration',
       path: namespace ? GITOPS_LIST_PATH.createPath({ workspaceName: namespace }) : '#',
     },
-    { name: 'Register repository', path: '#' },
+    { name: isEditMode ? `Edit ${gitopsRepoName}` : 'Register repository', path: '#' },
   ];
 
   return (
-    <PageLayout title="Register GitOps Repository" breadcrumbs={breadcrumbs}>
+    <PageLayout
+      title={isEditMode ? `Edit ${gitopsRepoName}` : 'Register GitOps Repository'}
+      breadcrumbs={breadcrumbs}
+    >
       <PageSection>
         <Formik<GitOpsRegistrationFormValues>
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
+          enableReinitialize
         >
           {(formikProps) => (
             <Form onSubmit={formikProps.handleSubmit}>
@@ -226,7 +240,7 @@ export const GitOpsRegistrationForm: React.FC = () => {
                   isDisabled={formikProps.isSubmitting || !formikProps.isValid || !formikProps.dirty}
                   data-test="gitops-register-submit"
                 >
-                  Register
+                  {isEditMode ? 'Save' : 'Register'}
                 </Button>
                 <Button variant="link" onClick={handleCancel} data-test="gitops-register-cancel">
                   Cancel

@@ -18,6 +18,8 @@ export const GITOPS_LIST_PATH = WORKSPACE_PATH.extend('gitops');
 
 export const GITOPS_REGISTER_PATH = GITOPS_LIST_PATH.extend('register');
 
+export const GITOPS_EDIT_PATH = GITOPS_LIST_PATH.extend(`:${RouterParams.gitopsRepoName}/edit`);
+
 export const IMPORT_PATH = WORKSPACE_PATH.extend('import');
 
 export const APPLICATION_LIST_PATH = WORKSPACE_PATH.extend(`applications`);

@@ -5,6 +5,7 @@ import { ComponentGroupVersionKind, ComponentModel } from '../models';
 import { useNamespace } from '../shared/providers/Namespace';
 import { ComponentKind } from '../types';
 import { useApplicationPipelineGitHubApp } from './useApplicationPipelineGitHubApp';
+import { USE_MOCK_DATA, mockComponents } from './__mock__/mock-data';
 
 export const useComponent = (
   namespace: string,
@@ -16,22 +17,28 @@ export const useComponent = (
     isLoading,
     error,
   } = useK8sWatchResource<ComponentKind>(
-    componentName
-      ? {
-          groupVersionKind: ComponentGroupVersionKind,
-          namespace,
-          name: componentName,
-          watch,
-        }
-      : undefined,
+    USE_MOCK_DATA
+      ? undefined
+      : componentName
+        ? {
+            groupVersionKind: ComponentGroupVersionKind,
+            namespace,
+            name: componentName,
+            watch,
+          }
+        : undefined,
     ComponentModel,
   );
   return React.useMemo(() => {
+    if (USE_MOCK_DATA) {
+      const mockComp = mockComponents.find((c) => c.metadata.name === componentName);
+      return [mockComp || null, true, mockComp ? undefined : { code: 404 }];
+    }
     if (!isLoading && !error && component?.metadata.deletionTimestamp) {
       return [null, !isLoading, { code: 404 }];
     }
     return [component, !isLoading, error];
-  }, [component, isLoading, error]);
+  }, [component, isLoading, error, componentName]);
 };
 
 export const useComponents = (
@@ -44,24 +51,30 @@ export const useComponents = (
     isLoading: componentsLoaded,
     error,
   } = useK8sWatchResource<ComponentKind[]>(
-    {
-      groupVersionKind: ComponentGroupVersionKind,
-      namespace,
-      isList: true,
-      watch,
-    },
+    USE_MOCK_DATA
+      ? undefined
+      : {
+          groupVersionKind: ComponentGroupVersionKind,
+          namespace,
+          isList: true,
+          watch,
+        },
     ComponentModel,
   );
-  const appComponents: ComponentKind[] = React.useMemo(
-    () =>
-      !componentsLoaded
-        ? (components as unknown as ComponentKind[])?.filter(
-            (c) => c.spec.application === applicationName && !c.metadata?.deletionTimestamp,
-          ) || []
-        : [],
-    [components, applicationName, componentsLoaded],
-  );
-  return [appComponents, !componentsLoaded, error];
+
+  const appComponents: ComponentKind[] = React.useMemo(() => {
+    if (USE_MOCK_DATA) {
+      return mockComponents.filter(
+        (c) => c.spec.application === applicationName && !c.metadata?.deletionTimestamp,
+      );
+    }
+    return !componentsLoaded
+      ? (components as unknown as ComponentKind[])?.filter(
+          (c) => c.spec.application === applicationName && !c.metadata?.deletionTimestamp,
+        ) || []
+      : [];
+  }, [components, applicationName, componentsLoaded]);
+  return USE_MOCK_DATA ? [appComponents, true, undefined] : [appComponents, !componentsLoaded, error];
 };
 
 const sortComponentsByCreation = (components: ComponentKind[]): ComponentKind[] =>
@@ -91,23 +104,27 @@ export const useAllComponents = (namespace: string): [ComponentKind[], boolean, 
     isLoading: componentsLoaded,
     error,
   } = useK8sWatchResource<ComponentKind[]>(
-    {
-      groupVersionKind: ComponentGroupVersionKind,
-      namespace,
-      isList: true,
-    },
+    USE_MOCK_DATA
+      ? undefined
+      : {
+          groupVersionKind: ComponentGroupVersionKind,
+          namespace,
+          isList: true,
+        },
     ComponentModel,
   );
-  const allComponents: ComponentKind[] = React.useMemo(
-    () =>
-      !componentsLoaded
-        ? (components as unknown as ComponentKind[])?.filter(
-            (c) => !c.metadata?.deletionTimestamp,
-          ) || []
-        : [],
-    [components, componentsLoaded],
-  );
-  return [allComponents, !componentsLoaded, error];
+
+  const allComponents: ComponentKind[] = React.useMemo(() => {
+    if (USE_MOCK_DATA) {
+      return mockComponents.filter((c) => !c.metadata?.deletionTimestamp);
+    }
+    return !componentsLoaded
+      ? (components as unknown as ComponentKind[])?.filter(
+          (c) => !c.metadata?.deletionTimestamp,
+        ) || []
+      : [];
+  }, [components, componentsLoaded]);
+  return USE_MOCK_DATA ? [allComponents, true, undefined] : [allComponents, !componentsLoaded, error];
 };
 
 export const useSortedGroupComponents = (

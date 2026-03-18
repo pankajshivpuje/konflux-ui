@@ -101,11 +101,11 @@ export const NamespaceProvider: React.FC<React.PropsWithChildren> = ({ children 
         namespace: activeNamespaceName,
         namespaceResource,
         namespaces,
-        namespacesLoaded: !(namespaceLoading && activeNamespaceLoading),
+        namespacesLoaded: useMockData || !(namespaceLoading && activeNamespaceLoading),
         lastUsedNamespace: getLastUsedNamespace(),
       }}
     >
-      {!(namespaceLoading || activeNamespaceLoading) ? (
+      {useMockData || !(namespaceLoading || activeNamespaceLoading) ? (
         children
       ) : (
         <Bullseye>
