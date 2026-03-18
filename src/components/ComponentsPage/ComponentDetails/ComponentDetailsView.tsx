@@ -46,10 +46,11 @@ const ComponentDetailsView: React.FC = () => {
     >
       <DetailsPage
         data-test="component-details-test-id"
-        headTitle={component.metadata.name}
+        headTitle={component.spec.componentName}
         title={
           <Text component={TextVariants.h2}>
-            {component.metadata.name} <FeatureFlagIndicator flags={['components-page']} fullLabel />
+            {component.spec.componentName}{' '}
+            <FeatureFlagIndicator flags={['components-page']} fullLabel />
           </Text>
         }
         description={<GitRepoLink url={component.spec?.source?.url} />}
@@ -63,7 +64,7 @@ const ComponentDetailsView: React.FC = () => {
               workspaceName: namespace,
               componentName,
             }),
-            name: component.metadata.name,
+            name: component.spec.componentName,
           },
         ]}
         baseURL={COMPONENT_DETAILS_V2_PATH.createPath({

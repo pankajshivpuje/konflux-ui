@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { downloadYamlAction } from '~/utils/common-utils';
 import { useAuth } from '../../auth/useAuth';
 import { PipelineRunLabel } from '../../consts/pipelinerun';
 import { Action } from '../../shared/components/action-menu/types';
@@ -20,7 +19,6 @@ export const useReleaseActions = (release: ReleaseKind): Action[] => {
       return [];
     }
     const updatedActions: Action[] = [
-      downloadYamlAction(release),
       {
         cta: () => releaseRerun(release, email),
         id: 're-run-release',

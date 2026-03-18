@@ -72,8 +72,7 @@ export const SourceSection = () => {
       <InputField
         name="source.git.url"
         label="Git repository url"
-        placeholder="Enter a Git repository URL"
-        helperText="Supports GitHub, GitLab, and Forgejo repositories"
+        placeholder="Enter a GitHub or GitLab repository URL"
         validated={validated}
         isRequired
         data-testid="enter-source"

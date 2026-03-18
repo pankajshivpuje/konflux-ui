@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { Bullseye, Spinner, Text, TextVariants } from '@patternfly/react-core';
 import { usePipelineRunV2 } from '~/hooks/usePipelineRunsV2';
 import { getErrorState } from '~/shared/utils/error-utils';
-import { downloadYamlAction } from '~/utils/common-utils';
 import { SnapshotLabels } from '../../consts/snapshots';
 import { useSnapshot } from '../../hooks/useSnapshots';
 import { SNAPSHOT_DETAILS_PATH, SNAPSHOT_LIST_PATH } from '../../routes/paths';
@@ -15,7 +14,6 @@ import { createCommitObjectFromPLR } from '../../utils/commits-utils';
 import { useApplicationBreadcrumbs } from '../Applications/breadcrumbs/breadcrumb-utils';
 import CommitLabel from '../Commits/commit-label/CommitLabel';
 import { DetailsPage } from '../DetailsPage';
-import { createDetailsPageAction } from '../DetailsPage/utils';
 
 const SnapshotDetailsView: React.FC = () => {
   const namespace = useNamespace();
@@ -132,7 +130,6 @@ const SnapshotDetailsView: React.FC = () => {
             disabledTooltip,
             onClick: cta,
           },
-          createDetailsPageAction(downloadYamlAction(snapshot)),
         ]}
       />
     );

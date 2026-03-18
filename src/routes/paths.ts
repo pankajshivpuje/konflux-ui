@@ -2,12 +2,15 @@ import { buildRoute, type RouteDefinition, RouterParams } from './utils';
 
 type NamespacePath = 'ns';
 type ReleaseMonitorPath = 'releasemonitor';
+type ResourcesPath = 'resources';
 
 /* Namespace/Workspace Paths */
 export const NAMESPACE_LIST_PATH: RouteDefinition<NamespacePath> = buildRoute('ns');
 
 export const RELEASE_MONITOR_PATH: RouteDefinition<ReleaseMonitorPath> =
   buildRoute('releasemonitor');
+
+export const RESOURCES_PATH: RouteDefinition<ResourcesPath> = buildRoute('resources');
 
 export const WORKSPACE_PATH = NAMESPACE_LIST_PATH.extend(`:${RouterParams.workspaceName}`);
 
@@ -32,12 +35,6 @@ export const APPLICATION_ACTIVITY_PATH = APPLICATION_DETAILS_PATH.extend('activi
 export const COMPONENTS_PATH = WORKSPACE_PATH.extend('components');
 
 export const COMPONENT_DETAILS_V2_PATH = COMPONENTS_PATH.extend(`:${RouterParams.componentName}`);
-
-export const COMPONENT_VERSIONS_PATH = COMPONENT_DETAILS_V2_PATH.extend('versions');
-
-export const COMPONENT_VERSION_DETAILS_PATH = COMPONENT_VERSIONS_PATH.extend(
-  `:${RouterParams.versionRevision}`,
-);
 
 /**
  * @deprecated Use COMPONENTS_PATH instead

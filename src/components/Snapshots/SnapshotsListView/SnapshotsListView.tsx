@@ -16,6 +16,7 @@ import {
   MenuToggle,
   SelectOption,
   SelectList,
+  capitalize,
 } from '@patternfly/react-core';
 import { FilterIcon } from '@patternfly/react-icons/dist/esm/icons/filter-icon';
 import { FilterContext } from '~/components/Filter/generic/FilterContext';
@@ -35,23 +36,13 @@ import SnapshotsList from './SnapshotsList';
 import { snapshotColumns } from './SnapshotsListHeader';
 import { SnapshotsListViewProps } from './types';
 
-enum FilterTypes {
-  name = 'name',
-  commitMessage = 'commitMessage',
-}
-
-const FILTER_TYPE_LABELS: Record<FilterTypes, string> = {
-  [FilterTypes.name]: 'Name',
-  [FilterTypes.commitMessage]: 'Commit message',
-};
-
 const SnapshotsListView: React.FC<React.PropsWithChildren<SnapshotsListViewProps>> = ({
   applicationName,
 }) => {
   const namespace = useNamespace();
   const { filters: unparsedFilters, setFilters, onClearFilters } = React.useContext(FilterContext);
   const [isOpen, setIsOpen] = React.useState(false);
-  const [activeFilter, setActiveFilter] = React.useState(FilterTypes.name);
+  const [activeFilter, setActiveFilter] = React.useState('name');
   const filters = useDeepCompareMemoize({
     name: unparsedFilters.name ? (unparsedFilters.name as string) : '',
     commitMessage: unparsedFilters.commitMessage ? (unparsedFilters.commitMessage as string) : '',
@@ -183,12 +174,12 @@ const SnapshotsListView: React.FC<React.PropsWithChildren<SnapshotsListViewProps
                   isExpanded={isOpen}
                   onClick={() => setIsOpen(!isOpen)}
                 >
-                  {FILTER_TYPE_LABELS[activeFilter]}
+                  {capitalize(activeFilter)}
                 </MenuToggle>
               )}
               onSelect={(_, val) => {
                 const newFilter = val as string;
-                setActiveFilter(newFilter as FilterTypes);
+                setActiveFilter(newFilter);
                 setFilters({ ...unparsedFilters, [activeFilter]: '', [newFilter]: '' });
                 setIsOpen(false);
               }}
@@ -197,18 +188,18 @@ const SnapshotsListView: React.FC<React.PropsWithChildren<SnapshotsListViewProps
               onOpenChange={setIsOpen}
             >
               <SelectList>
-                <SelectOption key={FilterTypes.name} value={FilterTypes.name}>
+                <SelectOption key={'name'} value={'name'}>
                   Name
                 </SelectOption>
-                <SelectOption key={FilterTypes.commitMessage} value={FilterTypes.commitMessage}>
-                  Commit message
+                <SelectOption key={'commitMessage'} value={'commitMessage'}>
+                  Commit Message
                 </SelectOption>
               </SelectList>
             </Select>
 
             <BaseTextFilterToolbar
-              text={activeFilter === FilterTypes.name ? nameFilter : commitMessageFilter}
-              label={activeFilter === FilterTypes.name ? 'name' : 'commit message'}
+              text={activeFilter === 'name' ? nameFilter : commitMessageFilter}
+              label={activeFilter}
               setText={(value) => {
                 setFilters({ ...unparsedFilters, [activeFilter]: value });
               }}

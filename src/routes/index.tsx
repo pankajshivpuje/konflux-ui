@@ -8,7 +8,6 @@ import ErrorEmptyState from '../shared/components/empty-state/ErrorEmptyState';
 import { namespaceLoader, NamespaceProvider } from '../shared/providers/Namespace';
 import applicationRoutes from './page-routes/application';
 import commitRoutes from './page-routes/commit';
-import componentVersionRoutes from './page-routes/component-version';
 import componentRoutes from './page-routes/components';
 import componentsPageRoutes from './page-routes/components-page';
 import integrationTestRoutes from './page-routes/integration-test';
@@ -18,6 +17,7 @@ import pipelineRoutes from './page-routes/pipeline';
 import releaseRoutes from './page-routes/release';
 import releaseMonitorRoutes from './page-routes/release-monitor';
 import releaseServiceRoutes from './page-routes/release-service';
+import resourcesRoutes from './page-routes/resources';
 import secretRoutes from './page-routes/secrets';
 import snapshotRoutes from './page-routes/snapshots';
 import taskRunRoutes from './page-routes/taskrun';
@@ -49,7 +49,6 @@ export const router = createBrowserRouter([
       ...applicationRoutes,
       ...componentRoutes,
       ...componentsPageRoutes,
-      ...componentVersionRoutes,
       ...releaseRoutes,
       ...releaseServiceRoutes,
       ...secretRoutes,
@@ -60,6 +59,7 @@ export const router = createBrowserRouter([
       ...pipelineRoutes,
       ...taskRunRoutes,
       ...userAccessRoutes,
+      ...resourcesRoutes,
       // '/ns/:ns',
       //   '/ns/:ns/pipelinerun/:pipelineRun',
       //   '/ns/:ns/pipelinerun/:pipelineRun/logs',

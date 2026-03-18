@@ -3,34 +3,36 @@ import { Link } from 'react-router-dom';
 import { Popover, Skeleton, Tooltip } from '@patternfly/react-core';
 import { ClipboardCheckIcon } from '@patternfly/react-icons/dist/esm/icons/clipboard-check-icon';
 import { ExclamationTriangleIcon } from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
-import { StatusIconWithText } from '~/components/StatusIcon/StatusIcon';
-import { PipelineRunColumnKeys } from '~/consts/pipeline';
-import { PipelineRunLabel, PipelineRunType, UNFINISHED_PLR_STATUSES } from '~/consts/pipelinerun';
-import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
-import { useKarchScanResults } from '~/hooks/useScanResults';
+import { PipelineRunColumnKeys } from '../../../consts/pipeline';
+import { PipelineRunLabel, PipelineRunType, runStatus } from '../../../consts/pipelinerun';
+import { useIsOnFeatureFlag } from '../../../feature-flags/hooks';
+import { useKarchScanResults } from '../../../hooks/useScanResults';
 import {
   PIPELINE_RUNS_DETAILS_PATH,
   COMPONENT_DETAILS_PATH,
   SNAPSHOT_DETAILS_PATH,
-} from '~/routes/paths';
-import ActionMenu from '~/shared/components/action-menu/ActionMenu';
-import { RowFunctionArgs, TableData } from '~/shared/components/table';
-import { Timestamp } from '~/shared/components/timestamp/Timestamp';
-import { TriggerColumnData } from '~/shared/components/trigger-column-data/trigger-column-data';
-import { useNamespace } from '~/shared/providers/Namespace';
-import { PipelineRunKind, TaskRunKind } from '~/types';
-import { ReleaseKind, ReleasePlanKind } from '~/types/coreBuildService';
-import { createCommitObjectFromPLR } from '~/utils/commits-utils';
+} from '../../../routes/paths';
+import ActionMenu from '../../../shared/components/action-menu/ActionMenu';
+import { RowFunctionArgs, TableData } from '../../../shared/components/table';
+import { Timestamp } from '../../../shared/components/timestamp/Timestamp';
+import { TriggerColumnData } from '../../../shared/components/trigger-column-data/trigger-column-data';
+import { useNamespace } from '../../../shared/providers/Namespace';
+import { PipelineRunKind, TaskRunKind } from '../../../types';
+import { ReleaseKind, ReleasePlanKind } from '../../../types/coreBuildService';
+import { createCommitObjectFromPLR } from '../../../utils/commits-utils';
 import {
   calculateDuration,
   getPipelineRunStatusResults,
   pipelineRunStatus,
   taskTestResultStatus,
-} from '~/utils/pipeline-utils';
-import { ScanResults } from '~/utils/scan/scan-utils';
+} from '../../../utils/pipeline-utils';
+import { ScanResults } from '../../../utils/scan/scan-utils';
+import { StatusIconWithText } from '../../StatusIcon/StatusIcon';
 import { usePipelinerunActionsLazy } from './pipelinerun-actions';
 import { pipelineRunTableColumnClasses, getDynamicColumnClasses } from './PipelineRunListHeader';
 import { ScanStatus } from './ScanStatus';
+
+const UNSCANNED_PLR_STATUSES = [runStatus.Pending, runStatus.Running, runStatus.Idle];
 
 type PipelineRunListRowProps = RowFunctionArgs<
   PipelineRunKind,
@@ -115,7 +117,7 @@ const usePipelineRunScanResults = (
 const shouldShowScanResults = (pipelineRun: PipelineRunKind): boolean => {
   return (
     pipelineRun.metadata.labels?.[PipelineRunLabel.PIPELINE_TYPE] === PipelineRunType.BUILD &&
-    !UNFINISHED_PLR_STATUSES.includes(pipelineRunStatus(pipelineRun)) &&
+    !UNSCANNED_PLR_STATUSES.includes(pipelineRunStatus(pipelineRun)) &&
     pipelineRun.status?.completionTime !== undefined
   );
 };
@@ -132,7 +134,6 @@ const PipelineRunAttestation = ({ pipelineRun }: { pipelineRun: PipelineRunKind 
       }
     >
       <AttestationIcon
-        data-test={hasAttestation ? 'attestation-signed' : 'attestation-unsigned'}
         color={
           hasAttestation
             ? 'var(--pf-v5-global--success-color--100)'
@@ -168,7 +169,6 @@ const BasePipelineRunListRow: React.FC<React.PropsWithChildren<BasePipelineRunLi
   );
 
   const status = pipelineRunStatus(obj);
-  const isFinished = !UNFINISHED_PLR_STATUSES.includes(status);
   const [actions, onOpen] = usePipelinerunActionsLazy(obj);
   if (!obj.metadata?.labels) {
     obj.metadata.labels = {};
@@ -199,7 +199,7 @@ const BasePipelineRunListRow: React.FC<React.PropsWithChildren<BasePipelineRunLi
           })}${queryString}`}
           title={obj.metadata?.name}
         >
-          {isFinished && <PipelineRunAttestation pipelineRun={obj} />}
+          <PipelineRunAttestation pipelineRun={obj} />
           {obj.metadata?.name}
         </Link>
       </TableData>
@@ -358,7 +358,6 @@ const DynamicPipelineRunListRow: React.FC<
   );
 
   const status = pipelineRunStatus(obj);
-  const isFinished = !UNFINISHED_PLR_STATUSES.includes(status);
   const [actions, onOpen] = usePipelinerunActionsLazy(obj);
   if (!obj.metadata?.labels) {
     obj.metadata.labels = {};
@@ -390,7 +389,7 @@ const DynamicPipelineRunListRow: React.FC<
             })}${queryString}`}
             title={obj.metadata?.name}
           >
-            {isFinished && <PipelineRunAttestation pipelineRun={obj} />}
+            <PipelineRunAttestation pipelineRun={obj} />
             {obj.metadata?.name}
           </Link>
         </TableData>

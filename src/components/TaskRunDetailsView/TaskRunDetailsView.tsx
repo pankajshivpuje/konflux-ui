@@ -6,7 +6,7 @@ import { PipelineRunLabel, runStatus } from '~/consts/pipelinerun';
 import { CONFORMA_TASK } from '~/consts/security';
 import { getErrorState } from '~/shared/utils/error-utils';
 import { TektonResourceLabel } from '~/types';
-import { downloadYamlAction } from '~/utils/common-utils';
+import { downloadYaml } from '~/utils/common-utils';
 import { isResourceEnterpriseContract } from '~/utils/conforma-utils';
 import { taskRunStatus } from '~/utils/pipeline-utils';
 import { FeatureFlagIndicator } from '../../feature-flags/FeatureFlagIndicator';
@@ -20,7 +20,6 @@ import {
 import { useNamespace } from '../../shared/providers/Namespace';
 import { useApplicationBreadcrumbs } from '../Applications/breadcrumbs/breadcrumb-utils';
 import { DetailsPage } from '../DetailsPage';
-import { createDetailsPageAction } from '../DetailsPage/utils';
 import { StatusIconWithTextLabel } from '../topology/StatusIcon';
 
 export const TaskRunDetailsView: React.FC = () => {
@@ -108,7 +107,13 @@ export const TaskRunDetailsView: React.FC = () => {
           <StatusIconWithTextLabel status={trStatus} />
         </>
       }
-      actions={[createDetailsPageAction(downloadYamlAction(taskRun))]}
+      actions={[
+        {
+          key: 'download-task-run-yaml',
+          label: 'Download YAML',
+          onClick: () => downloadYaml(taskRun),
+        },
+      ]}
       baseURL={baseURL}
       tabs={[
         {

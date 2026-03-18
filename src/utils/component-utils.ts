@@ -1,12 +1,7 @@
 import * as React from 'react';
 import { K8sQueryPatchResource } from '../k8s';
 import { ComponentModel, ImageRepositoryModel } from '../models';
-import {
-  ComponentBuildPipeline,
-  ComponentKind,
-  ImageRepositoryKind,
-  ImageRepositoryVisibility,
-} from '../types';
+import { ComponentKind, ImageRepositoryKind, ImageRepositoryVisibility } from '../types';
 
 // Image registry constants
 export const QUAY_IO_HOST = 'quay.io';
@@ -28,8 +23,9 @@ export const GIT_PROVIDER_ANNOTATION_VALUE = {
   GITHUB: 'github',
   GITLAB: 'gitlab',
   FORGEJO: 'forgejo',
+  OTHERS: 'others',
 };
-export const GIT_PROVIDER_URL_ANNOTATION = 'git-provider-url';
+export const GITLAB_PROVIDER_URL_ANNOTATION = 'git-provider-url';
 
 export enum ComponentBuildState {
   enabled = 'enabled',
@@ -271,21 +267,4 @@ export const getImageUrlForVisibility = (
 
   // Use original URL for public, user-owned, null visibility, or when proxyHost is not available
   return imageUrl;
-};
-
-export const getPipelineName = (
-  versionPipeline?: ComponentBuildPipeline,
-  defaultPipeline?: ComponentBuildPipeline,
-): string => {
-  const pipeline = versionPipeline ?? defaultPipeline;
-  if (!pipeline) {
-    return '-';
-  }
-
-  const def = pipeline['pull-and-push'] ?? pipeline.push ?? pipeline.pull;
-  if (!def) {
-    return '-';
-  }
-
-  return def['pipelineref-by-name'] ?? def['pipelinespec-from-bundle']?.name ?? '-';
 };

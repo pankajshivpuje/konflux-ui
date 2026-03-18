@@ -19,7 +19,6 @@ export const RouterParams = {
   releasePlanName: 'releasePlanName',
   snapshotName: 'snapshotName',
   bindingName: 'bindingName',
-  versionRevision: 'versionRevision',
 } as const;
 
 export type RouterParams = typeof RouterParams;

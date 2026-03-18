@@ -9,6 +9,7 @@ import {
   NAMESPACE_LIST_PATH,
   RELEASE_MONITOR_PATH,
   RELEASE_SERVICE_PATH,
+  RESOURCES_PATH,
   SECRET_LIST_PATH,
   USER_ACCESS_LIST_PAGE,
 } from '@routes/paths';
@@ -117,6 +118,14 @@ export const AppSideBar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
               >
                 Releases
               </NavLink>
+            </NavItem>
+
+            <NavItem
+              isActive={isActive(RESOURCES_PATH.path, {
+                exact: true,
+              })}
+            >
+              <NavLink to={RESOURCES_PATH.createPath({} as never)}>Resources</NavLink>
             </NavItem>
 
             <NavItem

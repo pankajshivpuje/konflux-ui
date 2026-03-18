@@ -13,13 +13,17 @@ export const AuthContext = React.createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<React.PropsWithChildren> = React.memo(({ children }) => {
-  const [user, setUser] = React.useState<AuthContextType['user']>({
-    email: null,
-    preferredUsername: null,
-  });
-  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean>(false);
+  const useMockData = process.env.NODE_ENV === 'development';
+
+  const [user, setUser] = React.useState<AuthContextType['user']>(
+    useMockData
+      ? { email: 'mock-user@example.com', preferredUsername: 'mock-user' }
+      : { email: null, preferredUsername: null },
+  );
+  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean>(useMockData);
 
   React.useEffect(() => {
+    if (useMockData) return;
     const checkAuthStatus = async () => {
       try {
         const userData = await fetch('/oauth2/userinfo');
@@ -40,7 +44,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = React.memo(({ chi
       }
     };
     void checkAuthStatus();
-  }, []);
+  }, [useMockData]);
 
   const signOut = async () => {
     await fetch('/oauth2/sign_out');

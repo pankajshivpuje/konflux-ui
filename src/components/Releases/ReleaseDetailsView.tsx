@@ -4,7 +4,6 @@ import { Bullseye, Spinner, Text, TextVariants } from '@patternfly/react-core';
 import { ReleaseModel } from '~/models';
 import { getErrorState } from '~/shared/utils/error-utils';
 import { TrackEvents, useTrackEvent } from '~/utils/analytics';
-import { downloadYamlAction } from '~/utils/common-utils';
 import { useAccessReviewForModel } from '~/utils/rbac';
 import { useAuth } from '../../auth/useAuth';
 import { useRelease } from '../../hooks/useReleases';
@@ -17,7 +16,6 @@ import { useNamespace } from '../../shared/providers/Namespace';
 import { releaseRerun } from '../../utils/release-actions';
 import { useApplicationBreadcrumbs } from '../Applications/breadcrumbs/breadcrumb-utils';
 import { DetailsPage } from '../DetailsPage';
-import { createDetailsPageAction } from '../DetailsPage/utils';
 
 const ReleaseDetailsView: React.FC = () => {
   const { applicationName, releaseName } = useParams<RouterParams>();
@@ -100,7 +98,6 @@ const ReleaseDetailsView: React.FC = () => {
           key: 're-run-release',
           label: 'Re-run release',
         },
-        createDetailsPageAction(downloadYamlAction(release)),
       ]}
       tabs={[
         {

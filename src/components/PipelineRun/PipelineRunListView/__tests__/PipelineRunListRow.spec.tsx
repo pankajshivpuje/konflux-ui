@@ -1,11 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
-import { PipelineRunColumnKeys } from '~/consts/pipeline';
 import { DataState, testPipelineRuns } from '../../../../__data__/pipelinerun-data';
 import { createK8sWatchResourceMock } from '../../../../utils/test-utils';
-import {
-  PipelineRunListRowWithColumns,
-  PipelineRunListRowWithVulnerabilities,
-} from '../PipelineRunListRow';
+import { PipelineRunListRowWithVulnerabilities } from '../PipelineRunListRow';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -134,73 +130,5 @@ describe('Pipeline run Row', () => {
       row.getByText('Stop');
       row.getByText('Cancel');
     });
-  });
-
-  it('should show no attestation when pipeline run is running', () => {
-    const runningPlr = testPipelineRuns[DataState.RUNNING];
-    const plrName = runningPlr.metadata.name;
-
-    const row = render(
-      <PipelineRunListRowWithColumns
-        obj={runningPlr}
-        customData={{
-          fetchedPipelineRuns: [plrName],
-          vulnerabilities: [{ [plrName]: {} }] as any,
-        }}
-        columns={['name']}
-        visibleColumns={new Set<PipelineRunColumnKeys>(['name'])}
-      />,
-    );
-
-    expect(row.queryByTestId('attestation-signed')).toBeNull();
-    expect(row.queryByTestId('attestation-unsigned')).toBeNull();
-  });
-
-  it('should show signed attestation when chains signed annotation is true', () => {
-    const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
-    const signedPlr = {
-      ...succeededPlr,
-      metadata: {
-        ...succeededPlr.metadata,
-        annotations: {
-          ...succeededPlr.metadata.annotations,
-          'chains.tekton.dev/signed': 'true',
-        },
-      },
-    };
-    const plrName = signedPlr.metadata.name;
-
-    const row = render(
-      <PipelineRunListRowWithColumns
-        obj={signedPlr}
-        customData={{
-          fetchedPipelineRuns: [plrName],
-          vulnerabilities: [{ [plrName]: {} }] as any,
-        }}
-        columns={['name']}
-        visibleColumns={new Set<PipelineRunColumnKeys>(['name'])}
-      />,
-    );
-
-    expect(row.getByTestId('attestation-signed')).toBeDefined();
-  });
-
-  it('should show warning attestation when pipeline run is not signed', () => {
-    const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
-    const plrName = succeededPlr.metadata.name;
-
-    const row = render(
-      <PipelineRunListRowWithColumns
-        obj={succeededPlr}
-        customData={{
-          fetchedPipelineRuns: [plrName],
-          vulnerabilities: [{ [plrName]: {} }] as any,
-        }}
-        columns={['name']}
-        visibleColumns={new Set<PipelineRunColumnKeys>(['name'])}
-      />,
-    );
-
-    expect(row.getByTestId('attestation-unsigned')).toBeDefined();
   });
 });

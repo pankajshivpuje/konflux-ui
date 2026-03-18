@@ -47,6 +47,9 @@ const usePACState = (component: ComponentKind) => {
             [PipelineRunLabel.COMPONENT]: component.metadata.name,
             [PipelineRunLabel.COMMIT_EVENT_TYPE_LABEL]: PipelineRunEventType.PUSH,
           },
+          matchExpressions: [
+            { key: PipelineRunLabel.PULL_REQUEST_NUMBER_LABEL, operator: 'DoesNotExist' },
+          ],
         },
         // this limit is based on the assumption that user merges the PR after the component is created
         limit: 10,
