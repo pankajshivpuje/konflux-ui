@@ -12,6 +12,7 @@ import { usePipelineRunsV2 } from './usePipelineRunsV2';
 export const useLatestBuildPipelineRunForComponentV2 = (
   namespace: string,
   componentName: string,
+  _version?: string,
 ): [PipelineRunKind, boolean, unknown] => {
   const result = usePipelineRunsV2(
     namespace,

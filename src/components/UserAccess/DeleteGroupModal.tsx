@@ -5,6 +5,8 @@ import {
   StackItem,
   TextContent,
   Text,
+  TextList,
+  TextListItem,
   Alert,
   AlertVariant,
   Button,
@@ -13,24 +15,22 @@ import {
   ModalVariant,
 } from '@patternfly/react-core';
 import { USE_MOCK_DATA } from '../../hooks/__mock__/mock-data';
-import { K8sQueryDeleteResource } from '../../k8s';
-import { RoleBindingModel } from '../../models';
-import { RoleBinding } from '../../types';
 import { RawComponentProps } from '../modal/createModalLauncher';
+import { KonfluxGroup } from './group-utils';
+import { deleteGroup } from './UserAccessForm/form-utils';
 
 type Props = RawComponentProps & {
-  rb: RoleBinding;
-  username: string;
+  group: KonfluxGroup;
 };
 
-export const RevokeAccessModal: React.FC<React.PropsWithChildren<Props>> = ({
-  rb,
-  username,
+export const DeleteGroupModal: React.FC<React.PropsWithChildren<Props>> = ({
+  group,
   onClose,
   modalProps,
 }) => {
   const [error, setError] = React.useState<string>();
   const [submitting, setSubmitting] = React.useState(false);
+
   const handleSubmit = React.useCallback(
     async (e) => {
       e.preventDefault();
@@ -40,20 +40,15 @@ export const RevokeAccessModal: React.FC<React.PropsWithChildren<Props>> = ({
         if (USE_MOCK_DATA) {
           await new Promise((resolve) => setTimeout(resolve, 300));
         } else {
-          await K8sQueryDeleteResource({
-            model: RoleBindingModel,
-            queryOptions: {
-              name: rb.metadata.name,
-              ns: rb.metadata.namespace,
-            },
-          });
+          await deleteGroup(group.roleBindings);
         }
         onClose(null, { submitClicked: true });
       } catch (err) {
-        setError((err as { message: string }).message || (err.toString() as string));
+        setError((err as { message: string }).message || String(err));
+        setSubmitting(false);
       }
     },
-    [onClose, rb],
+    [onClose, group],
   );
 
   return (
@@ -62,10 +57,14 @@ export const RevokeAccessModal: React.FC<React.PropsWithChildren<Props>> = ({
         <StackItem>
           <TextContent>
             <Text data-test="description">
-              The user <strong>{username}</strong> will lose access to this namespace and all of its
-              applications, environments, and any other dependent items.
+              Delete group <strong>{group.name}</strong>? This will revoke access for{' '}
+              {group.members.length} {group.members.length === 1 ? 'user' : 'users'}:
             </Text>
-            <Text>You can always grant the user access later.</Text>
+            <TextList>
+              {group.members.map((member) => (
+                <TextListItem key={member}>{member}</TextListItem>
+              ))}
+            </TextList>
           </TextContent>
         </StackItem>
         <StackItem>
@@ -80,9 +79,9 @@ export const RevokeAccessModal: React.FC<React.PropsWithChildren<Props>> = ({
             isLoading={submitting}
             onClick={handleSubmit}
             isDisabled={submitting}
-            data-test="revoke-access"
+            data-test="delete-group-submit"
           >
-            Revoke
+            Delete
           </Button>
           <Button
             variant={ButtonVariant.link}

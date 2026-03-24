@@ -31,5 +31,5 @@ export const useLogViewerTheme = (): UseLogViewerThemeResult => {
     }
   }, [effectiveTheme, setLogTheme]);
 
-  return [logTheme ?? 'dark', setLogTheme];
+  return [(logTheme ?? 'dark') as Theme, setLogTheme];
 };

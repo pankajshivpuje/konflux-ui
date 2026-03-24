@@ -42,6 +42,12 @@ export const COMPONENTS_PATH = WORKSPACE_PATH.extend('components');
 
 export const COMPONENT_DETAILS_V2_PATH = COMPONENTS_PATH.extend(`:${RouterParams.componentName}`);
 
+export const COMPONENT_VERSIONS_PATH = COMPONENT_DETAILS_V2_PATH.extend('versions');
+
+export const COMPONENT_VERSION_DETAILS_PATH = COMPONENT_VERSIONS_PATH.extend(
+  `:${RouterParams.versionRevision}`,
+);
+
 /**
  * @deprecated Use COMPONENTS_PATH instead
  */
@@ -154,3 +160,10 @@ export const USER_ACCESS_GRANT_PAGE = USER_ACCESS_LIST_PAGE.extend('grant');
 export const USER_ACCESS_EDIT_PAGE = USER_ACCESS_LIST_PAGE.extend(
   `edit/:${RouterParams.bindingName}`,
 );
+
+export const GROUP_CREATE_PAGE = USER_ACCESS_LIST_PAGE.extend('create-group');
+
+export const GROUP_EDIT_PAGE = USER_ACCESS_LIST_PAGE.extend(
+  `edit-group/:${RouterParams.groupName}`,
+);
+

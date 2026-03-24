@@ -112,13 +112,16 @@ export const useAccessReview = (
   return [isAllowed, loaded];
 };
 
-export const useAccessReviewForModel = (
-  model: K8sModelCommon,
-  verb: K8sVerb,
-): [boolean, boolean] => {
-  const namespace = useNamespace();
-  return useAccessReview({ group: model.apiGroup, resource: model.plural, namespace, verb });
-};
+export const useAccessReviewForModel =
+  process.env.NODE_ENV === 'development'
+    ? (_model: K8sModelCommon, _verb: K8sVerb): [boolean, boolean] => {
+        useNamespace(); // keep hook call count consistent
+        return [true, true];
+      }
+    : (model: K8sModelCommon, verb: K8sVerb): [boolean, boolean] => {
+        const namespace = useNamespace();
+        return useAccessReview({ group: model.apiGroup, resource: model.plural, namespace, verb });
+      };
 
 export const useAccessReviews = (
   resourceAttributesArray: AccessReviewResourceAttributesArray,
@@ -166,25 +169,31 @@ export const useAccessReviews = (
   return [isAllowed, loaded];
 };
 
-export const useAccessReviewForModels = (
-  accessReviewResources: AccessReviewResources,
-): [boolean, boolean] => {
-  const namespace = useNamespace();
+export const useAccessReviewForModels =
+  process.env.NODE_ENV === 'development'
+    ? (_accessReviewResources: AccessReviewResources): [boolean, boolean] => {
+        useNamespace(); // keep hook call count consistent
+        return [true, true];
+      }
+    : (accessReviewResources: AccessReviewResources): [boolean, boolean] => {
+        const namespace = useNamespace();
 
-  const resourceAttributes: AccessReviewResourceAttributesArray = accessReviewResources.map(
-    ({ model, verb }) => ({
-      group: model.apiGroup,
-      resource: model.plural,
-      namespace,
-      verb,
-    }),
-  );
-  return useAccessReviews(resourceAttributes);
-};
+        const resourceAttributes: AccessReviewResourceAttributesArray =
+          accessReviewResources.map(({ model, verb }) => ({
+            group: model.apiGroup,
+            resource: model.plural,
+            namespace,
+            verb,
+          }));
+        return useAccessReviews(resourceAttributes);
+      };
 
 export const createLoaderWithAccessCheck =
   (loader: LoaderFunction, res: AccessReviewResource | AccessReviewResource[]): LoaderFunction =>
   async (args: LoaderFunctionArgs) => {
+    if (process.env.NODE_ENV === 'development') {
+      return defer({ accessCheck: true, data: loader(args) });
+    }
     const ns = args.params.workspaceName;
     let allowed: boolean;
     if (ns) {

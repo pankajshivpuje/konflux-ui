@@ -158,6 +158,17 @@ export const startNewBuild = (component: ComponentKind) =>
     ],
   });
 
+export const getPipelineName = (
+  pipeline: unknown,
+  defaultPipeline?: unknown,
+): string | undefined => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const def = (pipeline ?? defaultPipeline) as Record<string, any> | undefined;
+  if (!def) return undefined;
+  const entry = def?.['pull-and-push'] ?? def?.push ?? def?.pull;
+  return entry?.['pipelineref-by-name'] ?? entry?.['pipelinespec-from-bundle']?.name;
+};
+
 export const useComponentBuildStatus = (component: ComponentKind): ComponentBuildStatus =>
   React.useMemo(() => getComponentBuildStatus(component), [component]);
 

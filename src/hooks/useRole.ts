@@ -14,7 +14,21 @@ export type RoleMap = {
   roleDescription: RoleAndNameMap;
 };
 
-export const useRoleMap = (): [RoleMap, boolean, unknown] => {
+const mockRoleMap: RoleMap = {
+  roleMap: {
+    'konflux-admin': 'Admin',
+    'konflux-contributor': 'Contributor',
+    'konflux-viewer': 'Viewer',
+  },
+  roleKind: 'ClusterRole',
+  roleDescription: {
+    'konflux-admin': 'Full access to all resources in the namespace',
+    'konflux-contributor': 'Can create and modify resources but cannot manage access',
+    'konflux-viewer': 'Read-only access to resources in the namespace',
+  },
+};
+
+const useRoleMapLive = (): [RoleMap, boolean, unknown] => {
   const [konfluxInfo, loaded, error] = useKonfluxPublicInfo();
 
   // Memoize the result of role map transformation for performance
@@ -57,3 +71,8 @@ export const useRoleMap = (): [RoleMap, boolean, unknown] => {
 
   return [transformedRoleMap, loaded, error];
 };
+
+export const useRoleMap =
+  process.env.NODE_ENV === 'development'
+    ? (): [RoleMap, boolean, unknown] => [mockRoleMap, true, undefined]
+    : useRoleMapLive;

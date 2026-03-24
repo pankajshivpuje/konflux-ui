@@ -1,4 +1,6 @@
 import {
+  GROUP_CREATE_PAGE,
+  GROUP_EDIT_PAGE,
   USER_ACCESS_EDIT_PAGE,
   USER_ACCESS_GRANT_PAGE,
   USER_ACCESS_LIST_PAGE,
@@ -9,6 +11,8 @@ import {
   EditAccessPage,
   UserAccessListPage,
   userAccessListPageLoader,
+  CreateGroupPage,
+  EditGroupPage,
 } from '~/components/UserAccess';
 import { RouteErrorBoundry } from '../RouteErrorBoundary';
 
@@ -20,9 +24,19 @@ const userAccessRoutes = [
     errorElement: <RouteErrorBoundry />,
   },
   {
-    // Permission check has been covered in the EditAccessPage itself.
     path: USER_ACCESS_EDIT_PAGE.path,
     element: <EditAccessPage />,
+    errorElement: <RouteErrorBoundry />,
+  },
+  {
+    path: GROUP_CREATE_PAGE.path,
+    loader: grantAccessPageLoader,
+    element: <CreateGroupPage />,
+    errorElement: <RouteErrorBoundry />,
+  },
+  {
+    path: GROUP_EDIT_PAGE.path,
+    element: <EditGroupPage />,
     errorElement: <RouteErrorBoundry />,
   },
   {

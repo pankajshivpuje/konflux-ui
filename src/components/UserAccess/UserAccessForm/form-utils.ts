@@ -7,12 +7,32 @@ import {
 } from '../../../k8s';
 import { RoleBindingGroupVersionKind, RoleBindingModel } from '../../../models';
 import { RoleBinding, NamespaceRole } from '../../../types';
+import { KONFLUX_GROUP_LABEL } from '../group-utils';
 
 export type UserAccessFormValues = {
   usernames: string[];
   role: NamespaceRole;
   roleMap: RoleMap;
 };
+
+export type GroupFormValues = {
+  groupName: string;
+  usernames: string[];
+  role: NamespaceRole;
+  roleMap: RoleMap;
+};
+
+export const groupFormSchema = yup.object({
+  groupName: yup
+    .string()
+    .required('Required.')
+    .matches(/^[a-z0-9][-a-z0-9]*$/, 'Lowercase alphanumeric and hyphens only.'),
+  usernames: yup.array().min(1, 'Must have at least 1 user.').required('Required.'),
+  role: yup
+    .string()
+    .matches(/Contributor|Maintainer|Admin/, 'Invalid role.')
+    .required('Required.'),
+});
 
 export const userAccessFormSchema = yup.object({
   usernames: yup.array().min(1, 'Must have at least 1 username.').required('Required.'),
@@ -128,4 +148,70 @@ export const editRB = async (
   );
 
   return newRoleBindings;
+};
+
+export const createGroupRBs = async (
+  values: GroupFormValues,
+  namespace: string,
+  dryRun?: boolean,
+): Promise<RoleBinding[]> => {
+  const { groupName, usernames, role, roleMap } = values;
+  const konfluxRoles = Object.keys(roleMap?.roleMap);
+  const roleRefName = konfluxRoles.find((konfluxRole) => konfluxRole.includes(role.toLowerCase()));
+  const objs: RoleBinding[] = usernames.map((username) => ({
+    apiVersion: `${RoleBindingGroupVersionKind.group}/${RoleBindingGroupVersionKind.version}`,
+    kind: RoleBindingGroupVersionKind.kind,
+    metadata: {
+      name: `konflux-${role.toLowerCase()}-${sanitizeUsername(username)}-${groupName}-group`,
+      namespace,
+      labels: {
+        [KONFLUX_GROUP_LABEL]: groupName,
+      },
+    },
+    roleRef: {
+      apiGroup: RoleBindingGroupVersionKind.group,
+      name: roleRefName,
+      kind: roleMap?.roleKind,
+    },
+    subjects: [
+      {
+        kind: 'User',
+        apiGroup: RoleBindingGroupVersionKind.group,
+        name: username,
+      },
+    ],
+  }));
+
+  return Promise.all(
+    objs.map((obj) =>
+      K8sQueryCreateResource({
+        model: RoleBindingModel,
+        queryOptions: {
+          ns: namespace,
+          ...(dryRun && { queryParams: { dryRun: 'All' } }),
+        },
+        resource: obj,
+      }),
+    ),
+  );
+};
+
+export const deleteGroup = async (
+  roleBindings: RoleBinding[],
+  dryRun?: boolean,
+): Promise<void> => {
+  for (const rb of roleBindings) {
+    await deleteRB(rb, dryRun);
+  }
+};
+
+export const editGroupRole = async (
+  values: GroupFormValues,
+  existingRBs: RoleBinding[],
+  dryRun?: boolean,
+): Promise<RoleBinding[]> => {
+  if (!dryRun) {
+    await deleteGroup(existingRBs, dryRun);
+  }
+  return createGroupRBs(values, existingRBs[0].metadata.namespace, dryRun);
 };

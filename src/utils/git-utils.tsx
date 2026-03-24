@@ -65,3 +65,16 @@ const GIT_ICONS: Partial<Record<string, React.ReactElement>> = {
 
 export const getGitIcon = (gitSource: string): React.ReactElement =>
   GIT_ICONS[findProvider(gitSource) ?? ''] ?? <GitAltIcon alt="Git" />;
+
+export const createBranchUrl = (repoUrl: string | undefined, branch: string): string | null => {
+  if (!repoUrl || !branch) return null;
+  try {
+    const parsed = gitUrlParse(repoUrl);
+    const provider = findProvider(parsed.resource);
+    const prefix = provider ? getPathPrefix(provider, parsed.resource) : null;
+    if (!prefix) return null;
+    return `https://${parsed.resource}/${parsed.full_name}${prefix}/${branch}`;
+  } catch {
+    return null;
+  }
+};
