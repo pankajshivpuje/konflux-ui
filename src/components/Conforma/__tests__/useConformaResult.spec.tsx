@@ -10,7 +10,7 @@ import { useTaskRunsForPipelineRuns } from '../../../hooks/useTaskRunsV2';
 import { mockUseNamespaceHook } from '../../../unit-test-utils/mock-namespace';
 import { getTaskRunLog } from '../../../utils/tekton-results';
 import { createK8sUtilMock, createTestQueryClient } from '../../../utils/test-utils';
-import { mockConformaJSON, mockConformaUIData } from '../__data__/mockConformaLogsJson';
+import { mockConformaJSON } from '../__data__/mockConformaLogsJson';
 import {
   mapConformaResultData,
   useConformaResultFromLogs,
@@ -139,7 +139,7 @@ describe('useConformaResult', () => {
     expect(mockCommmonFetchJSON).toHaveBeenCalled();
     expect(result.current[0][0].successes.length).toEqual(1);
     expect(result.current[0][0].violations.length).toEqual(1);
-    expect(result.current[0][0].warnings).toEqual(undefined);
+    expect(result.current[0][0].warnings.length).toEqual(2);
   });
 
   it('should call useTaskRunsForPipelineRuns with verify when pipeline run has EC task run', () => {
@@ -342,6 +342,7 @@ describe('useConformaResult', () => {
     expect(loaded).toBe(true);
     expect(ecResult[0].successes.length).toEqual(1);
     expect(ecResult[0].violations.length).toEqual(1);
+    expect(ecResult[0].warnings.length).toEqual(2);
   });
 
   it('should show empty state when both K8s and KubeArchive fail with kubearchive enabled', async () => {
@@ -368,10 +369,11 @@ describe('mapConformaResultData', () => {
       mockConformaJSON.components[2],
     ] as ComponentConformaResult[]);
 
-    expect(uiData.length).toEqual(2);
+    expect(uiData.length).toEqual(4);
     expect(uiData[0].status).toEqual('Failed');
     expect(uiData[0].solution).toEqual('solution for failure');
-    expect(uiData.findIndex((u) => u.status === 'Warning')).toEqual(-1);
+    const warningEntries = uiData.filter((u) => u.status === 'Warning');
+    expect(warningEntries.length).toEqual(2);
   });
 
   it('should map solution data to failed results', () => {
@@ -380,7 +382,20 @@ describe('mapConformaResultData', () => {
     ] as ComponentConformaResult[]);
     expect(uiData[0].status).toEqual('Failed');
     expect(uiData[0].solution).toEqual('solution for failure');
-    expect(uiData).toEqual(mockConformaUIData);
+  });
+
+  it('should map effective_until and compute warning fields', () => {
+    const uiData = mapConformaResultData([
+      mockConformaJSON.components[2],
+    ] as ComponentConformaResult[]);
+    const expiringWarning = uiData.find((u) => u.warningType === 'expiring-exception');
+    expect(expiringWarning).toBeDefined();
+    expect(expiringWarning.effectiveUntil).toBeDefined();
+    expect(expiringWarning.daysUntilEvent).toBeGreaterThan(0);
+
+    const activatingWarning = uiData.find((u) => u.warningType === 'upcoming-activation');
+    expect(activatingWarning).toBeDefined();
+    expect(activatingWarning.daysUntilEvent).toBeGreaterThan(0);
   });
 });
 
@@ -423,7 +438,11 @@ describe('useConformaResult', () => {
     expect(result.current[0]).toEqual(undefined);
     expect(result.current[1]).toEqual(false);
     await waitForNextUpdate();
-    expect(result.current[0]).toEqual(mockConformaUIData);
+    expect(result.current[0].length).toEqual(4);
+    expect(result.current[0][0].status).toEqual('Failed');
+    expect(result.current[0][1].status).toEqual('Warning');
+    expect(result.current[0][2].status).toEqual('Warning');
+    expect(result.current[0][3].status).toEqual('Success');
     expect(result.current[1]).toEqual(true);
   });
 });

@@ -5,9 +5,12 @@ import {
   Alert,
   AlertVariant,
   Button,
+  Checkbox,
   Form,
   FormGroup,
   FormHelperText,
+  FormSelect,
+  FormSelectOption,
   HelperText,
   HelperTextItem,
   PageSection,
@@ -19,16 +22,47 @@ import PageLayout from '~/components/PageLayout/PageLayout';
 import { useDocumentTitle } from '~/hooks/useDocumentTitle';
 import { USE_MOCK_DATA, mockGitOpsRepos } from '~/hooks/__mock__/mock-data';
 import { useNamespace } from '~/shared/providers/Namespace';
-import { GITOPS_LIST_PATH } from '~/routes/paths';
+import { APPLICATION_LIST_PATH, NAMESPACE_LIST_PATH } from '~/routes/paths';
 import { RouterParams } from '~/routes/utils';
 import './GitOpsRegistration.scss';
 
 interface GitOpsRegistrationFormValues {
   repoUrl: string;
-  namespace: string;
   branch: string;
   path: string;
+  isPrivateRepo: boolean;
+  secretName: string;
+  authType: string;
+  authValue: string;
 }
+
+const authTypeOptions = [
+  { value: '', label: 'Select authentication type', isPlaceholder: true },
+  { value: 'personal-token', label: 'Personal access token' },
+  { value: 'ssh-key', label: 'SSH key' },
+  { value: 'oauth-token', label: 'OAuth token' },
+];
+
+const authValueLabels: Record<string, { label: string; placeholder: string; helpText: string }> = {
+  'personal-token': {
+    label: 'Personal access token',
+    placeholder: 'ghp_xxxxxxxxxxxxxxxxxxxx',
+    helpText:
+      'Enter the personal access token generated from your Git provider. This token must have read access to the repository.',
+  },
+  'ssh-key': {
+    label: 'SSH private key',
+    placeholder: '-----BEGIN OPENSSH PRIVATE KEY-----',
+    helpText:
+      'Paste the SSH private key used to authenticate with the repository. The corresponding public key must be added to your Git provider.',
+  },
+  'oauth-token': {
+    label: 'OAuth token',
+    placeholder: 'gho_xxxxxxxxxxxxxxxxxxxx',
+    helpText:
+      'Enter the OAuth token issued by your Git provider. This token must have the necessary scopes to access the repository.',
+  },
+};
 
 const validationSchema = yup.object().shape({
   repoUrl: yup
@@ -38,17 +72,38 @@ const validationSchema = yup.object().shape({
       /^https?:\/\/.+\/.+\/.+/,
       'Enter a valid Git repository URL (e.g., https://github.com/org/repo)',
     ),
-  namespace: yup.string().required('Namespace is required'),
   branch: yup.string().default('main'),
   path: yup.string().default('/'),
+  isPrivateRepo: yup.boolean().default(false),
+  secretName: yup.string().when('isPrivateRepo', {
+    is: true,
+    then: (schema) => schema.required('Secret name is required for private repositories'),
+  }),
+  authType: yup.string().when('isPrivateRepo', {
+    is: true,
+    then: (schema) => schema.required('Authentication type is required for private repositories'),
+  }),
+  authValue: yup.string().when(['isPrivateRepo', 'authType'], {
+    is: (isPrivate: boolean, authType: string) => isPrivate && !!authType,
+    then: (schema) => schema.required('Authentication credential is required'),
+  }),
 });
 
-const GitOpsRegistrationFormContent: React.FC = () => {
-  const { values, errors, touched, handleChange, handleBlur, status } =
+const GitOpsRegistrationFormContent: React.FC<{ namespace: string }> = ({ namespace }) => {
+  const { values, errors, touched, handleBlur, setFieldValue, status } =
     useFormikContext<GitOpsRegistrationFormValues>();
 
   return (
     <div className="gitops-registration__form">
+      <Alert
+        variant="custom"
+        title="One-time setup"
+        isInline
+        className="pf-v5-u-mb-md"
+      >
+        {`This registration process maps your GitOps repository to the "${namespace}" namespace. Once registered, all resources from your repository will be deployed to this namespace.`}
+      </Alert>
+
       <FormGroup label="Git repository URL" isRequired fieldId="repo-url">
         <TextInput
           id="repo-url"
@@ -56,7 +111,7 @@ const GitOpsRegistrationFormContent: React.FC = () => {
           type="url"
           placeholder="https://github.com/your-org/your-gitops-repo"
           value={values.repoUrl}
-          onChange={handleChange}
+          onChange={(_event, value) => void setFieldValue('repoUrl', value)}
           onBlur={handleBlur}
           validated={touched.repoUrl && errors.repoUrl ? 'error' : 'default'}
           data-test="gitops-repo-url"
@@ -79,32 +134,132 @@ const GitOpsRegistrationFormContent: React.FC = () => {
         )}
       </FormGroup>
 
-      <FormGroup label="Target namespace" isRequired fieldId="namespace">
-        <TextInput
-          id="namespace"
-          name="namespace"
-          value={values.namespace}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          validated={touched.namespace && errors.namespace ? 'error' : 'default'}
-          data-test="gitops-namespace"
+      <FormGroup fieldId="is-private-repo">
+        <Checkbox
+          id="is-private-repo"
+          name="isPrivateRepo"
+          label="Private repository"
+          description="Select this if the Git repository requires authentication to access."
+          isChecked={values.isPrivateRepo}
+          onChange={(_event, checked) => {
+            void setFieldValue('isPrivateRepo', checked);
+            if (!checked) {
+              void setFieldValue('secretName', '');
+              void setFieldValue('authType', '');
+              void setFieldValue('authValue', '');
+            }
+          }}
+          data-test="gitops-private-repo"
         />
-        {touched.namespace && errors.namespace ? (
-          <FormHelperText>
-            <HelperText>
-              <HelperTextItem variant="error">{errors.namespace}</HelperTextItem>
-            </HelperText>
-          </FormHelperText>
-        ) : (
-          <FormHelperText>
-            <HelperText>
-              <HelperTextItem>
-                The Kubernetes namespace where resources from this repository will be deployed.
-              </HelperTextItem>
-            </HelperText>
-          </FormHelperText>
-        )}
       </FormGroup>
+
+      {values.isPrivateRepo && (
+        <div className="pf-v5-u-ml-lg pf-v5-u-mt-sm">
+          <FormGroup label="Secret name" isRequired fieldId="secret-name">
+            <TextInput
+              id="secret-name"
+              name="secretName"
+              placeholder="my-git-secret"
+              value={values.secretName}
+              onChange={(_event, value) => void setFieldValue('secretName', value)}
+              onBlur={handleBlur}
+              validated={touched.secretName && errors.secretName ? 'error' : 'default'}
+              data-test="gitops-secret-name"
+            />
+            {touched.secretName && errors.secretName ? (
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem variant="error">{errors.secretName}</HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            ) : (
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem>
+                    The name of the Kubernetes Secret that contains the credentials for accessing this
+                    repository.
+                  </HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            )}
+          </FormGroup>
+
+          <FormGroup label="Authentication type" isRequired fieldId="auth-type">
+            <FormSelect
+              id="auth-type"
+              name="authType"
+              value={values.authType}
+              onChange={(_event, value) => {
+                void setFieldValue('authType', value);
+                void setFieldValue('authValue', '');
+              }}
+              onBlur={handleBlur}
+              validated={touched.authType && errors.authType ? 'error' : 'default'}
+              data-test="gitops-auth-type"
+            >
+              {authTypeOptions.map((option) => (
+                <FormSelectOption
+                  key={option.value}
+                  value={option.value}
+                  label={option.label}
+                  isPlaceholder={option.isPlaceholder}
+                />
+              ))}
+            </FormSelect>
+            {touched.authType && errors.authType ? (
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem variant="error">{errors.authType}</HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            ) : (
+              <FormHelperText>
+                <HelperText>
+                  <HelperTextItem>
+                    Choose how the service authenticates with your Git provider. The selected type
+                    must match the credentials stored in the secret.
+                  </HelperTextItem>
+                </HelperText>
+              </FormHelperText>
+            )}
+          </FormGroup>
+
+          {values.authType && authValueLabels[values.authType] && (
+            <FormGroup
+              label={authValueLabels[values.authType].label}
+              isRequired
+              fieldId="auth-value"
+            >
+              <TextInput
+                id="auth-value"
+                name="authValue"
+                type="text"
+                placeholder={authValueLabels[values.authType].placeholder}
+                value={values.authValue}
+                onChange={(_event, value) => void setFieldValue('authValue', value)}
+                onBlur={handleBlur}
+                validated={touched.authValue && errors.authValue ? 'error' : 'default'}
+                data-test="gitops-auth-value"
+              />
+              {touched.authValue && errors.authValue ? (
+                <FormHelperText>
+                  <HelperText>
+                    <HelperTextItem variant="error">{errors.authValue}</HelperTextItem>
+                  </HelperText>
+                </FormHelperText>
+              ) : (
+                <FormHelperText>
+                  <HelperText>
+                    <HelperTextItem>
+                      {authValueLabels[values.authType].helpText}
+                    </HelperTextItem>
+                  </HelperText>
+                </FormHelperText>
+              )}
+            </FormGroup>
+          )}
+        </div>
+      )}
 
       <FormGroup label="Branch" fieldId="branch">
         <TextInput
@@ -112,7 +267,7 @@ const GitOpsRegistrationFormContent: React.FC = () => {
           name="branch"
           placeholder="main"
           value={values.branch}
-          onChange={handleChange}
+          onChange={(_event, value) => void setFieldValue('branch', value)}
           onBlur={handleBlur}
           data-test="gitops-branch"
         />
@@ -131,7 +286,7 @@ const GitOpsRegistrationFormContent: React.FC = () => {
           name="path"
           placeholder="/"
           value={values.path}
-          onChange={handleChange}
+          onChange={(_event, value) => void setFieldValue('path', value)}
           onBlur={handleBlur}
           data-test="gitops-path"
         />
@@ -182,9 +337,12 @@ export const GitOpsRegistrationForm: React.FC = () => {
 
   const initialValues: GitOpsRegistrationFormValues = {
     repoUrl: existingRepo?.repoUrl || '',
-    namespace: existingRepo?.namespace || namespace || '',
     branch: 'main',
     path: '/',
+    isPrivateRepo: false,
+    secretName: '',
+    authType: '',
+    authValue: '',
   };
 
   const handleSubmit = React.useCallback(
@@ -199,7 +357,7 @@ export const GitOpsRegistrationForm: React.FC = () => {
       // Simulate API call for now
       setTimeout(() => {
         formikHelpers.setSubmitting(false);
-        navigate(GITOPS_LIST_PATH.createPath({ workspaceName: namespace }));
+        navigate(NAMESPACE_LIST_PATH.createPath({} as never));
       }, 1000);
     },
     [namespace, navigate, isEditMode],
@@ -211,15 +369,28 @@ export const GitOpsRegistrationForm: React.FC = () => {
 
   const breadcrumbs = [
     {
-      name: 'GitOps Registration',
-      path: namespace ? GITOPS_LIST_PATH.createPath({ workspaceName: namespace }) : '#',
+      name: 'Namespaces',
+      path: NAMESPACE_LIST_PATH.createPath({} as never),
     },
-    { name: isEditMode ? `Edit ${gitopsRepoName}` : 'Register repository', path: '#' },
+    ...(namespace
+      ? [
+          {
+            name: namespace,
+            path: APPLICATION_LIST_PATH.createPath({ workspaceName: namespace }),
+          },
+        ]
+      : []),
+    { name: isEditMode ? `Edit ${gitopsRepoName}` : 'Register GitOps Repository', path: '#' },
   ];
 
   return (
     <PageLayout
       title={isEditMode ? `Edit ${gitopsRepoName}` : 'Register GitOps Repository'}
+      description={
+        isEditMode
+          ? undefined
+          : 'Connect your GitOps repository to Konflux. This will create a dedicated namespace and configure continuous deployment for your team\'s applications and components.'
+      }
       breadcrumbs={breadcrumbs}
     >
       <PageSection>
@@ -231,7 +402,7 @@ export const GitOpsRegistrationForm: React.FC = () => {
         >
           {(formikProps) => (
             <Form onSubmit={formikProps.handleSubmit}>
-              <GitOpsRegistrationFormContent />
+              <GitOpsRegistrationFormContent namespace={namespace} />
               <ActionGroup className="pf-v5-u-mt-lg pf-v5-u-ml-lg">
                 <Button
                   type="submit"

@@ -4,14 +4,19 @@ import {
   Banner,
   Bullseye,
   Button,
-  Checkbox,
   Flex,
   FlexItem,
+  MenuToggle,
+  Select,
+  SelectList,
+  SelectOption,
   Spinner,
   Toolbar,
   ToolbarContent,
   ToolbarGroup,
   ToolbarItem,
+  ToolbarToggleGroup,
+  Tooltip,
   Truncate,
 } from '@patternfly/react-core';
 import {
@@ -19,6 +24,9 @@ import {
   DownloadIcon,
   ExpandIcon,
   OutlinedPlayCircleIcon,
+  PauseIcon,
+  PlayIcon,
+  SearchIcon,
 } from '@patternfly/react-icons/dist/esm/icons';
 import {
   LogViewerSearch,
@@ -35,7 +43,6 @@ import { useLogViewerSearch } from '~/shared/components/pipeline-run-logs/logs/u
 import { LoadingInline } from '~/shared/components/status-box/StatusBox';
 import { VirtualizedLogViewer } from '~/shared/components/virtualized-log-viewer';
 import { useFullscreen } from '~/shared/hooks/fullscreen';
-import { useTheme } from '~/shared/theme';
 import { TaskRunKind } from '~/types';
 import LogsTaskDuration from './LogsTaskDuration';
 
@@ -45,6 +52,12 @@ import './LogViewer.scss';
 // ESC character (\u001b) is a control character but necessary for ANSI escape sequences
 // eslint-disable-next-line no-control-regex
 const ANSI_ESCAPE_REGEX = /\u001b\[[0-9;]*m/g;
+
+// Stream status constants (matching OpenShift Console)
+const STREAM_EOF = 'eof';
+const STREAM_LOADING = 'loading';
+const STREAM_PAUSED = 'paused';
+const STREAM_ACTIVE = 'streaming';
 
 export type Props = {
   showSearch?: boolean;
@@ -62,6 +75,52 @@ export type Props = {
   }) => void;
 };
 
+// --- TogglePlay button (matches OpenShift Console's toggle-play) ---
+const TogglePlay: React.FC<{
+  active: boolean;
+  onClick: () => void;
+  className?: string;
+}> = ({ active, onClick, className }) => (
+  <Button
+    icon={active ? <PauseIcon /> : <PlayIcon />}
+    variant="plain"
+    className={classNames(
+      'co-toggle-play',
+      active ? 'co-toggle-play--active' : 'co-toggle-play--inactive',
+      className,
+    )}
+    onClick={onClick}
+    aria-label={active ? 'Pause event streaming' : 'Start streaming events'}
+  />
+);
+
+// --- Header banner showing line count + stream status ---
+const HeaderBanner: React.FC<{ lineCount: number; status: string }> = ({ lineCount, status }) => {
+  const isEOF = status === STREAM_EOF;
+  const headerText = `${lineCount} line${lineCount !== 1 ? 's' : ''}`;
+  return (
+    <Banner variant={isEOF ? 'blue' : 'default'}>
+      {headerText}
+      {isEOF && ' - Log stream ended.'}
+    </Banner>
+  );
+};
+
+// --- Footer resume stream button ---
+const FooterButton: React.FC<{
+  onResume: () => void;
+  className?: string;
+}> = ({ onResume, className }) => (
+  <Button
+    icon={<OutlinedPlayCircleIcon />}
+    className={className}
+    onClick={onResume}
+    isBlock
+  >
+    &nbsp;Resume stream
+  </Button>
+);
+
 const LogViewer: React.FC<Props> = ({
   showSearch = true,
   allowAutoScroll,
@@ -74,9 +133,9 @@ const LogViewer: React.FC<Props> = ({
   onScroll: onScrollProp,
 }) => {
   const taskName = taskRun?.spec.taskRef?.name ?? taskRun?.metadata.name;
-  const { effectiveTheme } = useTheme();
-  const [logTheme, setLogTheme] = React.useState<'light' | 'dark'>('dark');
-  const themeCheckboxId = React.useId();
+  const [wrapLines, setWrapLines] = React.useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = React.useState(false);
+  const [streamStatus, setStreamStatus] = React.useState(STREAM_EOF); // Mock data = already ended
 
   // Auto-scroll and resume button logic
   const { autoScroll, showResumeStreamButton, handleScroll, handleResumeClick } =
@@ -124,6 +183,10 @@ const LogViewer: React.FC<Props> = ({
       });
   };
 
+  const toggleStreaming = () => {
+    setStreamStatus((prev) => (prev === STREAM_ACTIVE ? STREAM_PAUSED : STREAM_ACTIVE));
+  };
+
   // Use containerRef to measure actual height for VirtualizedLogViewer
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [viewerHeight, setViewerHeight] = React.useState<number | undefined>(undefined);
@@ -134,10 +197,8 @@ const LogViewer: React.FC<Props> = ({
         const measured = containerRef.current.clientHeight;
         if (measured > 0) {
           if (immediate) {
-            // Immediate update for fullscreen toggle and initial mount
             setViewerHeight(measured);
           } else {
-            // Use requestAnimationFrame for resize events to avoid ResizeObserver warnings
             requestAnimationFrame(() => {
               setViewerHeight(measured);
             });
@@ -146,13 +207,10 @@ const LogViewer: React.FC<Props> = ({
       }
     };
 
-    // Update immediately on mount and fullscreen changes
     updateHeight(true);
 
-    // Debounced resize handler for better performance (150ms delay)
     const debouncedUpdateHeight = debounce(() => updateHeight(false), 150);
 
-    // Update on window resize
     window.addEventListener('resize', debouncedUpdateHeight);
     return () => {
       window.removeEventListener('resize', debouncedUpdateHeight);
@@ -160,114 +218,162 @@ const LogViewer: React.FC<Props> = ({
     };
   }, [isFullscreen]);
 
+  // --- Play/pause button rendering ---
+  const playPauseButton = React.useMemo(() => {
+    switch (streamStatus) {
+      case STREAM_LOADING:
+        return <LoadingInline />;
+      case STREAM_ACTIVE:
+      case STREAM_PAUSED:
+        return (
+          <Tooltip content={streamStatus === STREAM_ACTIVE ? 'Log streaming...' : 'Log stream paused.'}>
+            <TogglePlay active={streamStatus === STREAM_ACTIVE} onClick={toggleStreaming} />
+          </Tooltip>
+        );
+      case STREAM_EOF:
+      default:
+        return null;
+    }
+  }, [streamStatus]);
+
+  // --- Options dropdown (matches Console's Select with wrap lines) ---
+  const optionsDropdown = (
+    <Select
+      toggle={(toggleRef: React.Ref<HTMLButtonElement>) => (
+        <MenuToggle
+          ref={toggleRef}
+          onClick={() => setIsOptionsOpen((isOpen) => !isOpen)}
+          isExpanded={isOptionsOpen}
+          data-test="resource-log-options-toggle"
+        >
+          Options
+        </MenuToggle>
+      )}
+      onSelect={(_event, value: string) => {
+        if (value === 'wrapLines') {
+          setWrapLines((prev) => !prev);
+        }
+      }}
+      onOpenChange={setIsOptionsOpen}
+      isOpen={isOptionsOpen}
+    >
+      <SelectList>
+        <SelectOption
+          key="wrapLines"
+          value="wrapLines"
+          isSelected={wrapLines}
+          hasCheckbox
+          data-test-dropdown-menu="wrap-lines"
+        >
+          Wrap lines
+        </SelectOption>
+      </SelectList>
+    </Select>
+  );
+
+  // --- Toolbar matching Console's LogControls layout ---
+  const logControls = (
+    <Toolbar data-test="resource-log-toolbar">
+      <ToolbarContent alignItems="center">
+        <ToolbarGroup align={{ default: 'alignLeft' }}>
+          <ToolbarItem>
+            <FeatureFlagIndicator flags={['kubearchive-logs', 'taskruns-kubearchive']} />
+          </ToolbarItem>
+          {playPauseButton && (
+            <ToolbarItem>{playPauseButton}</ToolbarItem>
+          )}
+          <ToolbarItem>{optionsDropdown}</ToolbarItem>
+        </ToolbarGroup>
+
+        <ToolbarGroup align={{ default: 'alignRight' }}>
+          {showSearch && (
+            <ToolbarToggleGroup toggleIcon={<SearchIcon />} breakpoint="lg">
+              <ToolbarItem>
+                <LogViewerSearch placeholder="Search" minSearchChars={0} />
+              </ToolbarItem>
+            </ToolbarToggleGroup>
+          )}
+
+          <ToolbarGroup variant="icon-button-group">
+            <ToolbarItem>
+              <Tooltip content="Download">
+                <Button variant="plain" onClick={downloadLogs} icon={<DownloadIcon />} aria-label="Download" />
+              </Tooltip>
+            </ToolbarItem>
+            {onDownloadAll && (
+              <ToolbarItem>
+                <Tooltip content={downloadAllLabel || 'Download all task logs'}>
+                  <Button
+                    variant="plain"
+                    onClick={startDownloadAll}
+                    isDisabled={downloadAllStatus}
+                    icon={<DownloadIcon />}
+                    aria-label={downloadAllLabel || 'Download all task logs'}
+                  />
+                </Tooltip>
+                {downloadAllStatus && <LoadingInline />}
+              </ToolbarItem>
+            )}
+            {fullscreenToggle && isFullscreenSupported && (
+              <ToolbarItem>
+                <Tooltip content={isFullscreen ? 'Collapse' : 'Expand'}>
+                  <Button
+                    variant="plain"
+                    onClick={fullscreenToggle}
+                    icon={isFullscreen ? <CompressIcon /> : <ExpandIcon />}
+                    aria-label={isFullscreen ? 'Collapse' : 'Expand'}
+                  />
+                </Tooltip>
+              </ToolbarItem>
+            )}
+          </ToolbarGroup>
+        </ToolbarGroup>
+      </ToolbarContent>
+    </Toolbar>
+  );
+
   return (
     <LogViewerContext.Provider value={logViewerContextValue}>
       <LogViewerToolbarContext.Provider value={toolbarContextValue}>
         <div
           ref={fullscreenRef}
           style={{ height: isFullscreen ? '100vh' : '100%' }}
-          className={classNames('log-viewer__container', 'pf-v5-c-log-viewer', {
-            'pf-m-dark': logTheme === 'dark',
-          })}
+          className={classNames('log-viewer__container', 'pf-v5-c-log-viewer', 'pf-m-dark')}
         >
           {/* Toolbar */}
           <div className="pf-v5-c-log-viewer__header">
-            <Toolbar>
-              <ToolbarContent
-                className={classNames({
-                  'log-viewer--fullscreen': isFullscreen,
-                })}
-                alignItems="center"
-              >
-                <ToolbarGroup>
-                  <ToolbarItem>
-                    <FeatureFlagIndicator flags={['kubearchive-logs', 'taskruns-kubearchive']} />
-                  </ToolbarItem>
-                </ToolbarGroup>
-                {showSearch && (
-                  <ToolbarGroup>
-                    <ToolbarItem>
-                      <LogViewerSearch placeholder="Search" minSearchChars={0} />
-                    </ToolbarItem>
-                  </ToolbarGroup>
-                )}
-                <ToolbarGroup align={{ default: 'alignRight' }}>
-                  <ToolbarItem>
-                    <Checkbox
-                      id={themeCheckboxId}
-                      label="Dark theme"
-                      // theme toggle should be disabled if global theme is dark
-                      isDisabled={effectiveTheme === 'dark'}
-                      checked={logTheme === 'dark'}
-                      onClick={() => setLogTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))}
-                    />
-                  </ToolbarItem>
-                  <ToolbarItem variant="separator" className="log-viewer__divider" />
-                  <ToolbarItem>
-                    <Button variant="link" onClick={downloadLogs} isInline>
-                      <DownloadIcon className="log-viewer__icon" />
-                      Download
-                    </Button>
-                  </ToolbarItem>
-                  <ToolbarItem variant="separator" className="log-viewer__divider" />
-                  {onDownloadAll && (
-                    <>
-                      <ToolbarItem>
-                        <Button
-                          variant="link"
-                          onClick={startDownloadAll}
-                          isDisabled={downloadAllStatus}
-                          isInline
-                        >
-                          <DownloadIcon className="log-viewer__icon" />
-                          {downloadAllLabel}
-                          {downloadAllStatus && <LoadingInline />}
-                        </Button>
-                      </ToolbarItem>
-                      <ToolbarItem variant="separator" className="log-viewer__divider" />
-                    </>
-                  )}
-                  {fullscreenToggle && isFullscreenSupported && (
-                    <ToolbarItem spacer={{ default: 'spacerMd' }}>
-                      <Button variant="link" onClick={fullscreenToggle} isInline>
-                        {isFullscreen ? (
-                          <>
-                            <CompressIcon className="log-viewer__icon" />
-                            Collapse
-                          </>
-                        ) : (
-                          <>
-                            <ExpandIcon className="log-viewer__icon" />
-                            Expand
-                          </>
-                        )}
-                      </Button>
-                    </ToolbarItem>
-                  )}
-                </ToolbarGroup>
-              </ToolbarContent>
-            </Toolbar>
+            {logControls}
           </div>
 
-          {/* Header */}
-          <Banner data-testid="logs-taskName">
-            <Flex gap={{ default: 'gapSm' }}>
-              {taskName && (
-                <FlexItem flex={{ default: 'flex_1' }} className="log-viewer__task-name">
-                  <Truncate content={taskName} />
-                </FlexItem>
-              )}
-              <FlexItem flex={{ default: 'flexNone' }}>
-                <LogsTaskDuration taskRun={taskRun} />
-              </FlexItem>
-            </Flex>
-            {isLoading && (
-              <Bullseye>
-                <Spinner size="lg" />
-              </Bullseye>
+          {/* Header — line count banner + task name */}
+          <Flex
+            gap={{ default: 'gapNone' }}
+            direction={{ default: 'column' }}
+            fullWidth={{ default: 'fullWidth' }}
+            className="log-window__header"
+          >
+            {errorMessage && (
+              <Alert variant="danger" isInline title={errorMessage} />
             )}
-            {errorMessage && <Alert variant="danger" isInline title={errorMessage} />}
-          </Banner>
+            <HeaderBanner lineCount={lines.length} status={streamStatus} />
+            <Banner data-testid="logs-taskName">
+              <Flex gap={{ default: 'gapSm' }}>
+                {taskName && (
+                  <FlexItem flex={{ default: 'flex_1' }} className="log-viewer__task-name">
+                    <Truncate content={taskName} />
+                  </FlexItem>
+                )}
+                <FlexItem flex={{ default: 'flexNone' }}>
+                  <LogsTaskDuration taskRun={taskRun} />
+                </FlexItem>
+              </Flex>
+              {isLoading && (
+                <Bullseye>
+                  <Spinner size="lg" />
+                </Bullseye>
+              )}
+            </Banner>
+          </Flex>
 
           {/* Log Viewer */}
           <div ref={containerRef} className="log-viewer__content">
@@ -282,17 +388,10 @@ const LogViewer: React.FC<Props> = ({
             )}
           </div>
 
-          {/* Footer */}
+          {/* Footer — resume stream button (hidden when not paused) */}
           {showResumeStreamButton && (
             <div className="log-viewer__resume-stream-button-wrapper">
-              <Button
-                data-testid="resume-log-stream"
-                variant="primary"
-                isBlock
-                onClick={handleResumeClick}
-              >
-                <OutlinedPlayCircleIcon /> Resume log stream
-              </Button>
+              <FooterButton onResume={handleResumeClick} />
             </div>
           )}
         </div>

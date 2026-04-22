@@ -17,6 +17,7 @@ import { PipelineRunKind } from '../types';
 import { WatchK8sResource } from '../types/k8s';
 import { getCommitSha } from '../utils/commits-utils';
 import { has404Error } from '../utils/common-utils';
+import { USE_MOCK_DATA, mockPipelineRuns } from './__mock__/mock-data';
 import { GetNextPage, NextPageProps, useTRPipelineRuns } from './useTektonResults';
 
 interface UsePipelineRunsV2Options
@@ -47,6 +48,17 @@ export const usePipelineRunsV2 = (
   namespace: string | null,
   options?: UsePipelineRunsV2Options,
 ): UsePipelineRunsV2Result => {
+  if (USE_MOCK_DATA) {
+    const filtered = mockPipelineRuns.filter((plr) => {
+      if (options?.selector?.matchLabels) {
+        return Object.entries(options.selector.matchLabels).every(
+          ([key, value]) => plr.metadata?.labels?.[key] === value,
+        );
+      }
+      return true;
+    });
+    return [filtered, true, null, undefined, { hasNextPage: false, isFetchingNextPage: false }];
+  }
   const etcdRunsRef = React.useRef<PipelineRunKind[]>([]);
   const optionsMemo = useDeepCompareMemoize(options);
   const kubearchiveEnabled = useIsOnFeatureFlag('pipelineruns-kubearchive');
@@ -283,6 +295,10 @@ export const usePipelineRunV2 = (
   namespace: string,
   pipelineRunName: string,
 ): [PipelineRunKind, boolean, unknown] => {
+  if (USE_MOCK_DATA) {
+    const mockRun = mockPipelineRuns.find((plr) => plr.metadata?.name === pipelineRunName);
+    return [mockRun, true, mockRun ? undefined : { code: 404 }];
+  }
   const kubearchiveEnabled = useIsOnFeatureFlag('pipelineruns-kubearchive');
   const enabled = !!namespace && !!pipelineRunName;
 

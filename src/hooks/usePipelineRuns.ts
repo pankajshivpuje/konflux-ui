@@ -19,6 +19,7 @@ import { K8sGroupVersionKind, K8sModelCommon, K8sResourceCommon, Selector } from
 import { getCommitSha } from '../utils/commits-utils';
 import { pipelineRunStatus } from '../utils/pipeline-utils';
 import { EQ } from '../utils/tekton-results';
+import { USE_MOCK_DATA, mockPipelineRuns } from './__mock__/mock-data';
 import { useApplication } from './useApplications';
 import { useComponents } from './useComponents';
 import { GetNextPage, NextPageProps, useTRPipelineRuns, useTRTaskRuns } from './useTektonResults';
@@ -175,9 +176,28 @@ export const usePipelineRuns = (
   options?: {
     selector?: Selector;
     limit?: number;
+    name?: string;
   },
-): [PipelineRunKind[], boolean, unknown, GetNextPage, NextPageProps] =>
-  useRuns<PipelineRunKind>(PipelineRunGroupVersionKind, PipelineRunModel, namespace, options);
+): [PipelineRunKind[], boolean, unknown, GetNextPage, NextPageProps] => {
+  if (USE_MOCK_DATA) {
+    let filtered = [...mockPipelineRuns];
+    if (options?.selector?.matchLabels) {
+      filtered = filtered.filter((plr) =>
+        Object.entries(options.selector.matchLabels).every(
+          ([key, value]) => plr.metadata?.labels?.[key] === value,
+        ),
+      );
+    }
+    if (options?.name) {
+      filtered = filtered.filter((plr) => plr.metadata?.name === options.name);
+    }
+    if (options?.limit) {
+      filtered = filtered.slice(0, options.limit);
+    }
+    return [filtered, true, undefined, undefined, { hasNextPage: false, isFetchingNextPage: false }];
+  }
+  return useRuns<PipelineRunKind>(PipelineRunGroupVersionKind, PipelineRunModel, namespace, options);
+};
 
 export const useTaskRuns = (
   namespace: string,

@@ -10,6 +10,10 @@
   &__form {
     max-width: 800px;
     padding: var(--pf-v5-global--spacer--lg);
+
+    > .pf-v5-c-alert {
+      max-width: 800px;
+    }
   }
 
   &__help-text {

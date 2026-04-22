@@ -14,6 +14,7 @@ import {
 import { TaskRunGroupVersionKind, TaskRunModel } from '../models';
 import { TaskRunKind, TektonResourceLabel } from '../types';
 import { createKubearchiveWatchResource } from '../utils/kubearchive-filter-transform';
+import { USE_MOCK_DATA, mockTaskRuns } from './__mock__/mock-data';
 import { sortTaskRunsByTime } from './useTaskRuns';
 import { GetNextPage, NextPageProps, useTRTaskRuns } from './useTektonResults';
 
@@ -31,6 +32,20 @@ export const useTaskRunsV2 = (
   options?: Partial<Pick<WatchK8sResource, 'watch' | 'limit' | 'selector' | 'fieldSelector'>>,
   queryOptions?: TQueryInfiniteOptions<TaskRunKind[], Error, InfiniteData<TaskRunKind[], unknown>>,
 ): [TaskRunKind[], boolean, unknown, GetNextPage, NextPageProps] => {
+  if (USE_MOCK_DATA) {
+    let filtered = [...mockTaskRuns];
+    if (options?.selector?.matchLabels) {
+      filtered = filtered.filter((tr) =>
+        Object.entries(options.selector.matchLabels).every(
+          ([key, value]) => tr.metadata?.labels?.[key] === value,
+        ),
+      );
+    }
+    if (options?.limit) {
+      filtered = filtered.slice(0, options.limit);
+    }
+    return [filtered, true, null, undefined, { hasNextPage: false, isFetchingNextPage: false }];
+  }
   const enableKubearchive = useIsOnFeatureFlag('taskruns-kubearchive');
   const etcdRunsRef = React.useRef<TaskRunKind[]>([]);
 
@@ -260,6 +275,10 @@ export const useTaskRunV2 = (
   namespace: string,
   taskRunName: string,
 ): [TaskRunKind | null | undefined, boolean, unknown] => {
+  if (USE_MOCK_DATA) {
+    const mockRun = mockTaskRuns.find((tr) => tr.metadata?.name === taskRunName);
+    return [mockRun || null, true, mockRun ? undefined : { code: 404 }];
+  }
   const isKubeArchiveOn = useIsOnFeatureFlag('taskruns-kubearchive');
   const enabled = !!namespace && !!taskRunName;
 

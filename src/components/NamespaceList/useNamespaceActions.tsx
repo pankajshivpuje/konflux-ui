@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { GITOPS_EDIT_PATH, GITOPS_REGISTER_PATH } from '@routes/paths';
+import { useGitOpsRegistration } from '~/hooks/useGitOpsRegistration';
 import { RoleBindingModel } from '~/models';
 import { Action } from '~/shared/components/action-menu/types';
 import { NamespaceKind } from '~/types';
@@ -10,6 +12,7 @@ export const useNamespaceActions = (
   namespace: NamespaceKind,
 ): [Action[], boolean, (isOpen: boolean) => void] => {
   const showModal = useModalLauncher();
+  const [gitopsInfo] = useGitOpsRegistration(namespace.metadata.name);
   const [isChecking, setChecking] = React.useState(false);
   const [canManage, setCanManage] = React.useState(false);
   const [checked, setChecked] = React.useState(false);
@@ -48,8 +51,33 @@ export const useNamespaceActions = (
     [checked, checkPermissions],
   );
 
+  const gitopsAction: Action = React.useMemo(() => {
+    if (gitopsInfo.isRegistered && gitopsInfo.repoName) {
+      return {
+        id: `edit-gitops-registration-${namespace.metadata.name.toLowerCase()}`,
+        label: 'Edit GitOps Registration',
+        cta: {
+          href: GITOPS_EDIT_PATH.createPath({
+            workspaceName: namespace.metadata.name,
+            gitopsRepoName: gitopsInfo.repoName,
+          }),
+        },
+      };
+    }
+    return {
+      id: `register-gitops-repo-${namespace.metadata.name.toLowerCase()}`,
+      label: 'Register GitOps Repo',
+      cta: {
+        href: GITOPS_REGISTER_PATH.createPath({
+          workspaceName: namespace.metadata.name,
+        }),
+      },
+    };
+  }, [namespace.metadata.name, gitopsInfo.isRegistered, gitopsInfo.repoName]);
+
   const actions: Action[] = React.useMemo(
     () => [
+      gitopsAction,
       {
         id: `manage-visibility-${namespace.metadata.name.toLowerCase()}`,
         label: 'Manage visibility',
@@ -64,7 +92,7 @@ export const useNamespaceActions = (
           : permissionError || "You don't have permission to manage namespace visibility",
       },
     ],
-    [namespace, canManage, isChecking, checked, permissionError, showModal],
+    [namespace, gitopsAction, canManage, isChecking, checked, permissionError, showModal],
   );
 
   return [actions, isChecking, onToggle];

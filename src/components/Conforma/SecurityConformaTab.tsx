@@ -13,12 +13,14 @@ import { CONFORMA_POLICY_AVAILABLE_RULE_COLLECTIONS_URL } from '~/consts/documen
 import { useDeepCompareMemoize } from '~/shared';
 import { getErrorState } from '~/shared/utils/error-utils';
 import { CONFORMA_RESULT_STATUS, UIConformaData } from '~/types/conforma';
+import { extractUpcomingWarnings } from '~/utils/ecp-warning-utils';
 import FilteredEmptyState from '../../shared/components/empty-state/FilteredEmptyState';
 import { FilterContext } from '../Filter/generic/FilterContext';
 import { MultiSelect } from '../Filter/generic/MultiSelect';
 import { BaseTextFilterToolbar } from '../Filter/toolbars/BaseTextFIlterToolbar';
 import { createFilterObj } from '../Filter/utils/filter-utils';
 import { ConformaTable } from './ConformaTable/ConformaTable';
+import { ECPWarningBanner } from './ECPWarningBanner';
 import SecurityTabEmptyState from './SecurityTabEmptyState';
 import { useConformaResult } from './useConformaResult';
 import { getRuleStatus } from './utils';
@@ -82,6 +84,12 @@ export const SecurityConformaTab: React.FC<
         })
       : undefined;
   }, [componentFilter, conformaResult, crLoaded, ruleFilter, statusFilter]);
+
+  // upcoming ECP warnings
+  const upcomingWarnings = React.useMemo(
+    () => (crLoaded && conformaResult ? extractUpcomingWarnings(conformaResult) : []),
+    [conformaResult, crLoaded],
+  );
 
   // result summary
   const resultSummary = React.useMemo(
@@ -169,6 +177,7 @@ export const SecurityConformaTab: React.FC<
           .
         </Text>
       </TextContent>
+      <ECPWarningBanner warnings={upcomingWarnings} />
       <Flex style={{ marginTop: 'var(--pf-v5-global--spacer--xl)' }}>
         <FlexItem style={{ marginRight: 'var(--pf-v5-global--spacer--2xl)' }}>
           <TextContent>

@@ -151,7 +151,8 @@ describe('SecurityConformaTab', () => {
     fireEvent.click(screen.getAllByText('Status')[1]);
     view.rerender(securityConforma('dummy-1'));
     const sortstatus = screen.getAllByTestId('rule-status');
-    expect(sortstatus[1].textContent.trim()).toEqual('Success');
+    // After sorting, last item should be Warning (alphabetical: Failed, Success, Warning, Warning)
+    expect(sortstatus[sortstatus.length - 1].textContent.trim()).toEqual('Warning');
   });
 
   it('should render result summary', () => {
@@ -163,7 +164,7 @@ describe('SecurityConformaTab', () => {
     expect(status[2].textContent.trim()).toBe('Success');
     const value = resultSummary.getElementsByTagName('b');
     expect(value[0].textContent).toBe('1');
-    expect(value[1].textContent).toBe('0');
+    expect(value[1].textContent).toBe('2');
     expect(value[2].textContent).toBe('1');
   });
 

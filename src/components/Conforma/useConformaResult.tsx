@@ -10,6 +10,7 @@ import {
   ConformaResult,
   UIConformaData,
 } from '~/types/conforma';
+import { computeWarningFields } from '~/utils/ecp-warning-utils';
 import { isResourceEnterpriseContract } from '~/utils/conforma-utils';
 import { isTaskRunInPipelineRun } from '~/utils/pipeline-utils';
 import { useTaskRunsForPipelineRuns } from '../../hooks/useTaskRunsV2';
@@ -181,6 +182,7 @@ export const mapConformaResultData = (
 ): UIConformaData[] => {
   return conformaResult.reduce((acc, compResult) => {
     compResult?.violations?.forEach((v) => {
+      const warningFields = computeWarningFields(v.metadata?.effective_on, v.metadata?.effective_until);
       const rule: UIConformaData = {
         title: v.metadata?.title,
         description: v.metadata?.description,
@@ -190,10 +192,13 @@ export const mapConformaResultData = (
         msg: v.msg,
         collection: v.metadata?.collections,
         solution: v.metadata?.solution,
+        effectiveUntil: v.metadata?.effective_until,
+        ...warningFields,
       };
       acc.push(rule);
     });
     compResult?.warnings?.forEach((v) => {
+      const warningFields = computeWarningFields(v.metadata?.effective_on, v.metadata?.effective_until);
       const rule: UIConformaData = {
         title: v.metadata?.title,
         description: v.metadata?.description,
@@ -202,6 +207,9 @@ export const mapConformaResultData = (
         component: compResult.name,
         msg: v.msg,
         collection: v.metadata?.collections,
+        solution: v.metadata?.solution,
+        effectiveUntil: v.metadata?.effective_until,
+        ...warningFields,
       };
       acc.push(rule);
     });

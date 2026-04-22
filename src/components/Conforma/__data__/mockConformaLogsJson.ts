@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { CONFORMA_RESULT_STATUS } from '~/types/conforma';
 
 export const mockConformaYaml = `components:
@@ -148,6 +149,33 @@ export const mockConformaJSON = {
           msg: 'CVE scan results not found',
         },
       ],
+      warnings: [
+        {
+          metadata: {
+            code: 'cve.cve_results_limit',
+            collections: ['redhat'],
+            description:
+              'Exception allowing CVE results above the critical threshold. This exception was granted to allow time for remediation of existing critical CVEs.',
+            effective_on: '2026-01-15T00:00:00Z',
+            effective_until: dayjs().add(15, 'day').toISOString(),
+            title: 'CVE results threshold exception',
+            solution: 'Fix all CVEs above the critical threshold before the exception expires, or request an extension from prodsec and releng.',
+          },
+          msg: 'Exception granted - CVE count exceeds threshold but exception is active',
+        },
+        {
+          metadata: {
+            code: 'slsa.new_provenance_check',
+            collections: ['slsa3'],
+            description:
+              'New SLSA provenance verification requiring v1.0 format. All build pipelines must produce SLSA v1.0 provenance attestations.',
+            effective_on: dayjs().add(10, 'day').toISOString(),
+            title: 'SLSA v1.0 Provenance Required',
+            solution: 'Update your build pipeline to produce SLSA v1.0 provenance attestations. See https://slsa.dev/spec/v1.0/ for specification details.',
+          },
+          msg: 'New policy rule - SLSA v1.0 provenance format will be required',
+        },
+      ],
     },
   ],
   key: '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWVUppvU1x8t866CQQSXbKpojoaTq\nimMnVnZ31e2ubZHKL1LdfgPG2gHIPeSeouTa8upOz9W+xxBFnA0X515Nsw==\n-----END PUBLIC KEY-----\n',
@@ -186,6 +214,33 @@ export const mockConformaUIData = [
     msg: 'CVE scan results not found',
     solution: 'solution for failure',
     collection: ['minimal'],
+  },
+  {
+    title: 'CVE results threshold exception',
+    description:
+      'Exception allowing CVE results above the critical threshold. This exception was granted to allow time for remediation of existing critical CVEs.',
+    status: CONFORMA_RESULT_STATUS.warnings,
+    timestamp: '2026-01-15T00:00:00Z',
+    component: 'devfile-sample-python-basic-aw05',
+    msg: 'Exception granted - CVE count exceeds threshold but exception is active',
+    solution: 'Fix all CVEs above the critical threshold before the exception expires, or request an extension from prodsec and releng.',
+    collection: ['redhat'],
+    effectiveUntil: dayjs().add(15, 'day').toISOString(),
+    daysUntilEvent: 15,
+    warningType: 'expiring-exception' as const,
+  },
+  {
+    title: 'SLSA v1.0 Provenance Required',
+    description:
+      'New SLSA provenance verification requiring v1.0 format. All build pipelines must produce SLSA v1.0 provenance attestations.',
+    status: CONFORMA_RESULT_STATUS.warnings,
+    timestamp: dayjs().add(10, 'day').toISOString(),
+    component: 'devfile-sample-python-basic-aw05',
+    msg: 'New policy rule - SLSA v1.0 provenance format will be required',
+    solution: 'Update your build pipeline to produce SLSA v1.0 provenance attestations. See https://slsa.dev/spec/v1.0/ for specification details.',
+    collection: ['slsa3'],
+    daysUntilEvent: 10,
+    warningType: 'upcoming-activation' as const,
   },
   {
     title: 'No tasks run',
