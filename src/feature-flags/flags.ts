@@ -114,6 +114,23 @@ const InternalFLAGS = {
       visibleInFeatureFlagPanel: false,
     },
   },
+  'feedback-section': {
+    key: 'feedback-section',
+    description: 'Provide feedback to the Konflux team',
+    defaultEnabled: true,
+    status: 'wip',
+    guard: {
+      allOf: ['isAnalyticsEnabled'],
+      failureReason: 'Analytics is not enabled on this cluster',
+      visibleInFeatureFlagPanel: true,
+    },
+  },
+  'edit-secret-page': {
+    key: 'edit-secret-page',
+    description: 'Editing existing secrets',
+    defaultEnabled: true,
+    status: 'wip',
+  },
 } satisfies Record<string, FeatureMeta>;
 
 export type FlagKey = keyof typeof InternalFLAGS;

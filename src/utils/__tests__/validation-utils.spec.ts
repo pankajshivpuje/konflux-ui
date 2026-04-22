@@ -116,7 +116,7 @@ describe('validation-utils', () => {
       SecretFromSchema.validate({
         secretName: 'secret1',
         type: SecretTypeDropdownLabel.source,
-        source: { authType: SourceSecretType.basic, password: 'pass' },
+        source: { authType: SourceSecretType.basic, password: '' },
         existingSecrets: [],
       }),
     ).rejects.toThrow('Required');
@@ -138,18 +138,29 @@ describe('validation-utils', () => {
       SecretFromSchema.validate({
         secretName: 'secret1',
         type: SecretTypeDropdownLabel.source,
-        source: { authType: SourceSecretType.basic, password: 'pass', ['ssh-privatekey']: '' },
+        source: { authType: SourceSecretType.ssh, ['ssh-privatekey']: '' },
         existingSecrets: [],
       }),
     ).rejects.toThrow('Required');
   });
 
-  it('should validate correct source secrets of basic type', () => {
+  it('should validate correct source secrets of ssh type', () => {
     expect(() =>
       SecretFromSchema.validate({
         secretName: 'secret1',
         type: SecretTypeDropdownLabel.source,
         source: { authType: SourceSecretType.ssh, ['ssh-privatekey']: 'key1' },
+        existingSecrets: [],
+      }),
+    ).not.toThrow();
+  });
+
+  it('should validate basic auth source secret without username', () => {
+    expect(() =>
+      SecretFromSchema.validate({
+        secretName: 'secret1',
+        type: SecretTypeDropdownLabel.source,
+        source: { authType: SourceSecretType.basic, password: 'pass' },
         existingSecrets: [],
       }),
     ).not.toThrow();

@@ -1,7 +1,12 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
+import { PipelineRunColumnKeys } from '~/consts/pipeline';
+import { renderWithQueryClient } from '~/unit-test-utils/mock-react-query';
 import { DataState, testPipelineRuns } from '../../../../__data__/pipelinerun-data';
 import { createK8sWatchResourceMock } from '../../../../utils/test-utils';
-import { PipelineRunListRowWithVulnerabilities } from '../PipelineRunListRow';
+import {
+  PipelineRunListRowWithColumns,
+  PipelineRunListRowWithVulnerabilities,
+} from '../PipelineRunListRow';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -35,7 +40,7 @@ describe('Pipeline run Row', () => {
   });
   it('should return - when pipelinerun is in running state ', () => {
     const runningPipelineRun = testPipelineRuns[DataState.RUNNING];
-    const row = render(
+    const row = renderWithQueryClient(
       <PipelineRunListRowWithVulnerabilities obj={runningPipelineRun} columns={[]} />,
     );
 
@@ -46,7 +51,7 @@ describe('Pipeline run Row', () => {
   it('should return - when vulnerabilities is not available ', () => {
     const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
     const plrName = succeededPlr.metadata.name;
-    const row = render(
+    const row = renderWithQueryClient(
       <PipelineRunListRowWithVulnerabilities
         obj={succeededPlr}
         customData={{
@@ -64,7 +69,7 @@ describe('Pipeline run Row', () => {
   it('should return N/A when vulnerabilities API errors out ', () => {
     const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
     const plrName = succeededPlr.metadata.name;
-    const row = render(
+    const row = renderWithQueryClient(
       <PipelineRunListRowWithVulnerabilities
         obj={succeededPlr}
         customData={{
@@ -82,7 +87,7 @@ describe('Pipeline run Row', () => {
   it('should show vulnerabilities when it is available ', () => {
     const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
     const plrName = succeededPlr.metadata.name;
-    const row = render(
+    const row = renderWithQueryClient(
       <PipelineRunListRowWithVulnerabilities
         obj={succeededPlr}
         customData={{
@@ -112,7 +117,7 @@ describe('Pipeline run Row', () => {
   it('should display correct PLR actions', async () => {
     const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
     const plrName = succeededPlr.metadata.name;
-    const row = render(
+    const row = renderWithQueryClient(
       <PipelineRunListRowWithVulnerabilities
         obj={succeededPlr}
         customData={{
@@ -130,5 +135,73 @@ describe('Pipeline run Row', () => {
       row.getByText('Stop');
       row.getByText('Cancel');
     });
+  });
+
+  it('should show no attestation when pipeline run is running', () => {
+    const runningPlr = testPipelineRuns[DataState.RUNNING];
+    const plrName = runningPlr.metadata.name;
+
+    const row = renderWithQueryClient(
+      <PipelineRunListRowWithColumns
+        obj={runningPlr}
+        customData={{
+          fetchedPipelineRuns: [plrName],
+          vulnerabilities: [{ [plrName]: {} }] as any,
+        }}
+        columns={['name']}
+        visibleColumns={new Set<PipelineRunColumnKeys>(['name'])}
+      />,
+    );
+
+    expect(row.queryByTestId('attestation-signed')).toBeNull();
+    expect(row.queryByTestId('attestation-unsigned')).toBeNull();
+  });
+
+  it('should show signed attestation when chains signed annotation is true', () => {
+    const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
+    const signedPlr = {
+      ...succeededPlr,
+      metadata: {
+        ...succeededPlr.metadata,
+        annotations: {
+          ...succeededPlr.metadata.annotations,
+          'chains.tekton.dev/signed': 'true',
+        },
+      },
+    };
+    const plrName = signedPlr.metadata.name;
+
+    const row = renderWithQueryClient(
+      <PipelineRunListRowWithColumns
+        obj={signedPlr}
+        customData={{
+          fetchedPipelineRuns: [plrName],
+          vulnerabilities: [{ [plrName]: {} }] as any,
+        }}
+        columns={['name']}
+        visibleColumns={new Set<PipelineRunColumnKeys>(['name'])}
+      />,
+    );
+
+    expect(row.getByTestId('attestation-signed')).toBeDefined();
+  });
+
+  it('should show warning attestation when pipeline run is not signed', () => {
+    const succeededPlr = testPipelineRuns[DataState.SUCCEEDED];
+    const plrName = succeededPlr.metadata.name;
+
+    const row = renderWithQueryClient(
+      <PipelineRunListRowWithColumns
+        obj={succeededPlr}
+        customData={{
+          fetchedPipelineRuns: [plrName],
+          vulnerabilities: [{ [plrName]: {} }] as any,
+        }}
+        columns={['name']}
+        visibleColumns={new Set<PipelineRunColumnKeys>(['name'])}
+      />,
+    );
+
+    expect(row.getByTestId('attestation-unsigned')).toBeDefined();
   });
 });
