@@ -13,6 +13,7 @@ import {
   SnapshotsListViewTab,
   snapshotsTabLoader,
 } from '~/components/Snapshots/SnapshotsListView/SnapshotsTab';
+import PolicyTab from '~/components/Conforma/PolicyTab/PolicyTab';
 import { APPLICATION_DETAILS_PATH, APPLICATION_LIST_PATH } from '../paths';
 import { RouteErrorBoundry } from '../RouteErrorBoundary';
 
@@ -75,6 +76,10 @@ const applicationRoutes = [
             <ReleaseListViewTab />
           </FilterContextProvider>
         ),
+      },
+      {
+        path: 'policy',
+        element: <PolicyTab />,
       },
     ],
   },

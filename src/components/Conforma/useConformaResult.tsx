@@ -187,6 +187,7 @@ export const mapConformaResultData = (
         status: CONFORMA_RESULT_STATUS.violations,
         timestamp: v.metadata?.effective_on,
         component: compResult.name,
+        containerImage: compResult.containerImage,
         msg: v.msg,
         collection: v.metadata?.collections,
         solution: v.metadata?.solution,
@@ -200,6 +201,7 @@ export const mapConformaResultData = (
         status: CONFORMA_RESULT_STATUS.warnings,
         timestamp: v.metadata?.effective_on,
         component: compResult.name,
+        containerImage: compResult.containerImage,
         msg: v.msg,
         collection: v.metadata?.collections,
       };
@@ -211,6 +213,7 @@ export const mapConformaResultData = (
         description: v.metadata?.description,
         status: CONFORMA_RESULT_STATUS.successes,
         component: compResult.name,
+        containerImage: compResult.containerImage,
         collection: v.metadata?.collections,
       };
       acc.push(rule);
