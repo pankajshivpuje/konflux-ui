@@ -65,7 +65,11 @@ export type UIConformaData = {
   status: CONFORMA_RESULT_STATUS;
   timestamp?: string;
   component: string;
+  containerImage?: string;
   msg?: string;
   collection?: string[];
   solution?: string;
+  effectiveUntil?: string;
+  daysUntilEvent?: number;
+  warningType?: string;
 };

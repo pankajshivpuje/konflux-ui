@@ -193,6 +193,11 @@ export const ApplicationDetails: React.FC<React.PropsWithChildren> = () => {
             label: 'Releases',
             isFilled: true,
           },
+          {
+            key: 'policy',
+            label: 'Conforma Results',
+            isFilled: true,
+          },
         ]}
       />
     </React.Fragment>
