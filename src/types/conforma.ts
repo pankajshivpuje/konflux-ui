@@ -65,6 +65,7 @@ export type ConformaResultRow = {
   status: CONFORMA_RESULT_STATUS;
   timestamp?: string;
   component: string;
+  containerImage?: string;
   msg?: string;
   collection?: string[];
   solution?: string;
@@ -77,6 +78,9 @@ export type ConformaResultRow = {
   /** Policy rule code — stable identifier used as primary group key. Optional for backward-compat. */
   code?: string;
   pipelineRunName?: string;
+  effectiveUntil?: string;
+  daysUntilEvent?: number;
+  warningType?: string;
 };
 
 export type ComponentConformaStatus = {
