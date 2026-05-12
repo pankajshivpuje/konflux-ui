@@ -5,8 +5,10 @@ import commonConfig from './webpack.config.js';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { config } from '@dotenvx/dotenvx';
+import { setupMockK8sMiddleware } from './config/mock-k8s-api.mjs';
 
 config();
+const USE_MOCK = process.env.USE_MOCK === 'true';
 const DEV_SERVER_PORT = 8080;
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,7 +25,15 @@ export default merge(commonConfig, {
     port: DEV_SERVER_PORT,
     hot: true,
     server: 'https',
-    proxy: [
+    ...(USE_MOCK
+      ? {
+          setupMiddlewares: (middlewares, devServer) => {
+            setupMockK8sMiddleware(devServer.app);
+            return middlewares;
+          },
+        }
+      : {}),
+    proxy: USE_MOCK ? [] : [
       {
         context: (path) => path.includes('/oauth2/'),
         target: process.env.AUTH_URL,
