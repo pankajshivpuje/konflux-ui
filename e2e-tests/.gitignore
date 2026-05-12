@@ -1,0 +1,14 @@
+cypress/
+node_modules
+coverage/
+.nyc_output/
+coverport-output/
+
+# Yarn Berry
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*

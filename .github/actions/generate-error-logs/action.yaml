@@ -1,0 +1,29 @@
+name: 'Generate error log'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate error logs
+      if: ${{ !cancelled() }}
+      run: |
+        set -euo pipefail
+        : Generate error logs
+        # This file is not present for periodic-stage jobs as we don't deploy Konflux
+        if [ -f ./konflux-ci/generate-err-logs.sh ]; then
+          ./konflux-ci/generate-err-logs.sh
+        fi
+      shell: bash
+
+    - name: Copy UI E2E test logs
+      if: ${{ !cancelled() }}
+      run: |
+        mkdir -p logs
+        if [ -d artifacts ]; then cp -r artifacts/* logs/ || true; fi
+      shell: bash
+
+    - name: Archive logs
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: logs
+        path: logs
