@@ -9,7 +9,7 @@ import { isTaskRunInPipelineRun } from '~/utils/pipeline-utils';
 import { useConformaResultFromLogs, mapConformaResultData } from '../useConformaResult';
 import { mockPolicyResults } from './__data__/mockPolicyData';
 
-const USE_MOCK_DATA = false;
+const USE_MOCK_DATA = true;
 
 export type PolicySummary = {
   violations: number;
