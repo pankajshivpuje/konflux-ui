@@ -86,69 +86,89 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
         </TextContent>
       </FlexItem>
       <FlexItem>
-        <Card isCompact isFlat data-test="policy-summary-card">
-          <CardBody>
-            <Flex
-              gap={{ default: 'gapLg' }}
-              alignItems={{ default: 'alignItemsCenter' }}
-            >
-              <StatItem
-                icon={
-                  <Icon size="md">
-                    <CubesIcon color="var(--pf-v5-global--Color--200)" />
-                  </Icon>
-                }
-                count={totalComponents}
-                label="Components"
-                testId="policy-stat-total-components"
-              />
-              <Divider />
-              <StatItem
-                icon={
-                  <Icon size="md" status="danger">
-                    <ExclamationCircleIcon />
-                  </Icon>
-                }
-                count={failedComponents}
-                label="Failed"
-                testId="policy-stat-failed-components"
-              />
-              <Divider />
-              <StatItem
-                icon={
-                  <Icon size="md" status="danger">
-                    <ExclamationCircleIcon />
-                  </Icon>
-                }
-                count={summary.violations}
-                label="Violations"
-                testId="policy-stat-violations"
-              />
-              <Divider />
-              <StatItem
-                icon={
-                  <Icon size="md" status="warning">
-                    <ExclamationTriangleIcon />
-                  </Icon>
-                }
-                count={summary.warnings}
-                label="Warnings"
-                testId="policy-stat-warnings"
-              />
-              <Divider />
-              <StatItem
-                icon={
-                  <Icon size="md" status="success">
-                    <CheckCircleIcon />
-                  </Icon>
-                }
-                count={summary.successes}
-                label="Successes"
-                testId="policy-stat-successes"
-              />
-            </Flex>
-          </CardBody>
-        </Card>
+        <Flex gap={{ default: 'gapMd' }}>
+          <FlexItem>
+            <Card isCompact isFlat data-test="policy-summary-components-card">
+              <CardBody>
+                <Text component={TextVariants.p} style={{ marginBottom: 'var(--pf-v5-global--spacer--sm)', fontWeight: 600 }}>
+                  Components
+                </Text>
+                <Flex
+                  gap={{ default: 'gapLg' }}
+                  alignItems={{ default: 'alignItemsCenter' }}
+                >
+                  <StatItem
+                    icon={
+                      <Icon size="md">
+                        <CubesIcon color="var(--pf-v5-global--Color--200)" />
+                      </Icon>
+                    }
+                    count={totalComponents}
+                    label="Total"
+                    testId="policy-stat-total-components"
+                  />
+                  <Divider />
+                  <StatItem
+                    icon={
+                      <Icon size="md" status="danger">
+                        <ExclamationCircleIcon />
+                      </Icon>
+                    }
+                    count={failedComponents}
+                    label="Failed"
+                    testId="policy-stat-failed-components"
+                  />
+                </Flex>
+              </CardBody>
+            </Card>
+          </FlexItem>
+          <FlexItem>
+            <Card isCompact isFlat data-test="policy-summary-results-card">
+              <CardBody>
+                <Text component={TextVariants.p} style={{ marginBottom: 'var(--pf-v5-global--spacer--sm)', fontWeight: 600 }}>
+                  Results summary
+                </Text>
+                <Flex
+                  gap={{ default: 'gapLg' }}
+                  alignItems={{ default: 'alignItemsCenter' }}
+                >
+                  <StatItem
+                    icon={
+                      <Icon size="md" status="danger">
+                        <ExclamationCircleIcon />
+                      </Icon>
+                    }
+                    count={summary.violations}
+                    label="Violations"
+                    testId="policy-stat-violations"
+                  />
+                  <Divider />
+                  <StatItem
+                    icon={
+                      <Icon size="md" status="warning">
+                        <ExclamationTriangleIcon />
+                      </Icon>
+                    }
+                    count={summary.warnings}
+                    label="Warnings"
+                    testId="policy-stat-warnings"
+                  />
+                  <Divider />
+                  <StatItem
+                    icon={
+                      <Icon size="md" status="success">
+                        <CheckCircleIcon />
+                      </Icon>
+                    }
+                    count={summary.successes}
+                    label="Successes"
+                    testId="policy-stat-successes"
+                  />
+                </Flex>
+              </CardBody>
+            </Card>
+          </FlexItem>
+        </Flex>
       </FlexItem>
     </Flex>
   );
