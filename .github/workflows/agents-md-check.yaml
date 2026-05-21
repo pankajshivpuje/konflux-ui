@@ -1,0 +1,31 @@
+name: AGENTS.md Line Count Check
+
+on:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+
+jobs:
+  check-line-count:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate AGENTS.md line count
+        run: |
+          if [ ! -f AGENTS.md ]; then
+            echo "AGENTS.md not found"
+            exit 0
+          fi
+
+          LINES=$(wc -l < AGENTS.md)
+          echo "AGENTS.md is $LINES lines"
+
+          if [ "$LINES" -gt 300 ]; then
+            echo "::error::AGENTS.md exceeds 300 line limit ($LINES lines). Reduce to under 300 (ideally under 150)."
+            exit 1
+          elif [ "$LINES" -gt 150 ]; then
+            echo "::warning::AGENTS.md is $LINES lines. Ideally keep it under 150."
+          else
+            echo "AGENTS.md line count is within limits."
+          fi
