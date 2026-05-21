@@ -1,46 +1,40 @@
 ---
 name: local-dev-setup
-description: >
-  Use when setting up the development environment, starting the dev server,
-  configuring local Konflux, or troubleshooting the dev setup for konflux-ui.
+description: Use when setting up the development environment, configuring environment variables, connecting to Konflux clusters, or troubleshooting the dev server.
 ---
 
-# Local Dev Setup
+# Local Development Setup for konflux-ui
 
-## Quick Start
+## One-Command Setup
 
 ```bash
-git clone https://github.com/konflux-ci/konflux-ui.git && cd konflux-ui
-make setup
+./setup.sh
 ```
 
-`make setup` runs `setup.sh` which checks Node.js >= 20, enables Corepack, installs deps, and starts the dev server.
+This checks Node.js >= 20, enables Corepack, installs dependencies, and starts the dev server.
 
-## Prerequisites
+## Manual Setup
 
-- Node.js >= 20
-- Corepack enabled (`corepack enable`)
-- Yarn Berry 4.x is managed automatically via `packageManager` in `package.json`
+```bash
+corepack enable                       # Required for Yarn Berry
+yarn install                          # Install project dependencies
+cd e2e-tests && yarn install && cd .. # Install e2e dependencies
+yarn start                            # Dev server at https://localhost:1337
+```
 
-## DevContainer
+**Never use `npm`.** This project uses Yarn Berry 4.x exclusively.
 
-A pre-configured DevContainer is available with all dependencies. See `.devcontainer/README.md`.
+## Environment Configuration
 
-## Makefile Targets
+The `.env` file controls which Konflux cluster the UI connects to.
 
-| Target | Command | What it does |
-|--------|---------|-------------|
-| `make setup` | `./setup.sh` | Full setup + start dev server |
-| `make dev` | `yarn start` | Start dev server only |
-| `make test` | `yarn test` | Run unit tests |
-| `make lint` | `yarn lint && yarn lint:restricted-imports` | Run all linters |
-| `make type-check` | `yarn type-checks` | TypeScript checking |
+### Stage Cluster (default)
 
-## Connecting to Local Konflux
+No changes needed — `.env` ships pointing to the stage cluster.
 
-By default the dev server proxies API calls to the stage cluster. To use a local Konflux deployment:
+### Local Konflux Deployment
 
-1. Deploy Konflux locally per https://konflux-ci.dev/konflux-ci/docs/installation/install-local/
+1. Deploy Konflux locally following https://konflux-ci.dev/konflux-ci/docs/installation/install-local/
 2. Update `.env`:
    ```
    AUTH_URL=https://127.0.0.1:9443/
@@ -48,10 +42,15 @@ By default the dev server proxies API calls to the stage cluster. To use a local
    PROXY_URL=https://127.0.0.1:9443/
    PROXY_WEBSOCKET_URL=wss://127.0.0.1:9443
    ```
-3. Update `webpack.dev.config.js` proxy context to include `/idp/` and set `autoRewrite: true`
+3. Update `webpack.dev.config.js` proxy context to include `/idp/` and set `autoRewrite: true`. See README.md for the full diff.
+
+## DevContainer
+
+The project includes a `.devcontainer/` configuration. VS Code will auto-detect it. See `.devcontainer/README.md` for details.
 
 ## Common Issues
 
-- **"corepack enable" fails**: Try `sudo corepack enable` or ensure Node >= 20
-- **Yarn version mismatch**: Corepack manages the Yarn version — don't install Yarn globally
-- **Port already in use**: Dev server defaults to port 9443. Kill existing processes or change the port in webpack config
+- **`corepack enable` fails**: May need `sudo corepack enable` on some systems
+- **Wrong Yarn version**: Delete `node_modules` and re-run `corepack enable && yarn install`
+- **SSL errors on dev server**: The dev server uses self-signed HTTPS. Accept the browser warning.
+- **Proxy errors**: Check `.env` values match your target cluster URL
