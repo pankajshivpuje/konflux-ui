@@ -76,3 +76,41 @@
 - The "Standard Layout" failure is because tests use colocated `__tests__/` dirs rather than a top-level `tests/` directory. This is a React convention, not a deficiency.
 - The "Cyclomatic Complexity" check errored due to output size (21.9 MB exceeded the 10 MB limit).
 - Full report saved to `.agentready/report-20260521-174254.md`.
+
+## AGENTS.md Effectiveness Test
+
+**Date:** 2026-05-27
+**Task:** "Write a unit test for the CommitLabel component at `src/components/Commits/commit-label/CommitLabel.tsx`"
+
+Two agent runs were compared — one with AGENTS.md loaded, one without.
+
+### With AGENTS.md
+
+| Convention | Followed? |
+|---|---|
+| Absolute imports (`~/`) | Yes — used `~/components/Commits/...` |
+| Test attribute `data-test` (not `data-testid`) | Yes — correctly identified `data-test` |
+| No snapshot tests | Yes — explicitly declined, citing AGENTS.md |
+| File path `__tests__/CommitLabel.spec.tsx` | Yes |
+| Run command `yarn test -- path` | Yes |
+
+### Without AGENTS.md
+
+| Convention | Followed? |
+|---|---|
+| Absolute imports (`~/`) | No — used relative `../CommitLabel` |
+| Test attribute `data-test` (not `data-testid`) | Partially — guessed correctly but stated uncertainty |
+| No snapshot tests | Yes — declined based on general best practices |
+| File path `__tests__/CommitLabel.spec.tsx` | Yes |
+| Run command `yarn test -- path` | Not mentioned |
+
+### Key Differences
+
+1. **Import paths:** With AGENTS.md, the agent used absolute `~/` imports as required. Without, it defaulted to relative imports — which would fail lint.
+2. **Test attributes:** With AGENTS.md, the agent confidently used `data-test`. Without, it guessed based on project name conventions.
+3. **Snapshot testing:** Both avoided snapshots, but only the AGENTS.md-aware agent cited a project rule rather than general preference.
+4. **Test runner command:** Only the AGENTS.md-aware agent included the exact `yarn test` command.
+
+### Conclusion
+
+AGENTS.md provides measurable improvement in convention adherence. Without it, agents fall back to generic React conventions that conflict with project-specific rules (relative imports, uncertain test attributes). The file pays for itself on the first task by preventing lint failures and review churn.
