@@ -10,15 +10,13 @@
 | Lint | `yarn lint` |
 | Import boundaries | `yarn lint:restricted-imports` |
 | Type check | `yarn type-checks` |
-| Lint single file | `npx eslint path/to/file.ts` |
-| Type-check single file | `npx tsc --noEmit path/to/file.ts` |
 | Start dev server| `yarn start` |
 
-CI runs two parallel jobs on Node 24: **lint** (`yarn lint` -> `yarn lint:restricted-imports` -> `yarn type-checks`) and **test** (`yarn test`).
+CI runs: `yarn lint` -> `yarn lint:restricted-imports` -> `yarn type-checks` -> `yarn test` (Node 20 + 22).
 
 ## Setup
 
-One-command setup: ./setup.sh (checks Node.js >= 24, enables Corepack, installs dependencies, starts dev server)
+One-command setup: ./setup.sh (checks Node.js >= 20, enables Corepack, installs dependencies, starts dev server)
 
 ## Key Conventions
 
@@ -30,11 +28,18 @@ One-command setup: ./setup.sh (checks Node.js >= 24, enables Corepack, installs 
 - `noUnusedLocals` and `noUnusedParameters` enforced -- prefix unused params with `_`
 - Never add `Co-Authored-By` to commit messages; use `Assisted-by: Claude` trailer instead
 
-## Commits & PRs
+## Commits
 
-Conventional Commits enforced by commitlint: `feat:`, `fix:`, `chore:`, etc. Husky pre-commit runs `lint-staged` (prettier + restricted-imports on TS, stylelint on SCSS). Read `docs/pr-review-guidelines.md` and fill every section of `.github/PULL_REQUEST_TEMPLATE.md` when creating PRs.
+Conventional Commits enforced by commitlint: `feat:`, `fix:`, `chore:`, etc. Husky pre-commit runs `lint-staged` (prettier + restricted-imports on TS, stylelint on SCSS).
 
-## Documentation (docs/)
+## PR Conventions
+
+- Read `docs/pr-review-guidelines.md` before reviewing or creating PRs.
+- Fill every section of `.github/PULL_REQUEST_TEMPLATE.md` when creating a PR.
+
+## Guidelines (docs/guidelines/)
+
+Detailed guides for AI agents and developers:
 
 | Document | Use When |
 |---|---|
@@ -44,9 +49,19 @@ Conventional Commits enforced by commitlint: `feat:`, `fix:`, `chore:`, etc. Hus
 | `docs/guidelines/hooks-and-data-fetching.md` | Using K8s hooks, React Query, RBAC, state management |
 | `docs/guidelines/patternfly-guidelines.md` | PatternFly components, layout, design tokens, SCSS |
 | `docs/guidelines/unit-testing.md` | Writing unit tests (mocks, renderers, patterns) |
+
+## Other Documentation (docs/)
+
+| Document | Purpose |
+|---|---|
 | `docs/best-practices.md` | Full coding standards and conventions |
+| `docs/pr-review-guidelines.md` | PR review checklist |
 | `docs/feature-flags.md` | Feature flag system (flags, persistence, URL grammar, lifecycle) |
+| `docs/conditions.md` | Feature flag conditions (`allOf`/`anyOf` guards, `registerCondition`) |
 | `docs/analytics.md` | Segment analytics (events, config, codegen, obfuscation) |
 | `docs/kubearchive.md` | KubeArchive dual-source data (cluster + archive hooks, deduplication) |
+| `docs/e2e-coverage.md` | E2E coverage via Istanbul + Cypress |
 
-Reviewed quarterly (next: August 2026). Update when architecture, commands, or conventions change.
+## Maintenance
+
+AGENTS.md is reviewed quarterly (next: August 2026). Update when architecture, commands, or conventions change. Run `agentready assess .` after major updates. See the [Global Engineering AGENTS.md guide](https://gitlab.com/gitlab-com/content-sites/internal-handbook/-/blob/main/content/handbook/engineering/development/global-engineering/ai-context-files.md) for best practices.
