@@ -61,3 +61,7 @@ Detailed guides for AI agents and developers:
 | `docs/analytics.md` | Segment analytics (events, config, codegen, obfuscation) |
 | `docs/kubearchive.md` | KubeArchive dual-source data (cluster + archive hooks, deduplication) |
 | `docs/e2e-coverage.md` | E2E coverage via Istanbul + Cypress |
+
+## Maintenance
+
+AGENTS.md is reviewed quarterly (next: August 2026). Update when architecture, commands, or conventions change. Run `agentready assess .` after major updates. See the [Global Engineering AGENTS.md guide](https://gitlab.com/gitlab-com/content-sites/internal-handbook/-/blob/main/content/handbook/engineering/development/global-engineering/ai-context-files.md) for best practices.
