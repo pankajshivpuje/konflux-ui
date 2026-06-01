@@ -380,6 +380,18 @@ export const PolicyDetailTable: React.FC<PolicyDetailTableProps> = ({ data }) =>
                                     )}
                                   </TextContent>
                                 )}
+                                {item.warningType && item.daysUntilEvent != null && (
+                                  <Label
+                                    color="orange"
+                                    isCompact
+                                    className="pf-v5-u-mt-sm"
+                                    data-test="ecp-policy-warning-badge"
+                                  >
+                                    {item.warningType === 'expiring-exception'
+                                      ? `Exception expires in ${item.daysUntilEvent}d`
+                                      : `Activates in ${item.daysUntilEvent}d`}
+                                  </Label>
+                                )}
                               </Td>
                             </Tr>
                           );

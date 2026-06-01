@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Grid, GridItem } from '@patternfly/react-core';
 import { IfFeature } from '~/feature-flags/hooks';
 import { ConformaViolationsCard } from './ConformaViolationsCard';
+import { ECPWarningsCard } from './ECPWarningsCard';
 import { IssueDistributionCard } from './IssueDistributionCard';
 import IssuesByStatusCard from './IssuesByStatusCard';
 import { LatestIssuesCard } from './LatestIssuesCard';
@@ -14,6 +15,9 @@ const IssuesOverview: React.FunctionComponent = () => {
         paddingTop: 'var(--pf-t--global--spacer--lg)',
       }}
     >
+      <GridItem span={12}>
+        <ECPWarningsCard />
+      </GridItem>
       <GridItem span={8}>
         <Grid hasGutter>
           <GridItem>

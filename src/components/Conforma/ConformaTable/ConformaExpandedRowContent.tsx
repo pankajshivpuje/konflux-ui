@@ -3,6 +3,9 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
+  Flex,
+  FlexItem,
+  Label,
 } from '@patternfly/react-core';
 import { ExpandableRowContent, Tr } from '@patternfly/react-table';
 import { CONFORMA_POLICY_AVAILABLE_RULE_COLLECTIONS_URL } from '~/consts/documentation';
@@ -17,7 +20,14 @@ interface Props {
 }
 
 export const ConformaExpandedRowContent: React.FC<Props> = ({ obj }) => {
-  if (!obj.description && !obj.collection?.length && !obj.solution && !obj.timestamp && !obj.effectiveUntil && !obj.warningType) return null;
+  if (
+    !obj.description &&
+    !obj.collection?.length &&
+    !obj.solution &&
+    !obj.timestamp &&
+    !obj.warningType
+  )
+    return null;
 
   return (
     <Tr className="conforma-expanded-row" data-test="conforma-expand-content">
@@ -46,7 +56,43 @@ export const ConformaExpandedRowContent: React.FC<Props> = ({ obj }) => {
             </DescriptionListGroup>
           ) : null}
 
-          {obj.timestamp ? (
+          {obj.warningType === 'expiring-exception' && obj.effectiveUntil ? (
+            <DescriptionListGroup>
+              <DescriptionListTerm>Exception expires</DescriptionListTerm>
+              <DescriptionListDescription>
+                <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                  <FlexItem>
+                    <Timestamp timestamp={obj.effectiveUntil} />
+                  </FlexItem>
+                  <FlexItem>
+                    <Label color="orange" isCompact data-test="ecp-countdown-badge">
+                      Expires in {obj.daysUntilEvent}d
+                    </Label>
+                  </FlexItem>
+                </Flex>
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          ) : null}
+
+          {obj.warningType === 'upcoming-activation' && obj.timestamp ? (
+            <DescriptionListGroup>
+              <DescriptionListTerm>Activates on</DescriptionListTerm>
+              <DescriptionListDescription>
+                <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                  <FlexItem>
+                    <Timestamp timestamp={obj.timestamp} />
+                  </FlexItem>
+                  <FlexItem>
+                    <Label color="orange" isCompact data-test="ecp-countdown-badge">
+                      Activates in {obj.daysUntilEvent}d
+                    </Label>
+                  </FlexItem>
+                </Flex>
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          ) : null}
+
+          {!obj.warningType && obj.timestamp ? (
             <DescriptionListGroup>
               <DescriptionListTerm>Effective from</DescriptionListTerm>
               <DescriptionListDescription>
@@ -55,31 +101,11 @@ export const ConformaExpandedRowContent: React.FC<Props> = ({ obj }) => {
             </DescriptionListGroup>
           ) : null}
 
-          {obj.effectiveUntil ? (
+          {obj.policySource === 'root' ? (
             <DescriptionListGroup>
-              <DescriptionListTerm>Effective until</DescriptionListTerm>
-              <DescriptionListDescription>
-                <Timestamp timestamp={obj.effectiveUntil} />
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-          ) : null}
-
-          {obj.warningType ? (
-            <DescriptionListGroup>
-              <DescriptionListTerm>Warning</DescriptionListTerm>
-              <DescriptionListDescription>
-                {obj.warningType === 'expiring-exception'
-                  ? `Expiring Exception — ${obj.daysUntilEvent} days remaining`
-                  : `Upcoming Activation — activates in ${obj.daysUntilEvent} days`}
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-          ) : null}
-
-          {obj.warningType ? (
-            <DescriptionListGroup>
-              <DescriptionListTerm>Remediation</DescriptionListTerm>
-              <DescriptionListDescription>
-                {getRemediationGuidance(obj)}
+              <DescriptionListTerm>Policy source</DescriptionListTerm>
+              <DescriptionListDescription data-test="policy-source-label">
+                <Label isCompact color="purple">Inherited from root policy</Label>
               </DescriptionListDescription>
             </DescriptionListGroup>
           ) : null}
