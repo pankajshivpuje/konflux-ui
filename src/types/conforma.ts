@@ -60,45 +60,18 @@ export type ConformaResult = {
   components: ComponentConformaResult[];
 };
 
-export type ECPWarningType = 'expiring-exception' | 'upcoming-activation';
-
 export type UIConformaData = {
   title: string;
   description: string;
   status: CONFORMA_RESULT_STATUS;
   timestamp?: string;
   component: string;
+  containerImage?: string;
   msg?: string;
   collection?: string[];
   solution?: string;
-  image?: string;
-  /** Policy rule code — stable identifier used as primary group key. Optional for backward-compat. */
-  code?: string;
   effectiveUntil?: string;
   daysUntilEvent?: number;
-  warningType?: ECPWarningType;
-};
-
-export type ConformaResultRow = UIConformaData;
-
-export type ComponentConformaStatus = {
-  componentName: string;
-  status: 'pass' | 'warning' | 'fail' | 'unknown';
-  violationCount: number;
-  warningCount: number;
-  successCount: number;
-  pipelineRunName?: string;
-};
-
-export type ApplicationConformaResults = {
-  componentStatuses: ComponentConformaStatus[];
-  allResults: ConformaResultRow[];
-  totalComponents: number;
-  totalFailed: number;
-  totalViolations: number;
-  totalWarnings: number;
-  totalSuccesses: number;
-  loaded: boolean;
-  settling: boolean;
-  error: unknown;
+  warningType?: 'expiring-exception' | 'upcoming-activation';
+  policySource?: 'root' | 'derived';
 };

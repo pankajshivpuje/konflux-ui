@@ -13,7 +13,7 @@ import { CONFORMA_POLICY_AVAILABLE_RULE_COLLECTIONS_URL } from '~/consts/documen
 import { useDeepCompareMemoize } from '~/shared';
 import { getErrorState } from '~/shared/utils/error-utils';
 import { CONFORMA_RESULT_STATUS, UIConformaData } from '~/types/conforma';
-import { extractUpcomingWarnings } from '~/utils/ecp-warning-utils';
+import { textMatch } from '~/utils/text-filter-utils';
 import FilteredEmptyState from '../../shared/components/empty-state/FilteredEmptyState';
 import { FilterContext } from '../Filter/generic/FilterContext';
 import { MultiSelect } from '../Filter/generic/MultiSelect';
@@ -49,10 +49,6 @@ export const SecurityConformaTab: React.FC<
   React.PropsWithChildren<{ pipelineRunName: string }>
 > = ({ pipelineRunName }) => {
   const [conformaResult, crLoaded, crError] = useConformaResult(pipelineRunName);
-  const componentOptions = React.useMemo(
-    () => Array.from(new Set(conformaResult?.map((cr) => cr.component) ?? [])),
-    [conformaResult],
-  );
 
   const { filters: unparsedFilters, setFilters, onClearFilters } = React.useContext(FilterContext);
   const filters = useDeepCompareMemoize({
@@ -67,16 +63,13 @@ export const SecurityConformaTab: React.FC<
     () =>
       crLoaded && conformaResult
         ? createFilterObj(conformaResult, (cr) => cr.status, statuses)
-        : [],
+        : {},
     [conformaResult, crLoaded],
   );
 
   const componentFilterObj = React.useMemo(
-    () =>
-      crLoaded && conformaResult
-        ? createFilterObj(conformaResult, (cr) => cr.component, componentOptions)
-        : [],
-    [conformaResult, crLoaded, componentOptions],
+    () => (crLoaded && conformaResult ? createFilterObj(conformaResult, (cr) => cr.component) : {}),
+    [conformaResult, crLoaded],
   );
 
   // filter data in table
@@ -84,19 +77,13 @@ export const SecurityConformaTab: React.FC<
     return crLoaded && conformaResult
       ? conformaResult?.filter((rule: UIConformaData) => {
           return (
-            (!ruleFilter || rule.title.toLowerCase().indexOf(ruleFilter.toLowerCase()) !== -1) &&
+            textMatch(rule.title, ruleFilter) &&
             (!statusFilter.length || statusFilter.includes(rule.status)) &&
             (!componentFilter.length || componentFilter.includes(rule.component))
           );
         })
       : undefined;
   }, [componentFilter, conformaResult, crLoaded, ruleFilter, statusFilter]);
-
-  // upcoming ECP warnings
-  const upcomingWarnings = React.useMemo(
-    () => (crLoaded && conformaResult ? extractUpcomingWarnings(conformaResult) : []),
-    [conformaResult, crLoaded],
-  );
 
   // result summary
   const resultSummary = React.useMemo(
@@ -184,7 +171,7 @@ export const SecurityConformaTab: React.FC<
           .
         </Text>
       </TextContent>
-      <ECPWarningBanner warnings={upcomingWarnings} />
+      <ECPWarningBanner warnings={conformaResult ?? []} />
       <Flex style={{ marginTop: 'var(--pf-v5-global--spacer--xl)' }}>
         <FlexItem style={{ marginRight: 'var(--pf-v5-global--spacer--2xl)' }}>
           <TextContent>
