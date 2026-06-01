@@ -41,6 +41,7 @@ export type ConformaRule = {
     code: string;
 
     effective_on?: string;
+    effective_until?: string;
     solution?: string;
   };
   msg: string;
@@ -71,5 +72,6 @@ export type UIConformaData = {
   solution?: string;
   effectiveUntil?: string;
   daysUntilEvent?: number;
-  warningType?: string;
+  warningType?: 'expiring-exception' | 'upcoming-activation';
+  policySource?: 'root' | 'derived';
 };

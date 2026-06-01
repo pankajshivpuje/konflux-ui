@@ -19,6 +19,7 @@ import { useNamespace } from '../../shared/providers/Namespace';
 import { getPipelineRunFromTaskRunOwnerRef } from '../../utils/common-utils';
 import { getTaskRunLog } from '../../utils/tekton-results';
 import { extractConformaResultsFromTaskRunLogs } from './utils';
+import { computeWarningFields } from './warning-utils';
 
 export const useConformaResultFromLogs = (
   pipelineRunName: string,
@@ -195,6 +196,10 @@ export const mapConformaResultData = (
       acc.push(rule);
     });
     compResult?.warnings?.forEach((v) => {
+      const warningFields = computeWarningFields(
+        v.metadata?.effective_on,
+        v.metadata?.effective_until,
+      );
       const rule: UIConformaData = {
         title: v.metadata?.title,
         description: v.metadata?.description,
@@ -204,6 +209,8 @@ export const mapConformaResultData = (
         containerImage: compResult.containerImage,
         msg: v.msg,
         collection: v.metadata?.collections,
+        solution: v.metadata?.solution,
+        ...warningFields,
       };
       acc.push(rule);
     });

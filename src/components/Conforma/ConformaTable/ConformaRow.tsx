@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Truncate } from '@patternfly/react-core';
+import { Label, Truncate } from '@patternfly/react-core';
 import { COMPONENT_DETAILS_PATH } from '@routes/paths';
 import { TableData } from '~/shared';
 import { useNamespace } from '~/shared/providers/Namespace';
@@ -26,6 +26,11 @@ const ConformaRow: React.FC<ConformaRowType> = ({ data }) => {
         className={`${ConformaTableColumnClasses.status} vertical-center-cell`}
       >
         {getRuleStatus(data.status)}
+        {data.daysUntilEvent != null && (
+          <Label isCompact color="orange" data-test="ecp-days-badge">
+            {data.daysUntilEvent}d
+          </Label>
+        )}
       </TableData>
       <TableData className={`${ConformaTableColumnClasses.message} vertical-center-cell`}>
         {data.msg ? <Truncate content={data.msg} /> : '-'}

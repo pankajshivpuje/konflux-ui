@@ -20,6 +20,7 @@ import { MultiSelect } from '../Filter/generic/MultiSelect';
 import { BaseTextFilterToolbar } from '../Filter/toolbars/BaseTextFIlterToolbar';
 import { createFilterObj } from '../Filter/utils/filter-utils';
 import { ConformaTable } from './ConformaTable/ConformaTable';
+import { ECPWarningBanner } from './ECPWarningBanner';
 import SecurityTabEmptyState from './SecurityTabEmptyState';
 import { useConformaResult } from './useConformaResult';
 import { getRuleStatus } from './utils';
@@ -170,6 +171,7 @@ export const SecurityConformaTab: React.FC<
           .
         </Text>
       </TextContent>
+      <ECPWarningBanner warnings={conformaResult ?? []} />
       <Flex style={{ marginTop: 'var(--pf-v5-global--spacer--xl)' }}>
         <FlexItem style={{ marginRight: 'var(--pf-v5-global--spacer--2xl)' }}>
           <TextContent>

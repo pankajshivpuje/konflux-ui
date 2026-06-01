@@ -67,6 +67,6 @@ describe('IssuesOverview', () => {
     expect(grid).toBeInTheDocument();
 
     const gridItems = container.querySelectorAll('.pf-v5-l-grid__item');
-    expect(gridItems.length).toBe(3);
+    expect(gridItems.length).toBe(4);
   });
 });
