@@ -11,6 +11,7 @@ import {
   Title,
 } from '@patternfly/react-core';
 import {
+  BellIcon,
   CheckCircleIcon,
   CubesIcon,
   ExclamationCircleIcon,
@@ -122,6 +123,32 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
               </CardBody>
             </Card>
           </FlexItem>
+          {summary.ecpWarnings > 0 && (
+            <FlexItem>
+              <Card isCompact isFlat data-test="policy-summary-changes-card">
+                <CardBody>
+                  <Text component={TextVariants.p} style={{ marginBottom: 'var(--pf-v5-global--spacer--sm)', fontWeight: 600 }}>
+                    Upcoming changes
+                  </Text>
+                  <Flex
+                    gap={{ default: 'gapLg' }}
+                    alignItems={{ default: 'alignItemsCenter' }}
+                  >
+                    <StatItem
+                      icon={
+                        <Icon size="md" status="warning">
+                          <BellIcon />
+                        </Icon>
+                      }
+                      count={summary.ecpWarnings}
+                      label="Pending"
+                      testId="policy-stat-ecp-warnings"
+                    />
+                  </Flex>
+                </CardBody>
+              </Card>
+            </FlexItem>
+          )}
           <FlexItem>
             <Card isCompact isFlat data-test="policy-summary-results-card">
               <CardBody>
