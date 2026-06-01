@@ -15,6 +15,7 @@ export type PolicySummary = {
   violations: number;
   warnings: number;
   successes: number;
+  ecpWarnings: number;
   componentStatuses: Record<string, { violations: number; warnings: number; successes: number }>;
 };
 
@@ -23,10 +24,14 @@ const computeSummary = (data: UIConformaData[]): PolicySummary => {
   let violations = 0;
   let warnings = 0;
   let successes = 0;
+  let ecpWarnings = 0;
 
   for (const item of data) {
     if (!componentStatuses[item.component]) {
       componentStatuses[item.component] = { violations: 0, warnings: 0, successes: 0 };
+    }
+    if (item.warningType) {
+      ecpWarnings++;
     }
     switch (item.status) {
       case CONFORMA_RESULT_STATUS.violations:
@@ -44,7 +49,7 @@ const computeSummary = (data: UIConformaData[]): PolicySummary => {
     }
   }
 
-  return { violations, warnings, successes, componentStatuses };
+  return { violations, warnings, successes, ecpWarnings, componentStatuses };
 };
 
 const getCompletionTime = (pr: PipelineRunKind): number => {

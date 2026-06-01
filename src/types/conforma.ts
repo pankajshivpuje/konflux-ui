@@ -68,6 +68,7 @@ export type ConformaResultRow = {
   status: CONFORMA_RESULT_STATUS;
   timestamp?: string;
   component: string;
+  containerImage?: string;
   msg?: string;
   collection?: string[];
   solution?: string;
@@ -83,6 +84,7 @@ export type ConformaResultRow = {
   effectiveUntil?: string;
   daysUntilEvent?: number;
   warningType?: ECPWarningType;
+  policySource?: 'root' | 'derived';
 };
 
 export type ComponentConformaStatus = {
