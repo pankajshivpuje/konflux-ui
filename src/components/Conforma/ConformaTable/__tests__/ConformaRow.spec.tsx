@@ -34,9 +34,24 @@ const dumpFailRowData = {
   collection: ['abcd', 'efg'],
 };
 
+const warningRowData = {
+  title: 'CVE threshold',
+  status: CONFORMA_RESULT_STATUS.warnings,
+  component: 'component-1',
+  description: 'CVE threshold exception',
+  msg: 'Warning message',
+  daysUntilEvent: 15,
+  warningType: 'expiring-exception',
+} as UIConformaData;
+
 const customDummyData = {
   sortedConformaResult: [dummySuccessRowData, dumpFailRowData],
 };
+
+const customDataWithWarning = {
+  sortedConformaResult: [warningRowData],
+};
+
 describe('ConformaRow', () => {
   mockUseNamespaceHook('test-ns');
 
@@ -65,5 +80,16 @@ describe('ConformaRow', () => {
     screen.getByText('Rule Description');
     screen.getByText('dummy description');
     screen.getAllByText('Fail');
+  });
+
+  it('should render inline days badge when daysUntilEvent is set', () => {
+    render(<WrappedConformaRow customData={customDataWithWarning} obj={warningRowData} />);
+    screen.getByText('15d');
+    expect(screen.getByTestId('ecp-days-badge')).toBeInTheDocument();
+  });
+
+  it('should not render inline days badge when daysUntilEvent is not set', () => {
+    render(<WrappedConformaRow customData={customDummyData} obj={dummySuccessRowData} />);
+    expect(screen.queryByTestId('ecp-days-badge')).not.toBeInTheDocument();
   });
 });
