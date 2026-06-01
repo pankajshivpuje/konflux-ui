@@ -183,6 +183,8 @@ export const mockConformaUIData = [
     status: CONFORMA_RESULT_STATUS.violations,
     timestamp: '2022-01-01T00:00:00Z',
     component: 'devfile-sample-python-basic-aw05',
+    containerImage:
+      'quay.io/redhat-appstudio/user-workload@sha256:8a234fb8f5785c29fd816e385a09e556a81e0e83d725b74085217e53ce3a7694',
     msg: 'CVE scan results not found',
     solution: 'solution for failure',
     collection: ['minimal'],
@@ -193,6 +195,8 @@ export const mockConformaUIData = [
       'This policy enforces that at least one Task is present in the PipelineRun attestation.',
     status: CONFORMA_RESULT_STATUS.successes,
     component: 'devfile-sample-python-basic-aw05',
+    containerImage:
+      'quay.io/redhat-appstudio/user-workload@sha256:8a234fb8f5785c29fd816e385a09e556a81e0e83d725b74085217e53ce3a7694',
     collection: ['minimal'],
   },
 ];

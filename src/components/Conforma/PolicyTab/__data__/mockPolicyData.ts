@@ -201,8 +201,7 @@ const generateMockResults = (): UIConformaData[] => {
   return componentNames.flatMap((name, i) => generateComponentResults(name, i));
 };
 
-export const mockPolicyResults: Record<string, UIConformaData[]> = {
-  'backend-api': [
+const backendApiResults: UIConformaData[] = [
     {
       title: 'Missing CVE scan results',
       description:
@@ -273,6 +272,22 @@ export const mockPolicyResults: Record<string, UIConformaData[]> = {
       warningType: 'upcoming-activation' as const,
     },
     {
+      title: 'Hermetic build required',
+      description:
+        'Root policy requires all builds to be hermetic. This rule is inherited from the organization-wide root policy and applies to all derived policies.',
+      status: CONFORMA_RESULT_STATUS.warnings,
+      timestamp: dayjs().add(30, 'day').toISOString(),
+      component: 'api-server',
+      containerImage: 'quay.io/myorg/api-server@sha256:a1b2c3d4e5f60011223344556677889900aabbccddeeff0011223344556677',
+      msg: 'New root policy rule - hermetic builds will be required',
+      solution:
+        'Configure your build pipeline for hermetic builds. See https://konflux-ci.dev/docs/how-tos/configuring/hermetic-builds/',
+      collection: ['redhat'],
+      daysUntilEvent: 30,
+      warningType: 'upcoming-activation' as const,
+      policySource: 'root' as const,
+    },
+    {
       title: 'No tasks run',
       description:
         'This policy enforces that at least one Task is present in the PipelineRun attestation.',
@@ -332,6 +347,10 @@ export const mockPolicyResults: Record<string, UIConformaData[]> = {
       containerImage: 'quay.io/myorg/auth-service@sha256:88991a2b3c4d5e6f0011223344556677889900aabbccddeeff001122334455',
       collection: ['minimal'],
     },
-  ],
+];
+
+export const mockPolicyResults: Record<string, UIConformaData[]> = {
+  'backend-api': backendApiResults,
+  'my-app-oneone': backendApiResults,
   'frontend-app': generateMockResults(),
 };

@@ -10,10 +10,11 @@ import {
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { useNamespace } from '~/shared/providers/Namespace';
-import PolicyEmptyState from './PolicyEmptyState';
-import { useApplicationConformaResults } from './useApplicationConformaResults';
-import { PolicySummaryHeader } from './PolicySummaryHeader';
+import { ECPWarningBanner } from '../ECPWarningBanner';
 import { PolicyDetailTable } from './PolicyDetailTable';
+import PolicyEmptyState from './PolicyEmptyState';
+import { PolicySummaryHeader } from './PolicySummaryHeader';
+import { useApplicationConformaResults } from './useApplicationConformaResults';
 
 const PolicyTab: React.FC = () => {
   const { applicationName } = useParams();
@@ -53,6 +54,7 @@ const PolicyTab: React.FC = () => {
   return (
     <>
       <PolicySummaryHeader summary={summary} data={data} />
+      <ECPWarningBanner warnings={data} />
       <PolicyDetailTable data={data} />
     </>
   );
