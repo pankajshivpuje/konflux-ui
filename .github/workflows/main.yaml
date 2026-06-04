@@ -50,7 +50,7 @@ jobs:
       - name: Lint Restricted Imports ✅
         run: yarn lint:restricted-imports
 
-      - name: Type Checking
+      - name: Type Check ✅
         run: yarn type-checks
 
   # Production bundle size budgets — fails PRs that exceed per-chunk limits

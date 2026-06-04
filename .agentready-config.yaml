@@ -1,0 +1,11 @@
+# AgentReady configuration for konflux-ui
+# This TypeScript/React project uses colocated tests (*.spec.tsx next to source)
+# rather than a separate tests/ directory, which is standard React convention.
+
+excluded_attributes:
+  # OpenAPI specs in integration-service/vendor/ are vendored upstream code
+  - openapi_specs
+  # Branch protection requires GitHub API access; enforced via repo settings
+  - branch_protection
+
+output_dir: ./agentready-reports

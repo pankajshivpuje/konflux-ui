@@ -1,25 +1,40 @@
 ---
 name: Bug Report
-about: Report a problem in Konflux UI
+about: Report a bug in Konflux UI
 title: '[BUG] '
-labels: bug
+labels: kind/bug
 assignees: ''
 ---
 
-Description of problem:
+## Describe the bug
 
-How reproducible:
+A clear and concise description of what the bug is.
 
-Steps to Reproduce:
+## Steps to reproduce
 
-1.
-2.
-3.
+1. Go to '...'
+2. Click on '...'
+3. Scroll down to '...'
+4. See error
 
-Actual results:
+## Expected behavior
 
-Expected results:
+A clear and concise description of what you expected to happen.
 
-Is this a customer issue: Yes | No
+## Actual behavior
 
-Please attach any logs/print screens to the ticket or share any additional info/links:
+A clear and concise description of what actually happened.
+
+## Screenshots
+
+If applicable, add screenshots to help explain your problem.
+
+## Environment
+
+- Browser: [e.g. Chrome 120, Firefox 121]
+- OS: [e.g. macOS 14.2, Ubuntu 22.04]
+- Konflux UI version/commit: [e.g. main@abc1234]
+
+## Additional context
+
+Add any other context about the problem here (console errors, network requests, etc.).
