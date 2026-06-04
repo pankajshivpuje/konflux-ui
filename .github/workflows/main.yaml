@@ -50,7 +50,7 @@ jobs:
       - name: Lint Restricted Imports ✅
         run: yarn lint:restricted-imports
 
-      - name: Type Checking
+      - name: Type Check ✅
         run: yarn type-checks
 
   # Unit tests — sharded across 2 runners for parallel execution

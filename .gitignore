@@ -20,12 +20,11 @@ coverage/
 .nyc_output/
 
 node_modules
-.npm/
 dist
 dist-ssr
 *.local
 *.local.*
-*.tsbuildinfo
+tsconfig.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
@@ -37,9 +36,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-*.swp
-*.swo
-
 
 **/.gitconfig*
 
@@ -47,18 +43,17 @@ dist-ssr
 CLAUDE.local.md
 .claude/worktrees/**/*
 
-# Screenshot UI automation outputs (Playwright MCP; layout: .screenshots/<branch>/<run-id>/)
-.screenshots/
-.playwright-mcp/
+# npm cache
+.npm/
+
+# TypeScript build info
+*.tsbuildinfo
 
 # Snyk Security Extension - AI Rules (auto-generated)
 .cursor/rules/snyk_rules.mdc
 
-# Storybook
-storybook-static/
+# AgentReady reports
+agentready-reports/
 
-# Worktrees
-.worktrees/
-
-# Snapshots (no snapshot tests)
-**/__snapshots__/
+# Repomix output (large generated file - regenerate with: npx repomix)
+repomix-output.xml
