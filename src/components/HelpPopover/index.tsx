@@ -13,7 +13,7 @@ const HelpPopover: React.FC<Props> = (props) => {
     if (triggerRef.current) {
       const modal =
         triggerRef.current.closest('.pf-v6-c-modal-box') ||
-        triggerRef.current.closest('.pf-c-modal-box');
+        triggerRef.current.closest('.pf-v6-c-modal-box');
       setIsInsideModal(!!modal);
     }
   }, []);

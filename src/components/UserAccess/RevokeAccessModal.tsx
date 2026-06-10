@@ -8,12 +8,15 @@ import {
   Button,
   ButtonType,
   ButtonVariant,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  ModalVariant,
 } from '@patternfly/react-core';
-import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
 import { K8sQueryDeleteResource } from '../../k8s';
 import { RoleBindingModel } from '../../models';
 import { RoleBinding } from '../../types';
-import { RawComponentProps } from '../modal/createModalLauncher';
+import { extractModalProps, RawComponentProps } from '../modal/createModalLauncher';
 
 type Props = RawComponentProps & {
   rb: RoleBinding;
@@ -51,42 +54,48 @@ export const RevokeAccessModal: React.FC<React.PropsWithChildren<Props>> = ({
     [onClose, rb],
   );
 
+  const { rest: restModalProps } = extractModalProps(modalProps);
+  const { title } = modalProps;
+
   return (
-    <Modal {...modalProps} variant={ModalVariant.small}>
-      <Stack hasGutter>
-        <StackItem>
-          <Content>
-            <Content component="p" data-test="description">
-              The user <strong>{username}</strong> will lose access to this namespace and all of its
-              applications, environments, and any other dependent items.
+    <Modal {...restModalProps} variant={ModalVariant.small}>
+      {title && <ModalHeader title={title} />}
+      <ModalBody>
+        <Stack hasGutter>
+          <StackItem>
+            <Content>
+              <Content component="p" data-test="description">
+                The user <strong>{username}</strong> will lose access to this namespace and all of
+                its applications, environments, and any other dependent items.
+              </Content>
+              <Content component="p">You can always grant the user access later.</Content>
             </Content>
-            <Content component="p">You can always grant the user access later.</Content>
-          </Content>
-        </StackItem>
-        <StackItem>
-          {error && (
-            <Alert isInline variant={AlertVariant.danger} title="An error occurred">
-              {error}
-            </Alert>
-          )}
-          <Button
-            type={ButtonType.submit}
-            variant={ButtonVariant.danger}
-            isLoading={submitting}
-            onClick={handleSubmit}
-            isDisabled={submitting}
-            data-test="revoke-access"
-          >
-            Revoke
-          </Button>
-          <Button
-            variant={ButtonVariant.link}
-            onClick={() => onClose(null, { submitClicked: false })}
-          >
-            Cancel
-          </Button>
-        </StackItem>
-      </Stack>
+          </StackItem>
+          <StackItem>
+            {error && (
+              <Alert isInline variant={AlertVariant.danger} title="An error occurred">
+                {error}
+              </Alert>
+            )}
+            <Button
+              type={ButtonType.submit}
+              variant={ButtonVariant.danger}
+              isLoading={submitting}
+              onClick={handleSubmit}
+              isDisabled={submitting}
+              data-test="revoke-access"
+            >
+              Revoke
+            </Button>
+            <Button
+              variant={ButtonVariant.link}
+              onClick={() => onClose(null, { submitClicked: false })}
+            >
+              Cancel
+            </Button>
+          </StackItem>
+        </Stack>
+      </ModalBody>
     </Modal>
   );
 };

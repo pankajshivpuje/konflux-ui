@@ -101,7 +101,7 @@ const SnapshotDetailsView: React.FC = () => {
                   at{' '}
                   <Timestamp
                     timestamp={snapshot.metadata.creationTimestamp}
-                    className="pf-u-display-inline"
+                    className="pf-v6-u-display-inline"
                   />
                 </Content>
               </>

@@ -85,7 +85,7 @@ const ComponentDetailsView: React.FC = () => {
               added security.
             </div>
             <ButtonWithAccessTooltip
-              className="pf-u-mt-xl"
+              className="pf-v6-u-mt-xl"
               variant={ButtonVariant.secondary}
               isDisabled={!canPatchComponent}
               tooltip="You don't have access to edit the build pipeline plan"
@@ -122,7 +122,7 @@ const ComponentDetailsView: React.FC = () => {
         ]}
         title={
           <Content component={ContentVariants.h2}>
-            <span className="pf-u-mr-sm">
+            <span className="pf-v6-u-mr-sm">
               <b>{component.spec.componentName}</b>
             </span>
             <FeatureFlagIndicator flags={['taskruns-kubearchive']} />

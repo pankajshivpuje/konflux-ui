@@ -33,14 +33,14 @@ const SnapshotComponentsList: React.FC<React.PropsWithChildren<SnapshotComponent
   return (
     <PageSection hasBodyWrapper={false} padding={{ default: 'noPadding' }} isFilled>
       <>
-        <Title size="lg" headingLevel="h2" className="pf-c-title pf-u-mt-lg pf-u-mb-sm">
+        <Title size="lg" headingLevel="h2" className="pf-v6-u-mt-lg pf-v6-u-mb-sm">
           Components
         </Title>
         {!components || components.length === 0 ? (
           <SnapshotComponentsEmptyState applicationName={applicationName} />
         ) : (
           <>
-            <Content component="p" className="pf-u-mb-lg">
+            <Content component="p" className="pf-v6-u-mb-lg">
               Component builds that are included in this snapshot
             </Content>
             <BaseTextFilterToolbar

@@ -11,9 +11,9 @@ import {
   StackItem,
   Content,
   ContentVariants,
+  ModalVariant,
   ValidatedOptions,
 } from '@patternfly/react-core';
-import { ModalVariant } from '@patternfly/react-core/deprecated';
 import { Formik } from 'formik';
 import { InputField } from 'formik-pf';
 import { useNamespace } from '~/shared/providers/Namespace';

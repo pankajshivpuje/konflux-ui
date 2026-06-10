@@ -1,7 +1,20 @@
 import * as React from 'react';
-import { Modal, ModalProps as PFModalProps } from '@patternfly/react-core/deprecated';
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalProps as PFModalProps,
+} from '@patternfly/react-core';
 
-export type ModalProps = Omit<PFModalProps, 'children' | 'ref'>;
+export type ModalProps = Omit<PFModalProps, 'children' | 'ref'> & {
+  title?: React.ReactNode;
+  titleIconVariant?: 'success' | 'danger' | 'warning' | 'info' | 'custom' | React.ComponentType;
+  description?: React.ReactNode;
+  hasNoBodyWrapper?: boolean;
+  bodyAriaLabel?: string;
+  actions?: React.ReactNode[];
+};
 
 type ModalComponentProps = Omit<ModalProps, 'isOpen' | 'appendTo'> & {
   'data-test': string;
@@ -18,6 +31,25 @@ export type RawComponentProps<D = unknown> = ComponentProps<D> & { modalProps?: 
 export type ModalLauncher<Result = Record<string, unknown>> = (
   onClose: OnModalClose<Result>,
 ) => React.ReactElement;
+
+const CUSTOM_MODAL_KEYS = ['title', 'titleIconVariant', 'description', 'hasNoBodyWrapper', 'bodyAriaLabel', 'actions'] as const;
+
+export const extractModalProps = (
+  modalProps: ModalProps,
+): { headerProps: { title?: React.ReactNode; titleIconVariant?: ModalProps['titleIconVariant']; description?: React.ReactNode }; rest: Omit<PFModalProps, 'children' | 'ref'> } => {
+  const rest = { ...modalProps };
+  for (const key of CUSTOM_MODAL_KEYS) {
+    delete rest[key];
+  }
+  return {
+    headerProps: {
+      title: modalProps?.title,
+      titleIconVariant: modalProps?.titleIconVariant,
+      description: modalProps?.description,
+    },
+    rest: rest as Omit<PFModalProps, 'children' | 'ref'>,
+  };
+};
 
 export const createRawModalLauncher =
   <D extends Record<string, unknown>, P extends ComponentProps<D>>(
@@ -52,11 +84,29 @@ export const createModalLauncher = <D extends Record<string, unknown>, P extends
   inModalProps: ModalComponentProps,
 ) =>
   createRawModalLauncher(
-    ({ modalProps, ...props }: P & { modalProps?: ModalProps }) => (
-      <Modal {...modalProps}>
-        {/* eslint-disable-next-line */}
+    ({ modalProps, ...props }: P & { modalProps?: ModalProps }) => {
+      const {
+        title,
+        titleIconVariant,
+        description,
+        hasNoBodyWrapper,
+        bodyAriaLabel,
+        actions,
+        ...rest
+      } = modalProps ?? {};
+      const content = (
+        // eslint-disable-next-line
         <Component {...(props as any)} />
-      </Modal>
-    ),
+      );
+      return (
+        <Modal {...rest}>
+          {title && (
+            <ModalHeader title={title} titleIconVariant={titleIconVariant} description={description} />
+          )}
+          {hasNoBodyWrapper ? content : <ModalBody aria-label={bodyAriaLabel}>{content}</ModalBody>}
+          {actions?.length > 0 && <ModalFooter>{actions}</ModalFooter>}
+        </Modal>
+      );
+    },
     inModalProps,
   );

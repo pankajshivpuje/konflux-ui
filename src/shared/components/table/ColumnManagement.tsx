@@ -8,8 +8,12 @@ import {
   ContentVariants,
   Flex,
   FlexItem,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalVariant,
 } from '@patternfly/react-core';
-import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
 
 export interface ColumnDefinition<T extends string> {
   key: T;
@@ -79,43 +83,45 @@ function ColumnManagement<T extends string>({
   return (
     <Modal
       variant={ModalVariant.medium}
-      title={title}
       isOpen={isOpen}
       onClose={onClose}
-      actions={[
+    >
+      <ModalHeader title={title} />
+      <ModalBody>
+        <Content>
+          <Content component={ContentVariants.p}>{description}</Content>
+        </Content>
+        <Form>
+          <FormGroup>
+            <Flex direction={{ default: 'column' }}>
+              <FlexItem className="pf-v6-u-my-md">
+                <Button variant="primary" onClick={handleReset}>
+                  Reset to default
+                </Button>
+              </FlexItem>
+              {columns.map((column) => (
+                <FlexItem key={column.key}>
+                  <Checkbox
+                    id={`column-${column.key}`}
+                    label={column.title}
+                    isChecked={localVisibleColumns.has(column.key)}
+                    onChange={() => handleColumnToggle(column.key)}
+                    isDisabled={nonHidableColumns.includes(column.key)}
+                  />
+                </FlexItem>
+              ))}
+            </Flex>
+          </FormGroup>
+        </Form>
+      </ModalBody>
+      <ModalFooter>
         <Button key="save" variant="primary" onClick={handleSave}>
           Save
-        </Button>,
+        </Button>
         <Button key="cancel" variant="link" onClick={onClose}>
           Cancel
-        </Button>,
-      ]}
-    >
-      <Content>
-        <Content component={ContentVariants.p}>{description}</Content>
-      </Content>
-      <Form>
-        <FormGroup>
-          <Flex direction={{ default: 'column' }}>
-            <FlexItem className="pf-v6-u-my-md">
-              <Button variant="primary" onClick={handleReset}>
-                Reset to default
-              </Button>
-            </FlexItem>
-            {columns.map((column) => (
-              <FlexItem key={column.key}>
-                <Checkbox
-                  id={`column-${column.key}`}
-                  label={column.title}
-                  isChecked={localVisibleColumns.has(column.key)}
-                  onChange={() => handleColumnToggle(column.key)}
-                  isDisabled={nonHidableColumns.includes(column.key)}
-                />
-              </FlexItem>
-            ))}
-          </Flex>
-        </FormGroup>
-      </Form>
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 }

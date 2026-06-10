@@ -1,6 +1,5 @@
 import React from 'react';
-import { Button, Content } from '@patternfly/react-core';
-import { Modal } from '@patternfly/react-core/deprecated';
+import { Button, Content, Modal, ModalBody, ModalFooter, ModalHeader } from '@patternfly/react-core';
 
 interface ErrorModalProps {
   title: string;
@@ -12,22 +11,24 @@ interface ErrorModalProps {
 const ErrorModal: React.FC<ErrorModalProps> = ({ title, errorMessage, isOpen, onClose }) => {
   return (
     <Modal
-      title={title}
       isOpen={isOpen}
       onClose={onClose}
       aria-label="Error details modal"
       className="pf-m-sm"
-      actions={[
+    >
+      <ModalHeader title={title} />
+      <ModalBody>
+        <Content>
+          <Content component="pre" style={{ whiteSpace: 'pre-wrap' }}>
+            {errorMessage}
+          </Content>
+        </Content>
+      </ModalBody>
+      <ModalFooter>
         <Button key="close" variant="primary" onClick={onClose}>
           Close
-        </Button>,
-      ]}
-    >
-      <Content>
-        <Content component="pre" style={{ whiteSpace: 'pre-wrap' }}>
-          {errorMessage}
-        </Content>
-      </Content>
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 };

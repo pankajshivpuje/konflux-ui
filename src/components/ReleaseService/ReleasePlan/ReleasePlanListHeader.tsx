@@ -8,7 +8,7 @@ export const releasesPlanTableColumnClasses = {
   standingAttribution: 'pf-m-hidden pf-m-width-15 pf-m-visible-on-xl',
   status: 'pf-m-hidden pf-m-width-15 pf-m-visible-on-xl',
   rpa: 'pf-m-hidden pf-m-width-15 pf-m-visible-on-xl',
-  kebab: 'pf-c-table__action',
+  kebab: 'pf-v6-c-table__action',
 };
 
 export const getDynamicReleasePlanColumnClasses = (visibleColumns: Set<ReleasePlanColumnKeys>) => {
@@ -25,7 +25,7 @@ export const getDynamicReleasePlanColumnClasses = (visibleColumns: Set<ReleasePl
       : 'pf-m-hidden pf-m-width-15 pf-m-visible-on-xl',
     status: isSmallTable ? 'pf-m-width-15' : 'pf-m-hidden pf-m-width-15 pf-m-visible-on-xl',
     rpa: isSmallTable ? 'pf-m-width-20' : 'pf-m-hidden pf-m-width-15 pf-m-visible-on-xl',
-    kebab: 'pf-c-table__action',
+    kebab: 'pf-v6-c-table__action',
   };
 };
 

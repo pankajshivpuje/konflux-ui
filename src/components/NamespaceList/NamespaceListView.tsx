@@ -7,7 +7,7 @@ import {
   Spinner,
   Tooltip,
 } from '@patternfly/react-core';
-import { QuestionCircleIcon } from '@patternfly/react-icons/dist/js/icons/question-circle-icon';
+import { QuestionCircleIcon } from '@patternfly/react-icons/dist/esm/icons/question-circle-icon';
 import { GETTING_ACCESS_INTERNAL } from '~/consts/documentation';
 import { useInstanceVisibility } from '~/hooks/useUIInstance';
 import { KonfluxInstanceVisibility } from '~/types/konflux-public-info';
