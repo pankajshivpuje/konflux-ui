@@ -85,7 +85,7 @@ const ComponentLatestBuild: React.FC<React.PropsWithChildren<ComponentLatestBuil
     (isPrivate && !proxyLoaded && !proxyError)
   ) {
     return (
-      <div className="pf-u-m-lg">
+      <div className="pf-v6-u-m-lg">
         <Spinner />
       </div>
     );

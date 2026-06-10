@@ -38,7 +38,6 @@ const TruncatedLinkListWithPopover: React.FC<Props> = ({
               data-test={popover.dataTestPrefix}
               aria-label={popover.ariaLabel}
               headerContent={popover.header}
-              enableFlip
               bodyContent={
                 <Stack
                   className="truncated-link-list-popover-stack"

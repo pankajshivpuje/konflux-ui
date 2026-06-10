@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { Button } from '@patternfly/react-core';
-import { Modal, ModalBoxBody, ModalVariant } from '@patternfly/react-core/deprecated';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant } from '@patternfly/react-core';
 import { Formik } from 'formik';
 import { isEmpty, merge } from 'lodash-es';
 import {
@@ -13,7 +12,7 @@ import {
   SecretForComponentOption,
 } from '../../types';
 import { SecretFromSchema } from '../../utils/validation-utils';
-import { RawComponentProps } from '../modal/createModalLauncher';
+import { extractModalProps, RawComponentProps } from '../modal/createModalLauncher';
 import SecretForm from './SecretForm';
 
 import './SecretModal.scss';
@@ -99,15 +98,22 @@ const SecretModal: React.FC<React.PropsWithChildren<SecretModalProps>> = ({
       validationSchema={SecretFromSchema}
     >
       {(props) => {
+        const { rest: restModalProps } = extractModalProps(modalProps);
         return (
           <Modal
-            {...modalProps}
-            title={isEdit ? 'Edit build secret' : 'Create new build secret'}
-            description="Keep your data secure with a build-time secret."
+            {...restModalProps}
             variant={ModalVariant.medium}
             data-test="build-secret-modal"
             className="build-secret-modal"
-            actions={[
+          >
+            <ModalHeader
+              title={isEdit ? 'Edit build secret' : 'Create new build secret'}
+              description="Keep your data secure with a build-time secret."
+            />
+            <ModalBody>
+              <SecretForm existingSecrets={existingSecrets} currentComponent={currentComponent} />
+            </ModalBody>
+            <ModalFooter>
               <Button
                 key="confirm"
                 variant="primary"
@@ -118,15 +124,11 @@ const SecretModal: React.FC<React.PropsWithChildren<SecretModalProps>> = ({
                 isDisabled={!props.dirty || !isEmpty(props.errors) || props.isSubmitting}
               >
                 {isEdit ? 'Save' : 'Create'}
-              </Button>,
-              <Button key="cancel" variant="link" onClick={modalProps.onClose}>
+              </Button>
+              <Button key="cancel" variant="link" onClick={restModalProps.onClose}>
                 Cancel
-              </Button>,
-            ]}
-          >
-            <ModalBoxBody>
-              <SecretForm existingSecrets={existingSecrets} currentComponent={currentComponent} />
-            </ModalBoxBody>
+              </Button>
+            </ModalFooter>
           </Modal>
         );
       }}

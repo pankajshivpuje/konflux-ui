@@ -1,8 +1,7 @@
 import React from 'react';
-import { Stack, StackItem, Content } from '@patternfly/react-core';
-import { Modal, ModalVariant } from '@patternfly/react-core/deprecated';
+import { Stack, StackItem, Content, Modal, ModalBody, ModalHeader, ModalVariant } from '@patternfly/react-core';
 import { Table, Thead, Tbody, Tr, Th, Td } from '@patternfly/react-table';
-import { createRawModalLauncher, RawComponentProps } from '~/components/modal/createModalLauncher';
+import { createRawModalLauncher, extractModalProps, RawComponentProps } from '~/components/modal/createModalLauncher';
 import ExternalLink from '~/shared/components/links/ExternalLink';
 import { TaskRunSBOM } from '../utils/pipelinerun-utils';
 
@@ -13,38 +12,42 @@ type PipelineRunSBOMsProps = {
 type PipelineRunSBOMsModalProps = RawComponentProps & PipelineRunSBOMsProps;
 
 const PipelineRunSBOMsModal: React.FC<PipelineRunSBOMsModalProps> = ({ modalProps, sboms }) => {
+  const { rest } = extractModalProps(modalProps);
   return (
-    <Modal {...modalProps} title="SBOMs" variant={ModalVariant.small}>
-      <Stack hasGutter>
-        <StackItem>
-          <Table variant="compact" borders>
-            <Thead>
-              <Tr>
-                <Th>Note</Th>
-                <Th>Link</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {sboms.map((sbom, i) => (
-                <Tr key={`${sbom.url}-${i}`}>
-                  <Td>
-                    {sbom.isIndex ? (
-                      <Content component="p" style={{ fontWeight: 'bold' }}>
-                        Index
-                      </Content>
-                    ) : (
-                      sbom.platform || '-'
-                    )}
-                  </Td>
-                  <Td>
-                    <ExternalLink href={sbom.url}>View SBOM</ExternalLink>
-                  </Td>
+    <Modal {...rest} variant={ModalVariant.small}>
+      <ModalHeader title="SBOMs" />
+      <ModalBody>
+        <Stack hasGutter>
+          <StackItem>
+            <Table variant="compact" borders>
+              <Thead>
+                <Tr>
+                  <Th>Note</Th>
+                  <Th>Link</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </StackItem>
-      </Stack>
+              </Thead>
+              <Tbody>
+                {sboms.map((sbom, i) => (
+                  <Tr key={`${sbom.url}-${i}`}>
+                    <Td>
+                      {sbom.isIndex ? (
+                        <Content component="p" style={{ fontWeight: 'bold' }}>
+                          Index
+                        </Content>
+                      ) : (
+                        sbom.platform || '-'
+                      )}
+                    </Td>
+                    <Td>
+                      <ExternalLink href={sbom.url}>View SBOM</ExternalLink>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </StackItem>
+        </Stack>
+      </ModalBody>
     </Modal>
   );
 };

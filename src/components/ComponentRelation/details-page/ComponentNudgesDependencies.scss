@@ -4,7 +4,7 @@
   }
   &__empty-state {
     padding: var(--pf-t--global--spacer--md);
-    color: var(--pf-global--Color--400);
+    color: var(--pf-t--global--color--nonstatus--gray--default);
   }
   & .pf-v6-c-expandable-section__toggle-text {
     margin-left: var(--pf-t--global--spacer--sm);

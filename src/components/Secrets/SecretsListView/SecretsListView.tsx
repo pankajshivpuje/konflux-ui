@@ -65,7 +65,7 @@ const SecretsListView: React.FC = () => {
         <br />
         To get started, add a secret
       </EmptyStateBody>
-      {<div className="pf-u-mt-xl">{createSecretButton}</div>}
+      {<div className="pf-v6-u-mt-xl">{createSecretButton}</div>}
     </AppEmptyState>
   );
 

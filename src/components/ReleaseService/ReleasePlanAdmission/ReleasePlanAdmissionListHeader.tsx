@@ -3,7 +3,7 @@ export const releasesPlanAdmissionTableColumnClasses = {
   application: 'pf-m-width-30',
   source: 'pf-m-width-20',
   blockReleases: 'pf-m-width-20',
-  kebab: 'pf-c-table__action',
+  kebab: 'pf-v6-c-table__action',
 };
 
 const ReleasePlanAdmissionListHeader = () => {

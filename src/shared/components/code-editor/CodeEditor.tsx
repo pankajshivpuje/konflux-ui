@@ -26,7 +26,6 @@ const shortcutsPopoverProps: PopoverProps = {
   'aria-label': 'Shortcuts',
   bodyContent: <KeyboardShortcutHint shortcuts={CODE_EDITOR_SHORTCUTS} />,
   maxWidth: '25rem',
-  distance: 18,
 };
 
 export type Props = {

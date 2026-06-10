@@ -189,7 +189,7 @@ const ComponentListView: React.FC<React.PropsWithChildren<ComponentListViewProps
           </FlexItem>
           <FlexItem>
             <ButtonWithAccessTooltip
-              className="pf-u-mr-2xl"
+              className="pf-v6-u-mr-2xl"
               variant={ButtonVariant.secondary}
               isDisabled={!canPatchComponent}
               tooltip="You don't have access to edit the build pipeline plans"

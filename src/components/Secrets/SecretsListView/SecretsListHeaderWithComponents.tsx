@@ -6,7 +6,7 @@ export const secretsTableColumnClasses = {
   components: 'pf-m-width-15',
   labels: 'pf-m-width-20 wrap-column',
   status: 'pf-m-width-25',
-  kebab: 'pf-m-width-5 pf-c-table__action',
+  kebab: 'pf-m-width-5 pf-v6-c-table__action',
 };
 
 const SecretsListHeaderWithComponents = () => {

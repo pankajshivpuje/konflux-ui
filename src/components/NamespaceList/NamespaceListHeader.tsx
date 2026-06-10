@@ -5,7 +5,7 @@ export const namespaceTableColumnClasses = {
   name: 'pf-m-width-35',
   visibility: 'pf-m-width-25',
   applications: 'pf-m-width-25',
-  kebab: 'pf-m-width-15 pf-c-table__action',
+  kebab: 'pf-m-width-15 pf-v6-c-table__action',
 };
 
 export const createNamespaceListHeader = () => {

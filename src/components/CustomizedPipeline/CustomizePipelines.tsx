@@ -8,13 +8,11 @@ import {
   Content,
   ContentVariants,
   Truncate,
-} from '@patternfly/react-core';
-import {
   Modal,
-  ModalBoxBody,
-  ModalBoxFooter,
-  ModalBoxHeader,
-} from '@patternfly/react-core/deprecated';
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from '@patternfly/react-core';
 import { Tbody, Thead, Th, Tr, Td, Table } from '@patternfly/react-table';
 import SendIconUrl from '../../assets/send.svg';
 import SuccessIconUrl from '../../assets/success.svg';
@@ -31,7 +29,7 @@ import { useAccessReviewForModel } from '../../utils/rbac';
 import AnalyticsButton from '../AnalyticsButton/AnalyticsButton';
 import { ButtonWithAccessTooltip } from '../ButtonWithAccessTooltip';
 import GitRepoLink from '../GitLink/GitRepoLink';
-import { RawComponentProps } from '../modal/createModalLauncher';
+import { extractModalProps, RawComponentProps } from '../modal/createModalLauncher';
 import ComponentPACStateLabel from './ComponentPACStateLabel';
 
 type Props = RawComponentProps & {
@@ -296,10 +294,12 @@ const CustomizePipeline: React.FC<React.PropsWithChildren<Props>> = ({
     onClose();
   }, [onClose, applicationName, namespace, track]);
 
+  const { rest: restModalProps } = extractModalProps(modalProps);
+
   return (
-    <Modal {...modalProps} onClose={trackedOnClose}>
-      <ModalBoxHeader />
-      <ModalBoxBody>
+    <Modal {...restModalProps} onClose={trackedOnClose}>
+      <ModalHeader />
+      <ModalBody>
         <>
           <Content
             className="pf-v6-u-pt-lg"
@@ -383,8 +383,8 @@ const CustomizePipeline: React.FC<React.PropsWithChildren<Props>> = ({
             </p>
           ) : undefined}
         </>
-      </ModalBoxBody>
-      <ModalBoxFooter>
+      </ModalBody>
+      <ModalFooter>
         <AnalyticsButton
           variant={ButtonVariant.secondary}
           onClick={trackedOnClose}
@@ -392,7 +392,7 @@ const CustomizePipeline: React.FC<React.PropsWithChildren<Props>> = ({
         >
           Close
         </AnalyticsButton>
-      </ModalBoxFooter>
+      </ModalFooter>
     </Modal>
   );
 };

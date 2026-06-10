@@ -5,8 +5,9 @@ import {
   EmptyStateBody,
   EmptyStateVariant,
   EmptyStateFooter,
+  Modal,
+  ModalBody,
 } from '@patternfly/react-core';
-import { Modal } from '@patternfly/react-core/deprecated';
 import { getErrorState } from '~/shared/utils/error-utils';
 import { useComponents } from '../../hooks/useComponents';
 import { ComponentModel } from '../../models';
@@ -14,7 +15,7 @@ import { APPLICATION_DETAILS_PATH } from '../../routes/paths';
 import { ComponentKind } from '../../types';
 import { useAccessReviewForModel } from '../../utils/rbac';
 import { ButtonWithAccessTooltip } from '../ButtonWithAccessTooltip';
-import { RawComponentProps } from '../modal/createModalLauncher';
+import { extractModalProps, RawComponentProps } from '../modal/createModalLauncher';
 import CustomizePipeline from './CustomizePipelines';
 
 type Props = RawComponentProps & {
@@ -37,9 +38,15 @@ const CustomizeAllPipelines: React.FC<React.PropsWithChildren<Props>> = ({
     [loaded, components, filter],
   );
 
+  const { rest: restModalProps } = extractModalProps(modalProps);
+
   if (loaded) {
     if (error) {
-      return <Modal {...modalProps}>{getErrorState(error, loaded, 'components')}</Modal>;
+      return (
+        <Modal {...restModalProps}>
+          <ModalBody>{getErrorState(error, loaded, 'components')}</ModalBody>
+        </Modal>
+      );
     }
 
     if (filteredComponents.length > 0) {
@@ -53,34 +60,36 @@ const CustomizeAllPipelines: React.FC<React.PropsWithChildren<Props>> = ({
     }
 
     return (
-      <Modal {...modalProps}>
-        <EmptyState headingLevel="h4" titleText="No components" variant={EmptyStateVariant.lg}>
-          <EmptyStateBody>To get started, add a component to your application.</EmptyStateBody>
-          <EmptyStateFooter>
-            <ButtonWithAccessTooltip
-              variant="primary"
-              component={(props) => (
-                <Link
-                  {...props}
-                  to={APPLICATION_DETAILS_PATH.createPath({
-                    workspaceName: namespace,
-                    applicationName,
-                  })}
-                />
-              )}
-              isDisabled={!canCreateComponent}
-              tooltip="You don't have access to add a component"
-              analytics={{
-                link_name: 'add-component',
-                link_location: 'manage-build-pipelines',
-                app_name: applicationName,
-                namespace,
-              }}
-            >
-              Add component
-            </ButtonWithAccessTooltip>
-          </EmptyStateFooter>
-        </EmptyState>
+      <Modal {...restModalProps}>
+        <ModalBody>
+          <EmptyState headingLevel="h4" titleText="No components" variant={EmptyStateVariant.lg}>
+            <EmptyStateBody>To get started, add a component to your application.</EmptyStateBody>
+            <EmptyStateFooter>
+              <ButtonWithAccessTooltip
+                variant="primary"
+                component={(props) => (
+                  <Link
+                    {...props}
+                    to={APPLICATION_DETAILS_PATH.createPath({
+                      workspaceName: namespace,
+                      applicationName,
+                    })}
+                  />
+                )}
+                isDisabled={!canCreateComponent}
+                tooltip="You don't have access to add a component"
+                analytics={{
+                  link_name: 'add-component',
+                  link_location: 'manage-build-pipelines',
+                  app_name: applicationName,
+                  namespace,
+                }}
+              >
+                Add component
+              </ButtonWithAccessTooltip>
+            </EmptyStateFooter>
+          </EmptyState>
+        </ModalBody>
       </Modal>
     );
   }
