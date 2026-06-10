@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'url';
+import path from 'path';
 import { merge } from 'webpack-merge';
 import commonConfig from './webpack.config.js';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
@@ -8,6 +10,9 @@ import { setupMockK8sMiddleware } from './config/mock-k8s-api.mjs';
 config();
 const USE_MOCK = process.env.USE_MOCK === 'true';
 const DEV_SERVER_PORT = 8080;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default merge(commonConfig, {
   mode: 'development',
@@ -81,7 +86,13 @@ export default merge(commonConfig, {
   module: {
     rules: [
       {
+        test: /\.css$/i,
+        include: path.resolve(__dirname, 'node_modules/monaco-editor'),
+        use: ['style-loader', 'css-loader'],
+      },
+      {
         test: /\.s?[ac]ss$/i,
+        exclude: path.resolve(__dirname, 'node_modules/monaco-editor'), // Exclude Monaco's CSS
         use: [
           'style-loader',
           'css-loader',
