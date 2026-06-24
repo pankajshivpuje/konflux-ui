@@ -111,7 +111,7 @@ export const ComponentSelectMenu: React.FC<ComponentSelectMenuProps> = ({
   const toggleText = React.useMemo(() => {
     const selectedComponents = value as string[];
     if (typeof selectedToggleText === 'function') {
-      return selectedToggleText(value);
+      return selectedToggleText(value) || defaultToggleText;
     }
     return selectedComponents?.length > 0 ? selectedToggleText : defaultToggleText;
   }, [defaultToggleText, value, selectedToggleText]);

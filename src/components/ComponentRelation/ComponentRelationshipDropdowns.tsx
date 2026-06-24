@@ -26,7 +26,11 @@ export const MultiSelectComponentsDropdown: React.FC<MultiSelectComponentsDropdo
       sourceComponentName={sourceComponentName}
       includeSelectAll
       defaultToggleText="Choose components to nudge"
-      selectedToggleText="Component"
+      selectedToggleText={(value) => {
+        const selected = value as string[];
+        if (!selected?.length) return undefined;
+        return `${selected.length} component${selected.length === 1 ? '' : 's'} selected`;
+      }}
     />
   );
 };
