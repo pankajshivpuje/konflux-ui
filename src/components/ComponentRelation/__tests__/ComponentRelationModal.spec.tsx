@@ -124,7 +124,7 @@ describe('ComponentRelationModal', () => {
       <ComponentRelationModal modalProps={{ isOpen, onClose }} application="apps" />,
     );
     expect(screen.queryByText('Component relationships')).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('nudged-by-0'));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Nudged by' })[0]);
     const saveButton = screen.getByText('Save relationships');
     expect(saveButton.getAttribute('class')).not.toContain('pf-m-disabled');
     fireEvent.click(saveButton);
@@ -151,7 +151,7 @@ describe('ComponentRelationModal', () => {
     };
     render(<ComponentRelationModal modalProps={{ isOpen, onClose }} application="apps" />);
     expect(screen.queryByText('Component relationships')).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('nudged-by-0'));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Nudged by' })[0]);
     const saveButton = screen.getByText('Save relationships');
     expect(saveButton.getAttribute('class')).not.toContain('pf-m-disabled');
     fireEvent.click(saveButton);

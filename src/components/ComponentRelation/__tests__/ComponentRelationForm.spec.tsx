@@ -1,4 +1,4 @@
-import { act, configure, fireEvent, screen } from '@testing-library/react';
+import { configure, screen } from '@testing-library/react';
 import { formikRenderer } from '../../../utils/test-utils';
 import { ComponentRelation } from '../ComponentRelationForm';
 import { ComponentRelationNudgeType } from '../type';
@@ -24,13 +24,53 @@ describe('ComponentRelationForm', () => {
       },
     );
     expect(screen.getAllByTestId('toggle-component-menu')).toHaveLength(2);
-    expect(screen.getAllByTestId('nudges-0')).toHaveLength(1);
-    expect(screen.getAllByTestId('nudged-by-0')).toHaveLength(1);
-    // mouseOver help icon
-    const nodgeSvg = screen.getAllByRole('img', { hidden: true })[1];
-    act(() => {
-      fireEvent.mouseEnter(nodgeSvg);
-    });
-    expect(nodgeSvg.getAttributeNames().includes('aria-describedby'));
+    expect(screen.getByRole('button', { name: 'Nudges' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nudged by' })).toBeInTheDocument();
+  });
+
+  it('should render selected targets as label chips', () => {
+    formikRenderer(
+      <ComponentRelation
+        index={0}
+        componentNames={['comp-a', 'comp-b', 'comp-c']}
+        sortedGroupedComponents={{ app: ['comp-a', 'comp-b', 'comp-c'] }}
+        removeProps={{
+          disableRemove: false,
+          onRemove: jest.fn(),
+        }}
+      />,
+      {
+        relations: [
+          {
+            source: 'comp-a',
+            target: ['comp-b', 'comp-c'],
+            nudgeType: ComponentRelationNudgeType.NUDGES,
+          },
+        ],
+      },
+    );
+    expect(screen.getByText('comp-b')).toBeInTheDocument();
+    expect(screen.getByText('comp-c')).toBeInTheDocument();
+  });
+
+  it('should render toggle group with nudge type', () => {
+    formikRenderer(
+      <ComponentRelation
+        index={0}
+        componentNames={['a', 'b']}
+        sortedGroupedComponents={{ app: ['a', 'b'] }}
+        removeProps={{
+          disableRemove: false,
+          onRemove: jest.fn(),
+        }}
+      />,
+      {
+        relations: [
+          { source: 'a', target: ['b'], nudgeType: ComponentRelationNudgeType.NUDGES },
+        ],
+      },
+    );
+    expect(screen.getByRole('button', { name: 'Nudges' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nudged by' })).toBeInTheDocument();
   });
 });
