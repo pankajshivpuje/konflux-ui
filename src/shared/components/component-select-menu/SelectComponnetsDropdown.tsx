@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { Badge, Menu, MenuContainer, MenuContent, MenuToggle } from '@patternfly/react-core';
+import {
+  Badge,
+  Menu,
+  MenuContainer,
+  MenuContent,
+  MenuToggle,
+  Truncate,
+} from '@patternfly/react-core';
 
 type SelectComponentsDropdownProps = {
   children: React.ReactNode;
@@ -35,7 +42,7 @@ const SelectComponentsDropdown: React.FC<SelectComponentsDropdownProps> = ({
             badge={badgeValue ? <Badge isRead>{badgeValue}</Badge> : null}
             style={{ width: '100%' }}
           >
-            {toggleText}
+            <Truncate content={toggleText} position="middle" />
           </MenuToggle>
         }
         menu={
