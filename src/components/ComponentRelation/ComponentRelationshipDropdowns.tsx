@@ -36,7 +36,11 @@ export const MultiSelectComponentsDropdown: React.FC<MultiSelectComponentsDropdo
       includeSelectAll
       showCountBadge={false}
       defaultToggleText="Choose components to nudge"
-      selectedToggleText={getSelectedComponentsToggleText}
+      selectedToggleText={(value) => {
+        const selected = value as string[];
+        if (!selected?.length) return undefined;
+        return `${selected.length} component${selected.length === 1 ? '' : 's'} selected`;
+      }}
       isOpen={isOpen}
       onOpenChange={onOpenChange}
     />
