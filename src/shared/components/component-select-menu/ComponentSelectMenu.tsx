@@ -120,7 +120,7 @@ export const ComponentSelectMenu: React.FC<ComponentSelectMenuProps> = ({
       : Boolean(value);
 
     if (typeof selectedToggleText === 'function') {
-      return hasSelection ? selectedToggleText(value) : defaultToggleText;
+      return selectedToggleText(value) || defaultToggleText;
     }
     return hasSelection ? selectedToggleText : defaultToggleText;
   }, [defaultToggleText, isMulti, value, selectedToggleText]);
