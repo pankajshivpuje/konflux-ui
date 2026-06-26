@@ -7,6 +7,7 @@ import {
 import { ExpandableRowContent, Tr } from '@patternfly/react-table';
 import { CONFORMA_POLICY_AVAILABLE_RULE_COLLECTIONS_URL } from '~/consts/documentation';
 import { UIConformaData } from '~/types/conforma';
+import { getRemediationGuidance } from '~/utils/ecp-warning-utils';
 import { ExternalLink, Timestamp } from '../../../shared';
 import './ConformaTable.scss';
 
@@ -15,7 +16,7 @@ interface Props {
 }
 
 export const ConformaExpandedRowContent: React.FC<Props> = ({ obj }) => {
-  if (!obj.description && !obj.collection?.length && !obj.solution && !obj.timestamp) return null;
+  if (!obj.description && !obj.collection?.length && !obj.solution && !obj.timestamp && !obj.effectiveUntil && !obj.warningType) return null;
 
   return (
     <Tr className="conforma-expanded-row" data-test="conforma-expand-content">
@@ -49,6 +50,35 @@ export const ConformaExpandedRowContent: React.FC<Props> = ({ obj }) => {
               <DescriptionListTerm>Effective from</DescriptionListTerm>
               <DescriptionListDescription>
                 <Timestamp timestamp={obj.timestamp} />
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          ) : null}
+
+          {obj.effectiveUntil ? (
+            <DescriptionListGroup>
+              <DescriptionListTerm>Effective until</DescriptionListTerm>
+              <DescriptionListDescription>
+                <Timestamp timestamp={obj.effectiveUntil} />
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          ) : null}
+
+          {obj.warningType ? (
+            <DescriptionListGroup>
+              <DescriptionListTerm>Warning</DescriptionListTerm>
+              <DescriptionListDescription>
+                {obj.warningType === 'expiring-exception'
+                  ? `Expiring Exception — ${obj.daysUntilEvent} days remaining`
+                  : `Upcoming Activation — activates in ${obj.daysUntilEvent} days`}
+              </DescriptionListDescription>
+            </DescriptionListGroup>
+          ) : null}
+
+          {obj.warningType ? (
+            <DescriptionListGroup>
+              <DescriptionListTerm>Remediation</DescriptionListTerm>
+              <DescriptionListDescription>
+                {getRemediationGuidance(obj)}
               </DescriptionListDescription>
             </DescriptionListGroup>
           ) : null}

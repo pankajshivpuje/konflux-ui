@@ -24,12 +24,40 @@ export const NamespaceContext = React.createContext<NamespaceContextData>({
   lastUsedNamespace: getLastUsedNamespace(),
 });
 
+const createMockNamespace = (name: string, uid: string, labels?: Record<string, string>): NamespaceKind =>
+  ({
+    apiVersion: 'v1',
+    kind: 'Namespace',
+    metadata: {
+      name,
+      uid,
+      creationTimestamp: new Date().toISOString(),
+      ...(labels ? { labels } : {}),
+    },
+    spec: {},
+    status: { phase: 'Active' },
+  }) as NamespaceKind;
+
+const MOCK_NAMESPACES: NamespaceKind[] = [
+  createMockNamespace('mock-namespace', 'mock-uid-1234', { 'konflux.dev/visibility': 'authenticated' }),
+  createMockNamespace('team-alpha', 'mock-uid-2345', { 'konflux.dev/visibility': 'authenticated' }),
+  createMockNamespace('team-beta', 'mock-uid-3456', { 'konflux.dev/visibility': 'private' }),
+  createMockNamespace('staging-env', 'mock-uid-4567'),
+  createMockNamespace('prod-releases', 'mock-uid-5678', { 'konflux.dev/visibility': 'private' }),
+];
+
 export const NamespaceProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const { data: namespaces, isLoading: namespaceLoading } = useQuery(createNamespaceQueryOptions());
+  const useMockData = process.env.NODE_ENV === 'development';
+
+  const { data: namespaces, isLoading: namespaceLoading } = useQuery({
+    ...createNamespaceQueryOptions(),
+    enabled: !useMockData,
+    ...(useMockData ? { initialData: MOCK_NAMESPACES } : {}),
+  });
   const params = useParams<RouterParams>();
   const navigate = useNavigate();
 
-  const activeNamespaceName: string = params.workspaceName ?? getLastUsedNamespace();
+  const activeNamespaceName: string = params.workspaceName ?? (useMockData ? 'mock-namespace' : getLastUsedNamespace());
 
   const homeNamespace = React.useMemo(
     () =>
@@ -44,7 +72,8 @@ export const NamespaceProvider: React.FC<React.PropsWithChildren> = ({ children 
   } = useQuery({
     ...createNamespaceQueryOptions(activeNamespaceName),
     retry: false,
-    enabled: !activeNamespaceName,
+    enabled: !activeNamespaceName && !useMockData,
+    ...(useMockData ? { initialData: MOCK_NAMESPACES.find((n) => n.metadata.name === activeNamespaceName) || MOCK_NAMESPACES[0] } : {}),
   });
 
   React.useEffect(() => {
@@ -82,11 +111,11 @@ export const NamespaceProvider: React.FC<React.PropsWithChildren> = ({ children 
         namespace: activeNamespaceName,
         namespaceResource,
         namespaces,
-        namespacesLoaded: !(namespaceLoading && activeNamespaceLoading),
+        namespacesLoaded: useMockData || !(namespaceLoading && activeNamespaceLoading),
         lastUsedNamespace: getLastUsedNamespace(),
       }}
     >
-      {!(namespaceLoading || activeNamespaceLoading) ? (
+      {useMockData || !(namespaceLoading || activeNamespaceLoading) ? (
         children
       ) : (
         <Bullseye>

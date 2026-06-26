@@ -1,0 +1,1 @@
+export { GitOpsRegistrationForm } from './GitOpsRegistrationForm';
