@@ -41,6 +41,7 @@ export type ConformaRule = {
     code: string;
 
     effective_on?: string;
+    effective_until?: string;
     solution?: string;
   };
   msg: string;
@@ -59,13 +60,14 @@ export type ConformaResult = {
   components: ComponentConformaResult[];
 };
 
+export type ECPWarningType = 'expiring-exception' | 'upcoming-activation';
+
 export type UIConformaData = {
   title: string;
   description: string;
   status: CONFORMA_RESULT_STATUS;
   timestamp?: string;
   component: string;
-  containerImage?: string;
   msg?: string;
   collection?: string[];
   solution?: string;
@@ -74,7 +76,7 @@ export type UIConformaData = {
   code?: string;
   effectiveUntil?: string;
   daysUntilEvent?: number;
-  warningType?: string;
+  warningType?: ECPWarningType;
 };
 
 export type ConformaResultRow = UIConformaData;

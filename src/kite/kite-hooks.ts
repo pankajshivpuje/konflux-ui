@@ -56,9 +56,10 @@ export const useIssueCountsByType = (namespace: string): IssueCounts => {
   const releaseResult = useIssues({ issueType: IssueType.RELEASE, ...baseQuery });
   const dependencyResult = useIssues({ issueType: IssueType.DEPENDENCY, ...baseQuery });
   const pipelineResult = useIssues({ issueType: IssueType.PIPELINE, ...baseQuery });
+  const policyResult = useIssues({ issueType: IssueType.POLICY, ...baseQuery });
 
   return React.useMemo(() => {
-    const allResults = [buildResult, testResult, releaseResult, dependencyResult, pipelineResult];
+    const allResults = [buildResult, testResult, releaseResult, dependencyResult, pipelineResult, policyResult];
 
     const isLoaded = allResults.every((result) => !result.isLoading);
     const error = allResults.find((result) => result.error)?.error;
@@ -74,9 +75,10 @@ export const useIssueCountsByType = (namespace: string): IssueCounts => {
         release: releaseResult.data?.total ?? 0,
         dependency: dependencyResult.data?.total ?? 0,
         pipeline: pipelineResult.data?.total ?? 0,
+        policy: policyResult.data?.total ?? 0,
       },
       isLoaded,
       error,
     };
-  }, [buildResult, testResult, releaseResult, dependencyResult, pipelineResult]);
+  }, [buildResult, testResult, releaseResult, dependencyResult, pipelineResult, policyResult]);
 };

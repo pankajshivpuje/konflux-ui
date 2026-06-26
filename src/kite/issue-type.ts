@@ -11,6 +11,7 @@ export enum IssueType {
   RELEASE = 'release',
   DEPENDENCY = 'dependency',
   PIPELINE = 'pipeline',
+  POLICY = 'policy',
 }
 
 export enum IssueState {

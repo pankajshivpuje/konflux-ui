@@ -137,7 +137,8 @@ describe('kite-hooks', () => {
         .mockResolvedValueOnce({ data: [], total: 4, limit: 1, offset: 0 }) // test
         .mockResolvedValueOnce({ data: [], total: 3, limit: 1, offset: 0 }) // release
         .mockResolvedValueOnce({ data: [], total: 2, limit: 1, offset: 0 }) // dependency
-        .mockResolvedValueOnce({ data: [], total: 1, limit: 1, offset: 0 }); // pipeline
+        .mockResolvedValueOnce({ data: [], total: 1, limit: 1, offset: 0 }) // pipeline
+        .mockResolvedValueOnce({ data: [], total: 7, limit: 1, offset: 0 }); // policy
 
       const { result } = renderHookWithQueryClient(() => useIssueCountsByType('test-namespace'));
 
@@ -151,6 +152,7 @@ describe('kite-hooks', () => {
         release: 3,
         dependency: 2,
         pipeline: 1,
+        policy: 7,
       });
       expect(result.current.error).toBeUndefined();
     });
@@ -170,6 +172,7 @@ describe('kite-hooks', () => {
         release: 0,
         dependency: 0,
         pipeline: 0,
+        policy: 0,
       });
     });
 
