@@ -169,6 +169,10 @@ export const PipelineRunDetailsView: React.FC = () => {
           label: 'Logs',
           isFilled: true,
         },
+        {
+          key: 'events',
+          label: 'Events',
+        },
         ...(showSecurityTab
           ? [
               {

@@ -3,12 +3,14 @@ import { Nav, NavItem, NavList } from '@patternfly/react-core';
 import { css } from '@patternfly/react-styles';
 import get from 'lodash/get';
 import { PipelineRunLabel, runStatus } from '~/consts/pipelinerun';
+import { USE_MOCK_DATA, mockTaskRunLogs } from '~/hooks/__mock__/mock-data';
 import { ColoredStatusIcon } from '../../../components/topology/StatusIcon';
 import { PodGroupVersionKind } from '../../../models/pod';
 import { PipelineRunKind, PipelineTask, TaskRunKind, TektonResourceLabel } from '../../../types';
 import { WatchK8sResource } from '../../../types/k8s';
 import { pipelineRunStatus, taskRunStatus } from '../../../utils/pipeline-utils';
 import { ErrorDetailsWithStaticLog } from './logs/log-snippet-types';
+import LogViewer from './logs/LogViewer';
 import { getDownloadAllLogsCallback } from './logs/logs-utils';
 import LogsWrapperComponent from './logs/LogsWrapperComponent';
 import { getPLRLogSnippet } from './logs/pipelineRunLogSnippet';
@@ -218,7 +220,19 @@ class PipelineRunLogs extends React.Component<PipelineRunLogsProps, PipelineRunL
           )}
         </div>
         <div className="pipeline-run-logs__container">
-          {activeItem && resource ? (
+          {USE_MOCK_DATA && activeItem ? (() => {
+            const isFailed = taskRunStatus(activeTaskRun) === runStatus.Failed;
+            const logKey = isFailed && mockTaskRunLogs[`${taskName}-failed`] ? `${taskName}-failed` : taskName;
+            return (
+              <LogViewer
+                data={mockTaskRunLogs[logKey] || `[${taskName}] No logs available for this task`}
+                allowAutoScroll={false}
+                taskRun={activeTaskRun}
+                isLoading={false}
+                errorMessage={null}
+              />
+            );
+          })() : activeItem && resource ? (
             <LogsWrapperComponent
               resource={resource}
               taskRun={activeTaskRun}
