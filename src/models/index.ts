@@ -24,5 +24,6 @@ export * from './remotesecret';
 export * from './workspace';
 export * from './role-binding';
 export * from './config-map';
+export * from './event';
 export * from './image-repository';
 export * from './namespace';
