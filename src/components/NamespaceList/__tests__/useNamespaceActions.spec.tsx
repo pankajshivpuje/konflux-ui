@@ -64,7 +64,7 @@ describe('useNamespaceActions', () => {
 
   it('should return edit gitops registration action when registered', () => {
     (useGitOpsRegistration as jest.Mock).mockReturnValue([
-      { isRegistered: true, repoName: 'my-gitops-repo' },
+      { isRegistered: true },
       true,
       undefined,
     ]);
@@ -75,7 +75,7 @@ describe('useNamespaceActions', () => {
     expect(gitopsAction.id).toBe('edit-gitops-registration-test-namespace');
     expect(gitopsAction.label).toBe('Edit GitOps Registration');
     expect(gitopsAction.cta).toEqual({
-      href: '/ns/test-namespace/gitops/my-gitops-repo/edit',
+      href: '/ns/test-namespace/gitops/edit',
     });
   });
 

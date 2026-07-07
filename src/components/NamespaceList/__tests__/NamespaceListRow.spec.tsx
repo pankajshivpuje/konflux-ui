@@ -33,7 +33,7 @@ describe('NamespaceListRow', () => {
     routerRenderer(<NamespaceListRow columns={[]} obj={mockNamespace} />);
 
     const namespaceName = screen.getByText('test-namespace');
-    expect(namespaceName.closest('a')).toHaveAttribute('href', '/ns/test-namespace/applications');
+    expect(namespaceName.closest('a')).toHaveAttribute('href', '/ns/test-namespace');
     expect(namespaceName.closest('a')).toHaveAttribute('title', 'Go to this namespace');
   });
 

@@ -1,4 +1,3 @@
-import { redirect } from 'react-router-dom';
 import { FilterContextProvider } from '~/components/Filter/generic/FilterContext';
 import { importPageLoader, ImportForm } from '../../components/ImportForm';
 import { IMPORT_PATH, NAMESPACE_LIST_PATH, WORKSPACE_PATH } from '../paths';
@@ -29,10 +28,33 @@ const workspaceRoutes = [
   },
   {
     path: WORKSPACE_PATH.path,
-    loader: () => {
-      return redirect('applications');
-    },
     errorElement: <RouteErrorBoundry />,
+    async lazy() {
+      const { default: NamespaceDetails } = await import(
+        '../../components/NamespaceDetails/NamespaceDetails' /* webpackChunkName: "namespace-details" */
+      );
+      return { element: <NamespaceDetails /> };
+    },
+    children: [
+      {
+        index: true,
+        async lazy() {
+          const { default: NamespaceOverviewTab } = await import(
+            '../../components/NamespaceDetails/NamespaceOverviewTab' /* webpackChunkName: "namespace-overview-tab" */
+          );
+          return { element: <NamespaceOverviewTab /> };
+        },
+      },
+      {
+        path: 'details',
+        async lazy() {
+          const { default: NamespaceDetailsTab } = await import(
+            '../../components/NamespaceDetails/NamespaceDetailsTab' /* webpackChunkName: "namespace-details-tab" */
+          );
+          return { element: <NamespaceDetailsTab /> };
+        },
+      },
+    ],
   },
 ];
 

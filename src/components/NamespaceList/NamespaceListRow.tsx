@@ -1,12 +1,14 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import { capitalize, Label, pluralize, Skeleton, Timestamp } from '@patternfly/react-core';
-import { APPLICATION_LIST_PATH } from '@routes/paths';
+import { capitalize, Flex, FlexItem, Label, pluralize, Skeleton, Timestamp } from '@patternfly/react-core';
+import StarIcon from '@patternfly/react-icons/dist/esm/icons/star-icon';
+import { WORKSPACE_PATH } from '@routes/paths';
 import { useApplications } from '~/hooks/useApplications';
 import { useGitOpsRegistration } from '~/hooks/useGitOpsRegistration';
 import { ExternalLink, RowFunctionArgs, TableData } from '~/shared';
 import ActionMenu from '~/shared/components/action-menu/ActionMenu';
 import { NAMESPACE_VISIBILITY_VALUES, NAMESPACE_VISIBILITY_LABEL } from '~/shared/providers/const';
+import { getLastUsedNamespace } from '~/shared/providers/Namespace/utils';
 import { NamespaceKind } from '~/types';
 import { namespaceTableColumnClasses } from './NamespaceListHeader';
 import { useNamespaceActions } from './useNamespaceActions';
@@ -19,16 +21,28 @@ const NamespaceListRow: React.FC<React.PropsWithChildren<RowFunctionArgs<Namespa
   const [gitopsInfo, gitopsLoaded] = useGitOpsRegistration(obj.metadata.name);
 
   const namespaceVisibility = obj.metadata.labels?.[NAMESPACE_VISIBILITY_LABEL];
+  const isDefault = getLastUsedNamespace() === obj.metadata.name;
 
   return (
     <>
       <TableData className={namespaceTableColumnClasses.name} data-test="app-row-test-id">
-        <Link
-          to={APPLICATION_LIST_PATH.createPath({ workspaceName: obj.metadata.name })}
-          title="Go to this namespace"
-        >
-          {obj.metadata.name}
-        </Link>
+        <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+          <FlexItem>
+            <Link
+              to={WORKSPACE_PATH.createPath({ workspaceName: obj.metadata.name })}
+              title="Go to this namespace"
+            >
+              {obj.metadata.name}
+            </Link>
+          </FlexItem>
+          {isDefault && (
+            <FlexItem>
+              <Label color="gold" isCompact icon={<StarIcon />}>
+                Default
+              </Label>
+            </FlexItem>
+          )}
+        </Flex>
       </TableData>
       <TableData className={namespaceTableColumnClasses.visibility}>
         {namespaceVisibility
