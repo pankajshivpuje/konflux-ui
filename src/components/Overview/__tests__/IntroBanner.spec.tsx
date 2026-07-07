@@ -2,10 +2,6 @@ import { screen } from '@testing-library/react';
 import { routerRenderer } from '../../../unit-test-utils/mock-react-router';
 import IntroBanner from '../IntroBanner';
 
-jest.mock('react-i18next', () => ({
-  useTranslation: jest.fn(() => ({ t: (x) => x })),
-}));
-
 describe('IntroBanner', () => {
   it('should render the intro banner with correct title and description', () => {
     routerRenderer(<IntroBanner />);
@@ -27,7 +23,7 @@ describe('IntroBanner', () => {
     expect(viewNamespacesButton).toHaveAttribute('href', '/ns');
   });
 
-  it('should render the Release Monitor Board button when release monitor feature is online official', () => {
+  it('should render the Release Monitor Board button', () => {
     routerRenderer(<IntroBanner />);
 
     const releaseMonitorButton = screen.queryByRole('link', { name: 'Release Monitor Board' });
