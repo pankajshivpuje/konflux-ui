@@ -153,6 +153,26 @@ const InternalFLAGS = {
       visibleInFeatureFlagPanel: false,
     },
   },
+  'mintmaker-dashboard': {
+    key: 'mintmaker-dashboard',
+    description: 'Show Mintmaker dependency update status on the Overview dashboard',
+    defaultEnabled: false,
+    status: 'wip',
+    guard: {
+      failureReason: 'Mintmaker integration is not yet available',
+      visibleInFeatureFlagPanel: true,
+    },
+  },
+  'status-indicator': {
+    key: 'status-indicator',
+    description: 'Show system status indicator in the masthead',
+    defaultEnabled: false,
+    status: 'wip',
+    guard: {
+      failureReason: 'Status indicator is work in progress',
+      visibleInFeatureFlagPanel: true,
+    },
+  },
 } satisfies Record<string, FeatureMeta>;
 
 export type FlagKey = keyof typeof InternalFLAGS;

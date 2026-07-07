@@ -14,6 +14,7 @@ import { ThemeDropdown } from '~/shared/theme';
 import { NotificationBadgeWrapper } from '../KonfluxSystemNotifications/NotificationBadgeWrapper';
 import { useModalLauncher } from '../modal/ModalProvider';
 import { HelpDropdown } from './HelpDropdown';
+import { StatusIndicator } from './StatusIndicator';
 import { UserDropdown } from './UserDropdown';
 
 interface HeaderProps {
@@ -44,6 +45,9 @@ export const Header: React.FC<HeaderProps> = ({ isDrawerExpanded, toggleDrawer }
               isDrawerExpanded={isDrawerExpanded}
               toggleDrawer={toggleDrawer}
             />
+          </IfFeature>
+          <IfFeature flag="status-indicator">
+            <StatusIndicator />
           </IfFeature>
           <ToolbarItem>
             <ThemeDropdown />
