@@ -19,5 +19,4 @@ export * from './role-binding';
 export * from './workspace';
 export * from './image-repository';
 export * from './conforma';
-export * from './event';
 export * from './namespace';
