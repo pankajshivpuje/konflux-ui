@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { mockIntegrationTestPipelineRuns } from '~/components/IntegrationTests/IntegrationTestDetails/tabs/__data__/mockIntegrationTestPipelineRuns';
 import { CONFORMA_TASK, EC_TASK } from '~/consts/security';
 import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
 import { usePipelineRunV2 } from '~/hooks/usePipelineRunsV2';
@@ -230,10 +231,114 @@ export const mapConformaResultData = (
   }, []);
 };
 
+const USE_MOCK_DATA = true;
+
+const mockConformaData: UIConformaData[] = [
+  {
+    title: 'CVE results found',
+    description:
+      'Verify that the build task results has the CVE scan results and no CVEs with critical severity are detected.',
+    status: CONFORMA_RESULT_STATUS.successes,
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    collection: ['minimal', 'redhat'],
+  },
+  {
+    title: 'Test data is accessible',
+    description: 'Verify the test data is accessible and complete.',
+    status: CONFORMA_RESULT_STATUS.successes,
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    collection: ['minimal'],
+  },
+  {
+    title: 'Image signature check passed',
+    description: 'Verify that the image has been signed using cosign.',
+    status: CONFORMA_RESULT_STATUS.successes,
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    collection: ['minimal', 'redhat'],
+  },
+  {
+    title: 'SLSA Provenance available',
+    description: 'Verify the build has SLSA provenance attestation available.',
+    status: CONFORMA_RESULT_STATUS.successes,
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    collection: ['slsa3'],
+  },
+  {
+    title: 'CVE results threshold exception',
+    description: 'Verify that CVE scan results do not exceed the critical threshold.',
+    status: CONFORMA_RESULT_STATUS.warnings,
+    timestamp: '2026-06-01T00:00:00Z',
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    msg: 'CVE scan results exceed the critical threshold but an exception is in place.',
+    collection: ['redhat'],
+    solution:
+      'Fix all CVEs above the critical threshold before the exception expires, or request an extension.',
+    effectiveUntil: '2026-08-04T00:00:00Z',
+    daysUntilEvent: 15,
+    warningType: 'expiring-exception' as const,
+  },
+  {
+    title: 'SLSA v1.0 provenance format required',
+    description: 'Verify that builds produce SLSA v1.0 provenance attestations.',
+    status: CONFORMA_RESULT_STATUS.warnings,
+    timestamp: '2026-07-30T00:00:00Z',
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    msg: 'New policy rule will require SLSA v1.0 provenance format.',
+    collection: ['slsa3'],
+    solution:
+      'Update your build pipeline to produce SLSA v1.0 provenance attestations. See https://slsa.dev/spec/v1.0/ for details.',
+    daysUntilEvent: 10,
+    warningType: 'upcoming-activation' as const,
+  },
+  {
+    title: 'Deprecated image registry',
+    description: 'Verify that the image is not from a deprecated registry.',
+    status: CONFORMA_RESULT_STATUS.warnings,
+    timestamp: '2026-08-15T00:00:00Z',
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    msg: 'Image is from a registry that will be deprecated.',
+    collection: ['redhat'],
+    solution: 'Migrate the image to a supported registry.',
+    effectiveUntil: '2026-08-15T00:00:00Z',
+    daysUntilEvent: 26,
+    warningType: 'expiring-exception' as const,
+  },
+  {
+    title: 'Step image registries',
+    description: 'Verify that all step images are from trusted registries.',
+    status: CONFORMA_RESULT_STATUS.violations,
+    component: 'backend-api',
+    containerImage: 'quay.io/redhat-appstudio/backend-api@sha256:abc123',
+    msg: 'Step 3 uses an image from an untrusted registry: docker.io/library/node:18.',
+    collection: ['redhat'],
+    solution: 'Use images from trusted registries such as registry.redhat.io or quay.io.',
+  },
+];
+
+const findMockPipelineRun = (name: string): boolean => {
+  for (const runs of Object.values(mockIntegrationTestPipelineRuns)) {
+    if (runs.find((r) => r.metadata?.name === name)) return true;
+  }
+  return false;
+};
+
 export const useConformaResult = (
   pipelineRunName: string,
 ): [UIConformaData[], boolean, unknown] => {
+  if (USE_MOCK_DATA && findMockPipelineRun(pipelineRunName)) {
+    return [mockConformaData, true, undefined];
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- USE_MOCK_DATA is a build-time constant
   const [cr, crLoaded, crError] = useConformaResultFromLogs(pipelineRunName);
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- USE_MOCK_DATA is a build-time constant
   const conformaResult = React.useMemo(() => {
     return crLoaded && cr && !crError ? mapConformaResultData(cr) : undefined;
   }, [cr, crLoaded, crError]);

@@ -16,6 +16,7 @@ import {
   Bullseye,
   Spinner,
 } from '@patternfly/react-core';
+import { mockIntegrationTestPipelineRuns } from '~/components/IntegrationTests/IntegrationTestDetails/tabs/__data__/mockIntegrationTestPipelineRuns';
 import GitRepoLink from '~/components/GitLink/GitRepoLink';
 import MetadataList from '~/components/MetadataList';
 import { useModalLauncher } from '~/components/modal/ModalProvider';
@@ -25,6 +26,7 @@ import { useImageProxy } from '~/hooks/useImageProxy';
 import { useImageRepository } from '~/hooks/useImageRepository';
 import { usePipelineRunV2 } from '~/hooks/usePipelineRunsV2';
 import { useTaskRunsForPipelineRuns } from '~/hooks/useTaskRunsV2';
+import { PipelineRunKind, TaskRunKind } from '~/types';
 import { useSbomUrl } from '~/hooks/useUIInstance';
 import {
   SNAPSHOT_DETAILS_PATH,
@@ -59,6 +61,45 @@ import RunResultsList from './RunResultsList';
 import ScanDescriptionListGroup from './ScanDescriptionListGroup';
 import { SnapshotCreationStatus } from './SnapshotCreationStatus';
 
+const USE_MOCK_DATA = true;
+
+const findMockPipelineRun = (name: string): PipelineRunKind | undefined => {
+  for (const runs of Object.values(mockIntegrationTestPipelineRuns)) {
+    const found = runs.find((r) => r.metadata?.name === name);
+    if (found) return found;
+  }
+  return undefined;
+};
+
+const useMockOrRealPipelineRun = (
+  namespace: string,
+  pipelineRunName: string,
+): [PipelineRunKind, boolean, unknown] => {
+  if (USE_MOCK_DATA) {
+    const mockRun = findMockPipelineRun(pipelineRunName);
+    if (mockRun) {
+      return [mockRun, true, undefined];
+    }
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- USE_MOCK_DATA is a build-time constant
+  return usePipelineRunV2(namespace, pipelineRunName);
+};
+
+const useMockOrRealTaskRuns = (
+  namespace: string,
+  pipelineRunName: string,
+): [TaskRunKind[], boolean, unknown] => {
+  if (USE_MOCK_DATA) {
+    const mockRun = findMockPipelineRun(pipelineRunName);
+    if (mockRun) {
+      return [[], true, undefined];
+    }
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- USE_MOCK_DATA is a build-time constant
+  const [taskRuns, loaded, error] = useTaskRunsForPipelineRuns(namespace, pipelineRunName);
+  return [taskRuns, loaded, error];
+};
+
 const addProxyUrlParamValue = <T extends { name: string; value: string | string[] }>(
   items: T[] | undefined | null,
   paramName: string,
@@ -85,9 +126,9 @@ const PipelineRunDetailsTab: React.FC = () => {
   const namespace = useNamespace();
   const generateSbomUrl = useSbomUrl();
   const showModal = useModalLauncher();
-  const [pipelineRun, loaded, error] = usePipelineRunV2(namespace, pipelineRunName);
+  const [pipelineRun, loaded, error] = useMockOrRealPipelineRun(namespace, pipelineRunName);
 
-  const [taskRuns, taskRunsLoaded, taskRunError] = useTaskRunsForPipelineRuns(
+  const [taskRuns, taskRunsLoaded, taskRunError] = useMockOrRealTaskRuns(
     namespace,
     pipelineRunName,
   );

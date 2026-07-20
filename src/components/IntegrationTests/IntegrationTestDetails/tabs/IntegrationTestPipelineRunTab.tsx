@@ -22,28 +22,29 @@ import PipelineRunEmptyState from '../../../PipelineRun/PipelineRunEmptyState';
 import { getPipelineRunListHeader } from '../../../PipelineRun/PipelineRunListView/PipelineRunListHeader';
 import { PipelineRunListRowWithColumns } from '../../../PipelineRun/PipelineRunListView/PipelineRunListRow';
 import { IntegrationTestLabels } from '../../IntegrationTestForm/types';
+import { mockIntegrationTestPipelineRuns } from './__data__/mockIntegrationTestPipelineRuns';
 
-const IntegrationTestPipelineRunTab: React.FC<React.PropsWithChildren> = () => {
-  const { applicationName, integrationTestName } = useParams<RouterParams>();
-  const namespace = useNamespace();
+const USE_MOCK_DATA = true;
 
-  // Todo add errors here
-  const [pipelineRuns, loaded, error, getNextPage, { isFetchingNextPage, hasNextPage }] =
-    usePipelineRunsV2(
-      namespace,
-      React.useMemo(
-        () => ({
-          selector: {
-            matchLabels: {
-              [PipelineRunLabel.APPLICATION]: applicationName,
-              [IntegrationTestLabels.SCENARIO]: integrationTestName,
-            },
-          },
-        }),
-        [applicationName, integrationTestName],
-      ),
-    );
-
+const IntegrationTestPipelineRunTabContent: React.FC<{
+  pipelineRuns: PipelineRunKind[];
+  loaded: boolean;
+  error: unknown;
+  applicationName: string;
+  integrationTestName: string;
+  getNextPage?: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+}> = ({
+  pipelineRuns,
+  loaded,
+  error,
+  applicationName,
+  integrationTestName,
+  getNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+}) => {
   const [isColumnManagementOpen, setIsColumnManagementOpen] = React.useState(false);
   const [persistedColumns, setPersistedColumns] = useLocalStorage<string[]>(
     `integration-test-pipeline-runs-columns-${applicationName}-${integrationTestName}`,
@@ -137,6 +138,54 @@ const IntegrationTestPipelineRunTab: React.FC<React.PropsWithChildren> = () => {
         description="Selected columns will be displayed in the pipeline runs table."
       />
     </>
+  );
+};
+
+const IntegrationTestPipelineRunTab: React.FC<React.PropsWithChildren> = () => {
+  const { applicationName, integrationTestName } = useParams<RouterParams>();
+  const namespace = useNamespace();
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- USE_MOCK_DATA is a build-time constant
+  if (USE_MOCK_DATA) {
+    const mockData = mockIntegrationTestPipelineRuns[integrationTestName] ?? [];
+    return (
+      <IntegrationTestPipelineRunTabContent
+        pipelineRuns={mockData}
+        loaded={true}
+        error={undefined}
+        applicationName={applicationName}
+        integrationTestName={integrationTestName}
+      />
+    );
+  }
+
+  const [pipelineRuns, loaded, error, getNextPage, { isFetchingNextPage, hasNextPage }] =
+    usePipelineRunsV2(
+      namespace,
+      React.useMemo(
+        () => ({
+          selector: {
+            matchLabels: {
+              [PipelineRunLabel.APPLICATION]: applicationName,
+              [IntegrationTestLabels.SCENARIO]: integrationTestName,
+            },
+          },
+        }),
+        [applicationName, integrationTestName],
+      ),
+    );
+
+  return (
+    <IntegrationTestPipelineRunTabContent
+      pipelineRuns={pipelineRuns}
+      loaded={loaded}
+      error={error}
+      applicationName={applicationName}
+      integrationTestName={integrationTestName}
+      getNextPage={getNextPage}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+    />
   );
 };
 

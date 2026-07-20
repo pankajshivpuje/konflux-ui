@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Bullseye, Spinner } from '@patternfly/react-core';
+import { mockIntegrationTestPipelineRuns } from '~/components/IntegrationTests/IntegrationTestDetails/tabs/__data__/mockIntegrationTestPipelineRuns';
 import { createDetailsPageAction } from '~/components/DetailsPage/utils';
 import { CONFORMA_TASK } from '~/consts/security';
 import { getErrorState } from '~/shared/utils/error-utils';
@@ -16,6 +17,7 @@ import {
 } from '../../../routes/paths';
 import { RouterParams } from '../../../routes/utils';
 import { useNamespace } from '../../../shared/providers/Namespace';
+import { PipelineRunKind } from '../../../types';
 import { isResourceEnterpriseContract } from '../../../utils/conforma-utils';
 import { pipelineRunCancel, pipelineRunStop } from '../../../utils/pipeline-actions';
 import { isTaskRunInPipelineRun, pipelineRunStatus } from '../../../utils/pipeline-utils';
@@ -25,6 +27,30 @@ import { DetailsPage } from '../../DetailsPage';
 import { StatusIconWithTextLabel } from '../../StatusIcon/StatusIcon';
 import { usePipelinererunAction } from '../PipelineRunListView/pipelinerun-actions';
 
+const USE_MOCK_DATA = true;
+
+const findMockPipelineRun = (name: string): PipelineRunKind | undefined => {
+  for (const runs of Object.values(mockIntegrationTestPipelineRuns)) {
+    const found = runs.find((r) => r.metadata?.name === name);
+    if (found) return found;
+  }
+  return undefined;
+};
+
+const useMockOrRealPipelineRun = (
+  namespace: string,
+  pipelineRunName: string,
+): [PipelineRunKind, boolean, unknown] => {
+  if (USE_MOCK_DATA) {
+    const mockRun = findMockPipelineRun(pipelineRunName);
+    if (mockRun) {
+      return [mockRun, true, undefined];
+    }
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks -- USE_MOCK_DATA is a build-time constant
+  return usePipelineRunV2(namespace, pipelineRunName);
+};
+
 export const PipelineRunDetailsView: React.FC = () => {
   const { pipelineRunName } = useParams<RouterParams>();
   const location = useLocation();
@@ -33,7 +59,7 @@ export const PipelineRunDetailsView: React.FC = () => {
   const namespace = useNamespace();
   const applicationBreadcrumbs = useApplicationBreadcrumbs();
 
-  const [pipelineRun, loaded, error] = usePipelineRunV2(namespace, pipelineRunName);
+  const [pipelineRun, loaded, error] = useMockOrRealPipelineRun(namespace, pipelineRunName);
   const { cta, isDisabled, disabledTooltip, key, label } = usePipelinererunAction(pipelineRun);
 
   const [canPatchPipeline] = useAccessReviewForModel(PipelineRunModel, 'patch');

@@ -2,13 +2,20 @@ import * as React from 'react';
 import {
   Bullseye,
   Button,
+  Card,
+  CardBody,
   Flex,
   FlexItem,
+  Icon,
   Spinner,
   Text,
   TextContent,
   TextVariants,
 } from '@patternfly/react-core';
+import BellIcon from '@patternfly/react-icons/dist/esm/icons/bell-icon';
+import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
+import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
+import ExclamationTriangleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
 import { CONFORMA_POLICY_AVAILABLE_RULE_COLLECTIONS_URL } from '~/consts/documentation';
 import { useDeepCompareMemoize } from '~/shared';
 import { getErrorState } from '~/shared/utils/error-utils';
@@ -23,7 +30,6 @@ import { ConformaTable } from './ConformaTable/ConformaTable';
 import { ECPWarningBanner } from './ECPWarningBanner';
 import SecurityTabEmptyState from './SecurityTabEmptyState';
 import { useConformaResult } from './useConformaResult';
-import { getRuleStatus } from './utils';
 
 const statuses = [
   CONFORMA_RESULT_STATUS.violations,
@@ -89,6 +95,12 @@ export const SecurityConformaTab: React.FC<
   const resultSummary = React.useMemo(
     () => getResultsSummary(filteredCRResult, crLoaded),
     [filteredCRResult, crLoaded],
+  );
+
+  const ecpWarningCount = React.useMemo(
+    () =>
+      conformaResult?.filter((item) => item.warningType && item.daysUntilEvent != null).length ?? 0,
+    [conformaResult],
   );
 
   const toolbar = (
@@ -171,42 +183,130 @@ export const SecurityConformaTab: React.FC<
           .
         </Text>
       </TextContent>
-      <ECPWarningBanner warnings={conformaResult ?? []} />
-      <Flex style={{ marginTop: 'var(--pf-v5-global--spacer--xl)' }}>
-        <FlexItem style={{ marginRight: 'var(--pf-v5-global--spacer--2xl)' }}>
-          <TextContent>
-            <Text component={TextVariants.h3}>Results</Text>
-          </TextContent>
-          {toolbar}
-        </FlexItem>
-        <Flex direction={{ default: 'column' }}>
+      <Flex
+        gap={{ default: 'gapMd' }}
+        style={{ marginTop: 'var(--pf-v5-global--spacer--xl)' }}
+        data-test="result-summary"
+      >
+        {ecpWarningCount > 0 && (
           <FlexItem>
-            <TextContent>
-              <Text component={TextVariants.h3}>Results summary</Text>
-            </TextContent>
+            <Card isCompact isFlat data-test="security-summary-changes-card">
+              <CardBody>
+                <Text
+                  component={TextVariants.p}
+                  style={{
+                    marginBottom: 'var(--pf-v5-global--spacer--sm)',
+                    fontWeight: 600,
+                  }}
+                >
+                  Upcoming changes
+                </Text>
+                <Flex gap={{ default: 'gapLg' }} alignItems={{ default: 'alignItemsCenter' }}>
+                  <FlexItem data-test="security-stat-ecp-warnings">
+                    <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                      <Icon size="md" status="warning">
+                        <BellIcon />
+                      </Icon>
+                      <FlexItem>
+                        <Text component={TextVariants.h3} style={{ margin: 0 }}>
+                          {ecpWarningCount}
+                        </Text>
+                      </FlexItem>
+                      <FlexItem>
+                        <Text component={TextVariants.small}>Pending</Text>
+                      </FlexItem>
+                    </Flex>
+                  </FlexItem>
+                </Flex>
+              </CardBody>
+            </Card>
           </FlexItem>
-          <Flex data-test="result-summary" spaceItems={{ default: 'spaceItemsXl' }}>
-            <FlexItem spacer={{ default: 'spacerXl' }}>
-              <span style={{ marginRight: 'var(--pf-v5-global--spacer--sm)' }}>
-                {getRuleStatus(CONFORMA_RESULT_STATUS.violations)}
-              </span>
-              <b>{resultSummary[CONFORMA_RESULT_STATUS.violations]}</b>
-            </FlexItem>
-            <FlexItem>
-              <span style={{ marginRight: 'var(--pf-v5-global--spacer--sm)' }}>
-                {getRuleStatus(CONFORMA_RESULT_STATUS.warnings)}
-              </span>
-              <b>{resultSummary[CONFORMA_RESULT_STATUS.warnings]}</b>
-            </FlexItem>
-            <FlexItem>
-              <span style={{ marginRight: 'var(--pf-v5-global--spacer--sm)' }}>
-                {getRuleStatus(CONFORMA_RESULT_STATUS.successes)}
-              </span>
-              <b>{resultSummary[CONFORMA_RESULT_STATUS.successes]}</b>
-            </FlexItem>
-          </Flex>
-        </Flex>
+        )}
+        <FlexItem>
+          <Card isCompact isFlat data-test="security-summary-results-card">
+            <CardBody>
+              <Text
+                component={TextVariants.p}
+                style={{
+                  marginBottom: 'var(--pf-v5-global--spacer--sm)',
+                  fontWeight: 600,
+                }}
+              >
+                Results summary
+              </Text>
+              <Flex gap={{ default: 'gapLg' }} alignItems={{ default: 'alignItemsCenter' }}>
+                <FlexItem data-test="security-stat-violations">
+                  <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                    <Icon size="md" status="danger">
+                      <ExclamationCircleIcon />
+                    </Icon>
+                    <FlexItem>
+                      <Text component={TextVariants.h3} style={{ margin: 0 }}>
+                        {resultSummary[CONFORMA_RESULT_STATUS.violations]}
+                      </Text>
+                    </FlexItem>
+                    <FlexItem>
+                      <Text component={TextVariants.small}>Violations</Text>
+                    </FlexItem>
+                  </Flex>
+                </FlexItem>
+                <FlexItem>
+                  <div
+                    style={{
+                      width: 1,
+                      height: 32,
+                      backgroundColor: 'var(--pf-v5-global--BorderColor--100)',
+                    }}
+                  />
+                </FlexItem>
+                <FlexItem data-test="security-stat-warnings">
+                  <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                    <Icon size="md" status="warning">
+                      <ExclamationTriangleIcon />
+                    </Icon>
+                    <FlexItem>
+                      <Text component={TextVariants.h3} style={{ margin: 0 }}>
+                        {resultSummary[CONFORMA_RESULT_STATUS.warnings]}
+                      </Text>
+                    </FlexItem>
+                    <FlexItem>
+                      <Text component={TextVariants.small}>Warnings</Text>
+                    </FlexItem>
+                  </Flex>
+                </FlexItem>
+                <FlexItem>
+                  <div
+                    style={{
+                      width: 1,
+                      height: 32,
+                      backgroundColor: 'var(--pf-v5-global--BorderColor--100)',
+                    }}
+                  />
+                </FlexItem>
+                <FlexItem data-test="security-stat-successes">
+                  <Flex gap={{ default: 'gapSm' }} alignItems={{ default: 'alignItemsCenter' }}>
+                    <Icon size="md" status="success">
+                      <CheckCircleIcon />
+                    </Icon>
+                    <FlexItem>
+                      <Text component={TextVariants.h3} style={{ margin: 0 }}>
+                        {resultSummary[CONFORMA_RESULT_STATUS.successes]}
+                      </Text>
+                    </FlexItem>
+                    <FlexItem>
+                      <Text component={TextVariants.small}>Successes</Text>
+                    </FlexItem>
+                  </Flex>
+                </FlexItem>
+              </Flex>
+            </CardBody>
+          </Card>
+        </FlexItem>
       </Flex>
+      <ECPWarningBanner warnings={conformaResult ?? []} />
+      <div style={{ marginTop: 'var(--pf-v5-global--spacer--lg)' }}>
+        {toolbar}
+      </div>
       {crLoaded && filteredCRResult.length > 0 ? (
         <ConformaTable conformaResult={filteredCRResult} />
       ) : (
