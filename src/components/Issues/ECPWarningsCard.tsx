@@ -7,9 +7,8 @@ import {
   FlexItem,
   Icon,
   Label,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
 } from '@patternfly/react-core';
 import { BellIcon } from '@patternfly/react-icons/dist/esm/icons/bell-icon';
 import { ExclamationTriangleIcon } from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
@@ -69,20 +68,20 @@ const WarningItem: React.FC<WarningItemProps> = ({ warning }) => (
       </Icon>
     </FlexItem>
     <FlexItem grow={{ default: 'grow' }}>
-      <TextContent>
-        <Text component={TextVariants.small}>
+      <Content>
+        <Content component={ContentVariants.small}>
           <strong>{warning.title}</strong> — {warning.component}
           {warning.policySource === 'root' && (
-            <Label isCompact color="purple" className="pf-v5-u-ml-sm">
+            <Label isCompact color="purple" className="pf-v6-u-ml-sm">
               Root policy
             </Label>
           )}
-        </Text>
-      </TextContent>
+        </Content>
+      </Content>
     </FlexItem>
     <FlexItem>
       <Label isCompact color="orange" data-test="ecp-warning-card-badge">
-        <OutlinedClockIcon className="pf-v5-u-mr-xs" />
+        <OutlinedClockIcon className="pf-v6-u-mr-xs" />
         {warning.daysUntilEvent}d
       </Label>
     </FlexItem>
@@ -122,16 +121,16 @@ export const ECPWarningsCard: React.FC = () => {
           <FlexItem>
             <Flex gap={{ default: 'gapLg' }}>
               <FlexItem data-test="ecp-expiring-count">
-                <Text component={TextVariants.h3} style={{ margin: 0 }}>
+                <Content component={ContentVariants.h3} style={{ margin: 0 }}>
                   {expiringCount}
-                </Text>
-                <Text component={TextVariants.small}>Expiring exceptions</Text>
+                </Content>
+                <Content component={ContentVariants.small}>Expiring exceptions</Content>
               </FlexItem>
               <FlexItem data-test="ecp-activating-count">
-                <Text component={TextVariants.h3} style={{ margin: 0 }}>
+                <Content component={ContentVariants.h3} style={{ margin: 0 }}>
                   {activatingCount}
-                </Text>
-                <Text component={TextVariants.small}>Upcoming activations</Text>
+                </Content>
+                <Content component={ContentVariants.small}>Upcoming activations</Content>
               </FlexItem>
             </Flex>
           </FlexItem>

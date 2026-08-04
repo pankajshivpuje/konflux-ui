@@ -36,7 +36,7 @@ const PolicyTab: React.FC = () => {
         <EmptyState data-test="policy-error-state">
           <EmptyStateHeader
             titleText="Unable to load policy results"
-            icon={<EmptyStateIcon icon={ExclamationCircleIcon} color="var(--pf-v5-global--danger-color--100)" />}
+            icon={<EmptyStateIcon icon={ExclamationCircleIcon} color="var(--pf-v6-global--danger-color--100)" />}
             headingLevel="h4"
           />
           <EmptyStateBody>

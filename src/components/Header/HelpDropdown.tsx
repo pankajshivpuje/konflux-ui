@@ -64,6 +64,12 @@ export const HelpDropdown: React.FC = () => {
             <DropdownItem key="documentation" data-test="help-dropdown-documentation">
               <ExternalLink href={documentationLink} text={'Documentation'} />
             </DropdownItem>
+            <DropdownItem key="copy-login-command" data-test="help-dropdown-copy-login-command">
+              <ExternalLink
+                href="https://oauth-openshift.apps.stone-stg-rh01.l2vh.p1.openshiftapps.com/oauth/token/request"
+                text="Copy login command"
+              />
+            </DropdownItem>
             <DropdownItem
               key="share-feedback"
               onClick={handleFeedbackClick}

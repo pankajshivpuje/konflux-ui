@@ -85,6 +85,7 @@ describe('HelpDropdown Component', () => {
       await waitFor(() => {
         expect(screen.getByText('About Konflux')).toBeInTheDocument();
         expect(screen.getByText('Documentation')).toBeInTheDocument();
+        expect(screen.getByText('Copy login command')).toBeInTheDocument();
         expect(screen.getByText('Share feedback')).toBeInTheDocument();
       });
     });
@@ -228,6 +229,50 @@ describe('HelpDropdown Component', () => {
         expect(docLink).toHaveAttribute('href', EXTERNAL_DOCUMENTATION_BASE_URL);
         expect(docLink).toHaveAttribute('target', '_blank');
         expect(docLink).toHaveAttribute('rel', 'noopener noreferrer');
+      });
+    });
+  });
+
+  describe('Copy Login Command Functionality', () => {
+    it('should render Copy login command link with correct attributes', async () => {
+      renderWithModalProvider(<HelpDropdown />);
+
+      const helpIcon = screen.getByLabelText('Help menu toggle');
+      fireEvent.click(helpIcon);
+
+      await waitFor(() => {
+        const loginLink = screen.getByRole('link', { name: /Copy login command/i });
+        expect(loginLink).toBeInTheDocument();
+        expect(loginLink).toHaveAttribute(
+          'href',
+          'https://oauth-openshift.apps.stone-stg-rh01.l2vh.p1.openshiftapps.com/oauth/token/request',
+        );
+        expect(loginLink).toHaveAttribute('target', '_blank');
+        expect(loginLink).toHaveAttribute('rel', 'noopener noreferrer');
+      });
+    });
+
+    it('should have correct data-test attribute', async () => {
+      renderWithModalProvider(<HelpDropdown />);
+
+      const helpIcon = screen.getByLabelText('Help menu toggle');
+      fireEvent.click(helpIcon);
+
+      await waitFor(() => {
+        const loginItem = screen.getByTestId('help-dropdown-copy-login-command');
+        expect(loginItem).toBeInTheDocument();
+      });
+    });
+
+    it('should display external link icon', async () => {
+      renderWithModalProvider(<HelpDropdown />);
+
+      const helpIcon = screen.getByLabelText('Help menu toggle');
+      fireEvent.click(helpIcon);
+
+      await waitFor(() => {
+        const loginItem = screen.getByTestId('help-dropdown-copy-login-command');
+        expect(loginItem.querySelector('svg')).toBeInTheDocument();
       });
     });
   });

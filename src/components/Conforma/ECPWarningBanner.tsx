@@ -2,9 +2,8 @@ import * as React from 'react';
 import {
   Alert,
   ExpandableSection,
-  TextContent,
-  Text,
-  TextVariants,
+  Content,
+  ContentVariants,
   Label,
   Flex,
   FlexItem,
@@ -38,7 +37,7 @@ export const ECPWarningBanner: React.FC<ECPWarningBannerProps> = ({ warnings }) 
       isInline
       variant="warning"
       title={`${ecpWarnings.length} upcoming policy change${ecpWarnings.length !== 1 ? 's' : ''} require${ecpWarnings.length === 1 ? 's' : ''} attention`}
-      className="pf-v5-u-mb-md"
+      className="pf-v6-u-mb-md"
     >
       <ExpandableSection
         toggleText="Show details"
@@ -49,28 +48,28 @@ export const ECPWarningBanner: React.FC<ECPWarningBannerProps> = ({ warnings }) 
             key={`${warning.component}-${warning.title}-${idx}`}
             direction={{ default: 'column' }}
             gap={{ default: 'gapSm' }}
-            className="pf-v5-u-mb-sm"
+            className="pf-v6-u-mb-sm"
             data-test={`ecp-warning-item-${idx}`}
           >
             <FlexItem>
-              <TextContent>
-                <Text component={TextVariants.p}>
+              <Content>
+                <Content component={ContentVariants.p}>
                   <strong>{warning.title}</strong> — {warning.component}
                   {warning.policySource === 'root' && (
-                    <Label isCompact color="purple" className="pf-v5-u-ml-sm" data-test="ecp-inherited-label">
+                    <Label isCompact color="purple" className="pf-v6-u-ml-sm" data-test="ecp-inherited-label">
                       Inherited from root policy
                     </Label>
                   )}
-                </Text>
-                <Text component={TextVariants.small}>
+                </Content>
+                <Content component={ContentVariants.small}>
                   {getWarningMessage(warning)}
-                </Text>
+                </Content>
                 {warning.solution && (
-                  <Text component={TextVariants.small}>
+                  <Content component={ContentVariants.small}>
                     <strong>Remediation:</strong> {warning.solution}
-                  </Text>
+                  </Content>
                 )}
-              </TextContent>
+              </Content>
             </FlexItem>
             <FlexItem>
               <Label color="orange" isCompact data-test="ecp-countdown-badge">
