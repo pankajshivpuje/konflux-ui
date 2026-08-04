@@ -87,6 +87,8 @@ export type ConformaResultRow = {
   policySource?: 'root' | 'derived';
 };
 
+export type UIConformaData = ConformaResultRow;
+
 export type ComponentConformaStatus = {
   componentName: string;
   status: 'pass' | 'warning' | 'fail' | 'unknown';

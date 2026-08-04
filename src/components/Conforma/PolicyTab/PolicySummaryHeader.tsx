@@ -5,18 +5,15 @@ import {
   Flex,
   FlexItem,
   Icon,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
   Title,
 } from '@patternfly/react-core';
-import {
-  BellIcon,
-  CheckCircleIcon,
-  CubesIcon,
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
-} from '@patternfly/react-icons';
+import { BellIcon } from '@patternfly/react-icons/dist/esm/icons/bell-icon';
+import { CheckCircleIcon } from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
+import { CubesIcon } from '@patternfly/react-icons/dist/esm/icons/cubes-icon';
+import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
+import { ExclamationTriangleIcon } from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
 import { UIConformaData } from '~/types/conforma';
 import { PolicySummary } from './useApplicationConformaResults';
 
@@ -40,12 +37,12 @@ const StatItem: React.FC<StatItemProps> = ({ icon, count, label, testId }) => (
     >
       {icon}
       <FlexItem>
-        <Text component={TextVariants.h3} style={{ margin: 0 }}>
+        <Content component={ContentVariants.h3} style={{ margin: 0 }}>
           {count}
-        </Text>
+        </Content>
       </FlexItem>
       <FlexItem>
-        <Text component={TextVariants.small}>{label}</Text>
+        <Content component={ContentVariants.small}>{label}</Content>
       </FlexItem>
     </Flex>
   </FlexItem>
@@ -57,7 +54,7 @@ const Divider: React.FC = () => (
       style={{
         width: 1,
         height: 32,
-        backgroundColor: 'var(--pf-v5-global--BorderColor--100)',
+        backgroundColor: 'var(--pf-v6-global--BorderColor--100)',
       }}
     />
   </FlexItem>
@@ -73,27 +70,27 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
     <Flex
       direction={{ default: 'column' }}
       gap={{ default: 'gapMd' }}
-      style={{ marginTop: 'var(--pf-v5-global--spacer--lg)' }}
+      style={{ marginTop: 'var(--pf-v6-global--spacer--lg)' }}
     >
       <FlexItem>
         <Title headingLevel="h2">Conforma results summary</Title>
       </FlexItem>
       <FlexItem>
-        <TextContent>
-          <Text component={TextVariants.p}>
+        <Content>
+          <Content component={ContentVariants.p}>
             Conforma is a set of tools for verifying the provenance of application snapshots and
             validating them against a clearly defined policy.
-          </Text>
-        </TextContent>
+          </Content>
+        </Content>
       </FlexItem>
       <FlexItem>
         <Flex gap={{ default: 'gapMd' }}>
           <FlexItem>
             <Card isCompact isFlat data-test="policy-summary-components-card">
               <CardBody>
-                <Text component={TextVariants.p} style={{ marginBottom: 'var(--pf-v5-global--spacer--sm)', fontWeight: 600 }}>
+                <Content component={ContentVariants.p} style={{ marginBottom: 'var(--pf-v6-global--spacer--sm)', fontWeight: 600 }}>
                   Components
-                </Text>
+                </Content>
                 <Flex
                   gap={{ default: 'gapLg' }}
                   alignItems={{ default: 'alignItemsCenter' }}
@@ -101,7 +98,7 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
                   <StatItem
                     icon={
                       <Icon size="md">
-                        <CubesIcon color="var(--pf-v5-global--Color--200)" />
+                        <CubesIcon color="var(--pf-v6-global--Color--200)" />
                       </Icon>
                     }
                     count={totalComponents}
@@ -127,9 +124,9 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
             <FlexItem>
               <Card isCompact isFlat data-test="policy-summary-changes-card">
                 <CardBody>
-                  <Text component={TextVariants.p} style={{ marginBottom: 'var(--pf-v5-global--spacer--sm)', fontWeight: 600 }}>
+                  <Content component={ContentVariants.p} style={{ marginBottom: 'var(--pf-v6-global--spacer--sm)', fontWeight: 600 }}>
                     Upcoming changes
-                  </Text>
+                  </Content>
                   <Flex
                     gap={{ default: 'gapLg' }}
                     alignItems={{ default: 'alignItemsCenter' }}
@@ -152,9 +149,9 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
           <FlexItem>
             <Card isCompact isFlat data-test="policy-summary-results-card">
               <CardBody>
-                <Text component={TextVariants.p} style={{ marginBottom: 'var(--pf-v5-global--spacer--sm)', fontWeight: 600 }}>
+                <Content component={ContentVariants.p} style={{ marginBottom: 'var(--pf-v6-global--spacer--sm)', fontWeight: 600 }}>
                   Results summary
-                </Text>
+                </Content>
                 <Flex
                   gap={{ default: 'gapLg' }}
                   alignItems={{ default: 'alignItemsCenter' }}

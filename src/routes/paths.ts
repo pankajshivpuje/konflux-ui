@@ -197,3 +197,9 @@ export const GROUP_RELEASE_LIST_PATH = GROUP_DETAILS_PATH.extend('releases');
 export const GROUP_RELEASE_DETAILS_PATH = GROUP_RELEASE_LIST_PATH.extend(
   `:${RouterParams.releaseName}`,
 );
+
+// GitOps Routes
+
+export const GITOPS_REGISTER_PATH = WORKSPACE_PATH.extend('gitops/register');
+
+export const GITOPS_EDIT_PATH = WORKSPACE_PATH.extend('gitops/edit/:gitopsRepoName');

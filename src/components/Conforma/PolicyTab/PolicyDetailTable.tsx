@@ -10,17 +10,14 @@ import {
   SelectOption,
   SelectList,
   Label,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
   Icon,
   Button,
 } from '@patternfly/react-core';
-import {
-  ExclamationCircleIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-} from '@patternfly/react-icons';
+import { CheckCircleIcon } from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
+import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
+import { ExclamationTriangleIcon } from '@patternfly/react-icons/dist/esm/icons/exclamation-triangle-icon';
 import {
   Table,
   Thead,
@@ -344,14 +341,14 @@ export const PolicyDetailTable: React.FC<PolicyDetailTableProps> = ({ data }) =>
                           return (
                             <Tr key={key} data-test={`policy-row-${sanitizeTestId(key)}`}>
                               <Td dataLabel="Rule">
-                                <TextContent>
-                                  <Text component={TextVariants.p}>
+                                <Content>
+                                  <Content component={ContentVariants.p}>
                                     <strong>{item.title || 'Unknown rule'}</strong>
-                                  </Text>
+                                  </Content>
                                   {item.description && (
-                                    <Text component={TextVariants.small}>{item.description}</Text>
+                                    <Content component={ContentVariants.small}>{item.description}</Content>
                                   )}
-                                </TextContent>
+                                </Content>
                               </Td>
                               {groupBy === 'rule' && (
                                 <Td dataLabel="Component">{item.component}</Td>
@@ -360,7 +357,7 @@ export const PolicyDetailTable: React.FC<PolicyDetailTableProps> = ({ data }) =>
                                 {item.containerImage && (
                                   <code
                                     style={{
-                                      fontSize: 'var(--pf-v5-global--FontSize--xs)',
+                                      fontSize: 'var(--pf-v6-global--FontSize--xs)',
                                       wordBreak: 'break-all',
                                     }}
                                   >
@@ -371,20 +368,20 @@ export const PolicyDetailTable: React.FC<PolicyDetailTableProps> = ({ data }) =>
                               <Td dataLabel="Status">{statusLabel(item.status)}</Td>
                               <Td dataLabel="Message">
                                 {message && (
-                                  <TextContent>
-                                    <Text component={TextVariants.p}>{message}</Text>
+                                  <Content>
+                                    <Content component={ContentVariants.p}>{message}</Content>
                                     {item.solution && (
-                                      <Text component={TextVariants.small}>
+                                      <Content component={ContentVariants.small}>
                                         <strong>Solution:</strong> {item.solution}
-                                      </Text>
+                                      </Content>
                                     )}
-                                  </TextContent>
+                                  </Content>
                                 )}
                                 {item.warningType && item.daysUntilEvent != null && (
                                   <Label
                                     color="orange"
                                     isCompact
-                                    className="pf-v5-u-mt-sm"
+                                    className="pf-v6-u-mt-sm"
                                     data-test="ecp-policy-warning-badge"
                                   >
                                     {item.warningType === 'expiring-exception'
