@@ -17,6 +17,7 @@ import {
 } from '~/types/conforma';
 import { getPipelineRunFromTaskRunOwnerRef } from '~/utils/common-utils';
 import { getTaskRunLog, getTaskRuns } from '~/utils/tekton-results';
+import { computeWarningFields } from '../warning-utils';
 import { buildConformaSecurityTaskRunSelector } from './conforma-taskrun-query';
 
 export async function fetchLatestSecurityTaskRunForComponent(
@@ -73,6 +74,7 @@ const mapToConformaResultRow = (
   images: compResult.containerImage ? [compResult.containerImage] : [],
   code: v.metadata?.code,
   pipelineRunName,
+  ...computeWarningFields(v.metadata?.effective_on, v.metadata?.effective_until),
 });
 
 export const mapConformaResultData = (

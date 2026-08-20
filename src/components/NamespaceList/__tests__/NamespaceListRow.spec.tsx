@@ -11,6 +11,12 @@ jest.mock('../../../hooks/useApplications', () => ({
   useApplications: jest.fn(),
 }));
 
+// Mock useGitOpsRegistration so its async loaded-state transition doesn't trigger
+// an extra re-render that would consume `mockReturnValueOnce` values for useApplications.
+jest.mock('~/hooks/useGitOpsRegistration', () => ({
+  useGitOpsRegistration: jest.fn(() => [{ isRegistered: false }, true, undefined]),
+}));
+
 const mockNamespace: NamespaceKind = {
   apiVersion: 'v1',
   kind: 'Namespace',

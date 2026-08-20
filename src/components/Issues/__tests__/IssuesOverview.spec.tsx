@@ -67,14 +67,18 @@ describe('IssuesOverview', () => {
     const outerGrid = container.querySelector('.pf-v6-l-grid');
     expect(outerGrid).toBeInTheDocument();
 
-    // Outer grid should have 2 direct grid-item children (left column + right column)
+    // Outer grid should have 3 direct grid-item children:
+    // full-width ECP warnings card, left column, and right column
     const outerGridItems = Array.from(outerGrid.children).filter((child) =>
       child.classList.contains('pf-v6-l-grid__item'),
     );
-    expect(outerGridItems).toHaveLength(2);
+    expect(outerGridItems).toHaveLength(3);
 
-    // Left column should contain a nested grid with 2 grid items
-    const nestedGrid = outerGridItems[0].querySelector('.pf-v6-l-grid');
+    // First row is the full-width ECP warnings card
+    expect(outerGridItems[0].querySelector('[data-test="ecp-warnings-card"]')).toBeInTheDocument();
+
+    // Left column (second item) should contain a nested grid with 2 grid items
+    const nestedGrid = outerGridItems[1].querySelector('.pf-v6-l-grid');
     expect(nestedGrid).toBeInTheDocument();
 
     const nestedGridItems = Array.from(nestedGrid.children).filter((child) =>

@@ -1,11 +1,6 @@
 import React from 'react';
 import { ComponentSelectMenu } from '~/shared/components/component-select-menu/ComponentSelectMenu';
 
-const getSelectedComponentsToggleText = (value: string | string[]): string => {
-  const count = Array.isArray(value) ? value.length : 0;
-  return `${count} component${count === 1 ? '' : 's'} selected`;
-};
-
 type MultiSelectComponentsDropdownProps = {
   sortedGroupedComponents: { [application: string]: string[] };
   sourceComponentName?: string;
