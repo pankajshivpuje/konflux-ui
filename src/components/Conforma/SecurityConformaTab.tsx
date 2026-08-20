@@ -12,7 +12,6 @@ import { CONFORMA_POLICY_AVAILABLE_RULE_COLLECTIONS_URL } from '~/consts/documen
 import { useDeepCompareMemoize } from '~/shared';
 import { getErrorState } from '~/shared/utils/error-utils';
 import { CONFORMA_RESULT_STATUS, ConformaResultRow } from '~/types/conforma';
-import { extractUpcomingWarnings } from '~/utils/ecp-warning-utils';
 import { textMatch } from '~/utils/text-filter-utils';
 import FilteredEmptyState from '../../shared/components/empty-state/FilteredEmptyState';
 import { FilterContext } from '../Filter/generic/FilterContext';
@@ -63,12 +62,12 @@ export const SecurityConformaTab: React.FC<
     () =>
       crLoaded && conformaResult
         ? createFilterObj(conformaResult, (cr) => cr.status, statuses)
-        : {},
+        : [],
     [conformaResult, crLoaded],
   );
 
   const componentFilterObj = React.useMemo(
-    () => (crLoaded && conformaResult ? createFilterObj(conformaResult, (cr) => cr.component) : {}),
+    () => (crLoaded && conformaResult ? createFilterObj(conformaResult, (cr) => cr.component) : []),
     [conformaResult, crLoaded],
   );
 
@@ -171,7 +170,7 @@ export const SecurityConformaTab: React.FC<
           .
         </Content>
       </Content>
-      <ECPWarningBanner warnings={upcomingWarnings} />
+      <ECPWarningBanner warnings={conformaResult || []} />
       <Flex style={{ marginTop: 'var(--pf-t--global--spacer--xl)' }}>
         <FlexItem style={{ marginRight: 'var(--pf-t--global--spacer--2xl)' }}>
           <Content>

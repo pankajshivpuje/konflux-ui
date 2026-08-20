@@ -12,7 +12,6 @@ import { CONFORMA_POLICY_AVAILABLE_RULE_COLLECTIONS_URL } from '~/consts/documen
 import ExternalLink from '~/shared/components/links/ExternalLink';
 import { Timestamp } from '~/shared/components/timestamp/Timestamp';
 import { ConformaResultRow } from '~/types/conforma';
-import { getRemediationGuidance } from '~/utils/ecp-warning-utils';
 import './ConformaTable.scss';
 
 interface Props {
