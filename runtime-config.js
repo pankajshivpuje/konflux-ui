@@ -1,1 +1,0 @@
-window.RUNTIME_CONFIG = {};

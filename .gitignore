@@ -57,3 +57,18 @@ agentready-reports/
 
 # Repomix output (large generated file - regenerate with: npx repomix)
 repomix-output.xml
+
+# Playwright MCP browser profile / captures
+.playwright-mcp/
+
+# Webpack build output emitted at repo root (regenerate with: yarn build)
+/*.woff2
+/*.js.map
+/*.css.map
+/*.js.LICENSE.txt
+/*.[0-9a-f]*.js
+/*.css
+/*.svg
+/index.html
+/404.html
+/runtime-config.js
