@@ -86,7 +86,7 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
       <FlexItem>
         <Flex gap={{ default: 'gapMd' }}>
           <FlexItem>
-            <Card isCompact isFlat data-test="policy-summary-components-card">
+            <Card isCompact data-test="policy-summary-components-card">
               <CardBody>
                 <Content component={ContentVariants.p} style={{ marginBottom: 'var(--pf-v6-global--spacer--sm)', fontWeight: 600 }}>
                   Components
@@ -122,7 +122,7 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
           </FlexItem>
           {summary.ecpWarnings > 0 && (
             <FlexItem>
-              <Card isCompact isFlat data-test="policy-summary-changes-card">
+              <Card isCompact data-test="policy-summary-changes-card">
                 <CardBody>
                   <Content component={ContentVariants.p} style={{ marginBottom: 'var(--pf-v6-global--spacer--sm)', fontWeight: 600 }}>
                     Upcoming changes
@@ -147,7 +147,7 @@ export const PolicySummaryHeader: React.FC<PolicySummaryHeaderProps> = ({ summar
             </FlexItem>
           )}
           <FlexItem>
-            <Card isCompact isFlat data-test="policy-summary-results-card">
+            <Card isCompact data-test="policy-summary-results-card">
               <CardBody>
                 <Content component={ContentVariants.p} style={{ marginBottom: 'var(--pf-v6-global--spacer--sm)', fontWeight: 600 }}>
                   Results summary

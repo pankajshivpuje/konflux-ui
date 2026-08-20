@@ -1,5 +1,12 @@
 import dayjs from 'dayjs';
-import { GitOpsRepo } from '../../components/GitOpsRegistration/GitOpsRegistrationPage';
+type GitOpsRepo = {
+  name: string;
+  repoUrl: string;
+  namespace: string;
+  status: string;
+  lastSynced: string;
+  registeredAt: string;
+};
 import { PipelineRunLabel, PipelineRunType, PipelineRunEventType } from '../../consts/pipelinerun';
 import { Issue, IssueSeverity, IssueState, IssueType } from '../../kite/issue-type';
 import { ApplicationKind, ComponentKind, EventKind, PipelineRunKind, TaskRunKind, TektonResourceLabel } from '../../types';

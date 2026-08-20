@@ -77,7 +77,7 @@ export type ConformaResultRow = {
    * non-collapsed row, and with every unique digest in the group once
    * `collapseArchDuplicates` has merged arch-duplicate rows together.
    */
-  images: string[];
+  images?: string[];
   /** Policy rule code — stable identifier used as primary group key. Optional for backward-compat. */
   code?: string;
   pipelineRunName?: string;

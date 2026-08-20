@@ -225,7 +225,7 @@ class PipelineRunLogs extends React.Component<PipelineRunLogsProps, PipelineRunL
             const logKey = isFailed && mockTaskRunLogs[`${taskName}-failed`] ? `${taskName}-failed` : taskName;
             return (
               <LogViewer
-                data={mockTaskRunLogs[logKey] || `[${taskName}] No logs available for this task`}
+                sections={[{ containerName: taskName, data: mockTaskRunLogs[logKey] || `[${taskName}] No logs available for this task` }]}
                 allowAutoScroll={false}
                 taskRun={activeTaskRun}
                 isLoading={false}

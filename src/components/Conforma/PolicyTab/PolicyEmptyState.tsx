@@ -2,9 +2,7 @@ import * as React from 'react';
 import {
   EmptyState,
   EmptyStateBody,
-  EmptyStateIcon,
   EmptyStateVariant,
-  EmptyStateHeader,
   EmptyStateFooter,
   EmptyStateActions,
   Button,
@@ -26,12 +24,10 @@ const PolicyEmptyState: React.FC = () => {
       className="app-empty-state"
       data-test="policy-tab-empty-state"
       variant={EmptyStateVariant.full}
+      icon={EmptyStateImg}
+      titleText="No policy results yet"
+      headingLevel="h2"
     >
-      <EmptyStateHeader
-        titleText="No policy results yet"
-        icon={<EmptyStateIcon icon={EmptyStateImg} />}
-        headingLevel="h2"
-      />
       <EmptyStateBody>
         Policy results appear after integration test pipelines run with a Conforma (Enterprise
         Contract) verification task. These results show whether your components meet your
