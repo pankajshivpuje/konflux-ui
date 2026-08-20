@@ -75,7 +75,7 @@ describe('useNamespaceActions', () => {
     expect(gitopsAction.id).toBe('edit-gitops-registration-test-namespace');
     expect(gitopsAction.label).toBe('Edit GitOps Registration');
     expect(gitopsAction.cta).toEqual({
-      href: '/ns/test-namespace/gitops/my-gitops-repo/edit',
+      href: '/ns/test-namespace/gitops/edit/my-gitops-repo',
     });
   });
 

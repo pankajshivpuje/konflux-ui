@@ -153,14 +153,21 @@ describe('SecurityConformaTab', () => {
   });
 
   it('should sort by Status', () => {
+    // The status cell may also contain an ECP countdown badge (e.g. "10d"); read
+    // only the status label text, excluding any badge.
+    const statusLabel = (cell: HTMLElement) => {
+      const badge = cell.querySelector('[data-test="ecp-days-badge"]');
+      const text = badge ? cell.textContent.replace(badge.textContent, '') : cell.textContent;
+      return text.trim();
+    };
     const view = routerRenderer(securityConforma('dummy-1'));
     const status = screen.getAllByTestId('rule-status');
-    expect(status[0].textContent.trim()).toEqual('Failed');
+    expect(statusLabel(status[0])).toEqual('Failed');
     fireEvent.click(screen.getAllByText('Status')[1]);
     view.rerender(securityConforma('dummy-1'));
     const sortstatus = screen.getAllByTestId('rule-status');
     // After sorting, last item should be Warning (alphabetical: Failed, Success, Warning, Warning)
-    expect(sortstatus[sortstatus.length - 1].textContent.trim()).toEqual('Warning');
+    expect(statusLabel(sortstatus[sortstatus.length - 1])).toEqual('Warning');
   });
 
   it('should render result summary', () => {

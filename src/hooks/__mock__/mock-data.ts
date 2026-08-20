@@ -11,8 +11,9 @@ import { PipelineRunLabel, PipelineRunType, PipelineRunEventType } from '../../c
 import { Issue, IssueSeverity, IssueState, IssueType } from '../../kite/issue-type';
 import { ApplicationKind, ComponentKind, EventKind, PipelineRunKind, TaskRunKind, TektonResourceLabel } from '../../types';
 
-// Toggle this flag to use mock data instead of live API calls
-export const USE_MOCK_DATA = true;
+// Toggle this flag to use mock data instead of live API calls.
+// MUST stay false on main/production; flip to true only for local development.
+export const USE_MOCK_DATA = false;
 
 const MOCK_NAMESPACE = 'mock-namespace';
 

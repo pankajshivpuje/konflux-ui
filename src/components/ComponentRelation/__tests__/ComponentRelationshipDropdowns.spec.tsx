@@ -80,6 +80,11 @@ describe('SingleSelectComponentDropdown', () => {
 });
 
 describe('MultiSelectComponentDropdown', () => {
+  // The toggle text is wrapped in <Truncate position="middle" />, which splits
+  // longer strings across multiple elements. Assert on the toggle's text content
+  // instead of a contiguous getByText match.
+  const toggle = () => screen.getByTestId('toggle-component-menu');
+
   it('should render component dropdown', () => {
     formikRenderer(
       <MultiSelectComponentsDropdown
@@ -88,7 +93,7 @@ describe('MultiSelectComponentDropdown', () => {
       />,
       { multiSelect: '' },
     );
-    screen.getByText('Choose components to nudge');
+    expect(toggle()).toHaveTextContent('Choose components to nudge');
   });
 
   it('should select all item from menu', () => {
@@ -99,14 +104,14 @@ describe('MultiSelectComponentDropdown', () => {
       />,
       { multiSelect: '' },
     );
-    screen.getByText('Choose components to nudge');
+    expect(toggle()).toHaveTextContent('Choose components to nudge');
     const button = screen.getByTestId('toggle-component-menu');
     fireEvent.click(button);
-    expect(screen.queryByText('2 components selected')).not.toBeInTheDocument();
+    expect(toggle()).not.toHaveTextContent('2 components selected');
     const menu = screen.getAllByRole('menuitem');
     const selectAllButton = menu[0].querySelector('input');
     fireEvent.click(selectAllButton);
-    screen.getByText('2 components selected');
+    expect(toggle()).toHaveTextContent('2 components selected');
   });
 
   it('should select/unselect all item from menu', () => {
@@ -117,16 +122,16 @@ describe('MultiSelectComponentDropdown', () => {
       />,
       { multiSelect: '' },
     );
-    screen.getByText('Choose components to nudge');
+    expect(toggle()).toHaveTextContent('Choose components to nudge');
     const button = screen.getByTestId('toggle-component-menu');
     fireEvent.click(button);
-    expect(screen.queryByText('2 components selected')).not.toBeInTheDocument();
+    expect(toggle()).not.toHaveTextContent('2 components selected');
     const menu = screen.getAllByRole('menuitem');
     const selectAllButton = menu[0].querySelector('input');
     fireEvent.click(selectAllButton);
-    screen.getByText('2 components selected');
+    expect(toggle()).toHaveTextContent('2 components selected');
     fireEvent.click(selectAllButton);
-    screen.getByText('Choose components to nudge');
+    expect(toggle()).toHaveTextContent('Choose components to nudge');
   });
 
   it('should not select disabled menu item', () => {
@@ -138,14 +143,14 @@ describe('MultiSelectComponentDropdown', () => {
       />,
       { multiSelect: '' },
     );
-    screen.getByText('Choose components to nudge');
+    expect(toggle()).toHaveTextContent('Choose components to nudge');
     const button = screen.getByTestId('toggle-component-menu');
     fireEvent.click(button);
-    expect(screen.queryByText('1 component selected')).not.toBeInTheDocument();
+    expect(toggle()).not.toHaveTextContent('1 component selected');
     const menu = screen.getAllByRole('menuitem');
     const selectAllButton = menu[0].querySelector('input');
     fireEvent.click(selectAllButton);
-    screen.getByText('1 component selected');
+    expect(toggle()).toHaveTextContent('1 component selected');
     const disabledItem = screen.getAllByRole('menu')[1].querySelectorAll('.pf-m-disabled');
     expect(disabledItem).toHaveLength(1);
   });

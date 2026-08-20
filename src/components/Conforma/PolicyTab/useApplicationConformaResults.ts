@@ -7,9 +7,6 @@ import { CONFORMA_RESULT_STATUS, UIConformaData } from '~/types/conforma';
 import { isResourceEnterpriseContract } from '~/utils/conforma-utils';
 import { isTaskRunInPipelineRun } from '~/utils/pipeline-utils';
 import { useConformaResultFromLogs, mapConformaResultData } from '../useConformaResult';
-import { mockPolicyResults } from './__data__/mockPolicyData';
-
-const USE_MOCK_DATA = true;
 
 export type PolicySummary = {
   violations: number;
@@ -46,6 +43,8 @@ const computeSummary = (data: UIConformaData[]): PolicySummary => {
         successes++;
         componentStatuses[item.component].successes++;
         break;
+      default:
+        break;
     }
   }
 
@@ -62,17 +61,10 @@ const hasConformaTask = (pr: PipelineRunKind): boolean =>
   isTaskRunInPipelineRun(pr, CONFORMA_TASK) ||
   isTaskRunInPipelineRun(pr, EC_TASK);
 
-// eslint-disable-next-line react-hooks/rules-of-hooks -- USE_MOCK_DATA is a build-time constant;
-// the branch taken is always the same at runtime, matching the pattern used by usePipelineRunsV2 etc.
 export const useApplicationConformaResults = (
   namespace: string,
   applicationName: string,
 ): [UIConformaData[], PolicySummary, boolean, unknown] => {
-  if (USE_MOCK_DATA) {
-    const data = mockPolicyResults[applicationName] ?? [];
-    return [data, computeSummary(data), true, undefined];
-  }
-
   const [pipelineRuns, prsLoaded, prsError] = usePipelineRunsV2(
     namespace,
     React.useMemo(

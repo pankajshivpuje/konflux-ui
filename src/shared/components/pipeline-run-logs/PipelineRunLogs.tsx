@@ -13,9 +13,9 @@ import { PodGroupVersionKind } from '../../../models/pod';
 import { WatchK8sResource } from '../../../types/k8s';
 import { pipelineRunStatus, taskRunStatus } from '../../../utils/pipeline-utils';
 import { ErrorDetailsWithStaticLog } from './logs/log-snippet-types';
-import LogViewer from './logs/LogViewer';
 import { getDownloadAllLogsCallback } from './logs/logs-utils';
 import LogsWrapperComponent from './logs/LogsWrapperComponent';
+import LogViewer from './logs/LogViewer';
 import { getPLRLogSnippet } from './logs/pipelineRunLogSnippet';
 
 import './PipelineRunLogs.scss';
