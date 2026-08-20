@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { ConformaResultRow, CONFORMA_RESULT_STATUS } from '~/types/conforma';
+import { ConformaResultRow, CONFORMA_RESULT_STATUS, UIConformaData } from '~/types/conforma';
 import { mockUseNamespaceHook } from '~/unit-test-utils/mock-namespace';
 import { ConformaExpandedRowContent } from '../ConformaExpandedRowContent';
 import { WrappedConformaRow } from '../ConformaRow';

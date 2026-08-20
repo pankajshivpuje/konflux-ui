@@ -21,6 +21,7 @@ export const RouterParams = {
   bindingName: 'bindingName',
   versionRevision: 'versionRevision',
   groupName: 'groupName',
+  gitopsRepoName: 'gitopsRepoName',
 } as const;
 
 export type RouterParams = typeof RouterParams;

@@ -241,7 +241,7 @@ export const PolicyDetailTable: React.FC<PolicyDetailTableProps> = ({ data }) =>
             </Select>
           </ToolbarItem>
 
-          <ToolbarGroup align={{ default: 'alignRight' }}>
+          <ToolbarGroup align={{ default: 'alignEnd' }}>
             <ToolbarItem>
               <Button variant="link" onClick={() => toggleAllGroups(true)}>
                 Expand all

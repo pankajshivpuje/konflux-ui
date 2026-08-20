@@ -5,10 +5,8 @@ import {
   Spinner,
   EmptyState,
   EmptyStateBody,
-  EmptyStateHeader,
-  EmptyStateIcon,
 } from '@patternfly/react-core';
-import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { ExclamationCircleIcon } from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import { useNamespace } from '~/shared/providers/Namespace';
 import { ECPWarningBanner } from '../ECPWarningBanner';
 import { PolicyDetailTable } from './PolicyDetailTable';
@@ -33,12 +31,12 @@ const PolicyTab: React.FC = () => {
   if (error) {
     return (
       <Bullseye>
-        <EmptyState data-test="policy-error-state">
-          <EmptyStateHeader
-            titleText="Unable to load policy results"
-            icon={<EmptyStateIcon icon={ExclamationCircleIcon} color="var(--pf-v6-global--danger-color--100)" />}
-            headingLevel="h4"
-          />
+        <EmptyState
+          data-test="policy-error-state"
+          icon={ExclamationCircleIcon}
+          titleText="Unable to load policy results"
+          headingLevel="h4"
+        >
           <EmptyStateBody>
             There was a problem loading the policy results. Try refreshing the page.
           </EmptyStateBody>

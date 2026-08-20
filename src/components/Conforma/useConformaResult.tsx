@@ -5,7 +5,6 @@ import { usePipelineRunV2 } from '~/hooks/usePipelineRunsV2';
 import { logger } from '~/monitoring/logger';
 import { TaskRunKind } from '~/types';
 import { ComponentConformaResult, ConformaResult, ConformaResultRow } from '~/types/conforma';
-import { computeWarningFields } from '~/utils/ecp-warning-utils';
 import { isResourceEnterpriseContract } from '~/utils/conforma-utils';
 import { isTaskRunInPipelineRun } from '~/utils/pipeline-utils';
 import { useTaskRunsForPipelineRuns } from '../../hooks/useTaskRunsV2';
