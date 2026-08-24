@@ -4,6 +4,12 @@ set -euo pipefail
 # 1. Auto-format staged files (Prettier, ESLint restricted imports, Stylelint)
 npx lint-staged
 
+# 1b. Block secrets / tool-generated artifacts from entering history.
+#     Skill: .claude/skills/precommit-secret-guard  (override: SKIP_SECRET_GUARD=1)
+if [ -f .claude/skills/precommit-secret-guard/scripts/precommit-guard.sh ]; then
+  bash .claude/skills/precommit-secret-guard/scripts/precommit-guard.sh
+fi
+
 # 2. Block destructive operations — refuse commits that delete or rename protected paths
 # Policy: CONTRIBUTING.md § Git hooks → Protected repo files
 # Uses bash 3.2+ constructs only (macOS /bin/bash); no associative arrays.
