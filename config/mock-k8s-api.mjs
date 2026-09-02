@@ -115,13 +115,121 @@ const mockPipelineRuns = [
   },
 ];
 
+// Per-image CVE scan reports from roxctl image-scan task. Each build run produces
+// a CVEScanReport with an images array; each image has digest, pullSpec, platform,
+// and vulnerabilities (cveId, severity, packageName, packageVersion, fixedInVersion).
+const vulnReportByRun = {
+  'frontend-app-react-ui-build-abc12': {
+    images: [
+      {
+        digest: 'sha256:react-ui-amd64',
+        pullSpec: 'quay.io/konflux/react-ui:latest',
+        platform: 'linux/amd64',
+        vulnerabilities: [
+          { cveId: 'CVE-2024-21626', severity: 'critical', packageName: 'runc', packageVersion: '1.1.4', fixedInVersion: '1.1.12' },
+          { cveId: 'CVE-2023-44487', severity: 'critical', packageName: 'nodejs', packageVersion: '18.16.0', fixedInVersion: '18.18.2' },
+          { cveId: 'CVE-2022-3602', severity: 'critical', packageName: 'openssl', packageVersion: '3.0.5', fixedInVersion: '3.0.7' },
+          { cveId: 'CVE-2024-4068', severity: 'important', packageName: 'braces', packageVersion: '3.0.2', fixedInVersion: '3.0.3' },
+          { cveId: 'CVE-2023-45857', severity: 'important', packageName: 'axios', packageVersion: '1.4.0', fixedInVersion: '1.6.0' },
+          { cveId: 'CVE-2023-26136', severity: 'moderate', packageName: 'tough-cookie', packageVersion: '4.1.2', fixedInVersion: '4.1.3' },
+          { cveId: 'CVE-2024-28849', severity: 'low', packageName: 'follow-redirects', packageVersion: '1.15.4', fixedInVersion: '1.15.6' },
+          { cveId: 'CVE-2023-28154', severity: 'low', packageName: 'webpack', packageVersion: '5.75.0', fixedInVersion: '5.76.0' },
+          { cveId: 'CVE-2022-25883', severity: 'low', packageName: 'semver', packageVersion: '7.3.8', fixedInVersion: '7.5.2' },
+          { cveId: 'CVE-2021-3803', severity: 'low', packageName: 'nth-check', packageVersion: '1.0.2' },
+        ],
+      },
+      {
+        digest: 'sha256:react-ui-arm64',
+        pullSpec: 'quay.io/konflux/react-ui:latest',
+        platform: 'linux/arm64',
+        vulnerabilities: [
+          { cveId: 'CVE-2024-21626', severity: 'critical', packageName: 'runc', packageVersion: '1.1.4', fixedInVersion: '1.1.12' },
+          { cveId: 'CVE-2022-3602', severity: 'critical', packageName: 'openssl', packageVersion: '3.0.5', fixedInVersion: '3.0.7' },
+        ],
+      },
+    ],
+  },
+  'frontend-app-nginx-proxy-build-def34': {
+    images: [
+      {
+        digest: 'sha256:nginx-proxy',
+        pullSpec: 'quay.io/konflux/nginx-proxy:latest',
+        platform: 'linux/amd64',
+        vulnerabilities: [
+          { cveId: 'CVE-2023-44487', severity: 'moderate', packageName: 'nginx', packageVersion: '1.23.3', fixedInVersion: '1.25.3' },
+          { cveId: 'CVE-2023-38545', severity: 'low', packageName: 'curl', packageVersion: '7.87.0', fixedInVersion: '8.4.0' },
+          { cveId: 'CVE-2022-40674', severity: 'low', packageName: 'expat', packageVersion: '2.4.9' },
+        ],
+      },
+    ],
+  },
+  'backend-api-api-server-build-ghi56': {
+    images: [
+      {
+        digest: 'sha256:api-server',
+        pullSpec: 'quay.io/konflux/api-server:latest',
+        platform: 'linux/amd64',
+        vulnerabilities: [
+          { cveId: 'CVE-2023-39325', severity: 'important', packageName: 'golang.org/x/net', packageVersion: '0.7.0', fixedInVersion: '0.17.0' },
+          { cveId: 'CVE-2023-29491', severity: 'low', packageName: 'ncurses', packageVersion: '6.3', fixedInVersion: '6.4' },
+        ],
+      },
+    ],
+  },
+  'backend-api-worker-service-build-jkl78': { images: [] },
+  'data-pipeline-etl-processor-build-mno90': {
+    images: [
+      {
+        digest: 'sha256:etl-processor',
+        pullSpec: 'quay.io/konflux/etl-processor:latest',
+        platform: 'linux/amd64',
+        vulnerabilities: [
+          { cveId: 'CVE-2024-3651', severity: 'moderate', packageName: 'idna', packageVersion: '3.4', fixedInVersion: '3.7' },
+          { cveId: 'CVE-2023-50782', severity: 'moderate', packageName: 'cryptography', packageVersion: '41.0.3', fixedInVersion: '42.0.0' },
+          { cveId: 'CVE-2023-45803', severity: 'low', packageName: 'urllib3', packageVersion: '2.0.4', fixedInVersion: '2.0.7' },
+          { cveId: 'CVE-2022-40897', severity: 'low', packageName: 'setuptools', packageVersion: '65.5.0', fixedInVersion: '65.5.1' },
+          { cveId: 'CVE-2021-33503', severity: 'low', packageName: 'urllib3', packageVersion: '2.0.4' },
+        ],
+      },
+    ],
+  },
+};
+
 const mockTaskRuns = [
   {
     apiVersion: 'tekton.dev/v1',
     kind: 'TaskRun',
     metadata: { name: 'frontend-app-react-ui-build-abc12-init', namespace: MOCK_NAMESPACE, uid: 'tr-uid-001', creationTimestamp: '2026-04-22T08:00:30Z', labels: { 'tekton.dev/pipelineRun': 'frontend-app-react-ui-build-abc12', 'tekton.dev/pipelineTask': 'init' } },
     spec: { taskRef: { name: 'init' } },
-    status: { podName: 'init-pod', startTime: '2026-04-22T08:00:30Z', completionTime: '2026-04-22T08:01:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [] },
+    status: { podName: 'init-pod', startTime: '2026-04-22T08:00:30Z', completionTime: '2026-04-22T08:01:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['frontend-app-react-ui-build-abc12'] ?? { images: [] }) }] },
+  },
+  {
+    apiVersion: 'tekton.dev/v1',
+    kind: 'TaskRun',
+    metadata: { name: 'frontend-app-nginx-proxy-build-def34-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-002', creationTimestamp: '2026-04-22T08:05:00Z', labels: { 'tekton.dev/pipelineRun': 'frontend-app-nginx-proxy-build-def34', 'tekton.dev/pipelineTask': 'scan' } },
+    spec: { taskRef: { name: 'scan-image' } },
+    status: { podName: 'scan-pod-002', startTime: '2026-04-22T08:05:00Z', completionTime: '2026-04-22T08:06:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['frontend-app-nginx-proxy-build-def34'] ?? { images: [] }) }] },
+  },
+  {
+    apiVersion: 'tekton.dev/v1',
+    kind: 'TaskRun',
+    metadata: { name: 'backend-api-api-server-build-ghi56-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-003', creationTimestamp: '2026-04-22T09:20:00Z', labels: { 'tekton.dev/pipelineRun': 'backend-api-api-server-build-ghi56', 'tekton.dev/pipelineTask': 'scan' } },
+    spec: { taskRef: { name: 'scan-image' } },
+    status: { podName: 'scan-pod-003', startTime: '2026-04-22T09:20:00Z', completionTime: '2026-04-22T09:21:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['backend-api-api-server-build-ghi56'] ?? { images: [] }) }] },
+  },
+  {
+    apiVersion: 'tekton.dev/v1',
+    kind: 'TaskRun',
+    metadata: { name: 'backend-api-worker-service-build-jkl78-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-004', creationTimestamp: '2026-04-22T09:30:00Z', labels: { 'tekton.dev/pipelineRun': 'backend-api-worker-service-build-jkl78', 'tekton.dev/pipelineTask': 'scan' } },
+    spec: { taskRef: { name: 'scan-image' } },
+    status: { podName: 'scan-pod-004', startTime: '2026-04-22T09:30:00Z', completionTime: '2026-04-22T09:31:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['backend-api-worker-service-build-jkl78'] ?? { images: [] }) }] },
+  },
+  {
+    apiVersion: 'tekton.dev/v1',
+    kind: 'TaskRun',
+    metadata: { name: 'data-pipeline-etl-processor-build-mno90-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-005', creationTimestamp: '2026-04-22T10:00:00Z', labels: { 'tekton.dev/pipelineRun': 'data-pipeline-etl-processor-build-mno90', 'tekton.dev/pipelineTask': 'scan' } },
+    spec: { taskRef: { name: 'scan-image' } },
+    status: { podName: 'scan-pod-005', startTime: '2026-04-22T10:00:00Z', completionTime: '2026-04-22T10:01:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['data-pipeline-etl-processor-build-mno90'] ?? { images: [] }) }] },
   },
 ];
 
