@@ -4,10 +4,12 @@ import { renderHook, act } from '@testing-library/react-hooks';
 import { DataState, testPipelineRuns } from '~/__data__/pipelinerun-data';
 import { TrackEvents } from '~/analytics';
 import { downloadYaml } from '~/utils/common-utils';
+import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
+import { TASKRUN_DETAILS_PATH } from '~/routes/paths';
 import { PipelineRunEventType, PipelineRunLabel, runStatus } from '../../../../consts/pipelinerun';
 import { useComponent } from '../../../../hooks/useComponents';
 import { useSnapshot } from '../../../../hooks/useSnapshots';
-import { k8sQueryGetResource } from '../../../../k8s';
+import { K8sQueryListResourceItems, k8sQueryGetResource } from '../../../../k8s';
 import { PipelineRunKind } from '../../../../types';
 import { useAccessReviewForModel } from '../../../../utils/rbac';
 import { createK8sWatchResourceMock } from '../../../../utils/test-utils';
@@ -17,6 +19,7 @@ import {
   usePipelinererunAction,
   usePipelinerunActions,
   useRerunActionLazy,
+  useViewVulnerabilitiesActionLazy,
 } from '../pipelinerun-actions';
 
 jest.mock('../../../../utils/rbac', () => ({
@@ -60,6 +63,8 @@ const mockUseSnapshots = useSnapshot as jest.Mock;
 const useComponentMock = useComponent as jest.Mock;
 const mockUseLocation = useLocation as jest.Mock;
 const k8sQueryGetResourceMock = k8sQueryGetResource as jest.Mock;
+const listResourceItemsMock = K8sQueryListResourceItems as jest.Mock;
+const isOnFeatureFlagMock = useIsOnFeatureFlag as jest.Mock;
 
 // helper function to create location object
 const createMockLocation = (pathname: string | undefined | null) => ({
@@ -76,6 +81,11 @@ jest.mock('../../../../k8s', () => ({
   ...jest.requireActual('../../../../k8s'),
   K8sQueryPatchResource: jest.fn(() => Promise.resolve()),
   k8sQueryGetResource: jest.fn(),
+  K8sQueryListResourceItems: jest.fn(),
+}));
+
+jest.mock('~/feature-flags/hooks', () => ({
+  useIsOnFeatureFlag: jest.fn(),
 }));
 
 jest.mock('../../../../shared/providers/Namespace', () => ({
@@ -1411,5 +1421,135 @@ describe('useRerunActionLazy', () => {
         queryOptions: { ns: 'test-ns', name: 'test-component' },
       });
     });
+  });
+});
+
+describe('useViewVulnerabilitiesActionLazy', () => {
+  const APPLICATION_LABEL = 'appstudio.openshift.io/application';
+
+  const makePlr = (labels: Record<string, string> = {}): PipelineRunKind =>
+    ({
+      apiVersion: 'tekton.dev/v1',
+      kind: 'PipelineRun',
+      metadata: { name: 'plr', labels },
+    }) as PipelineRunKind;
+
+  const makeScanTr = (name: string, ts: string) => ({
+    apiVersion: 'tekton.dev/v1',
+    kind: 'TaskRun',
+    metadata: { name, creationTimestamp: ts },
+    status: { results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify({ images: [] }) }] },
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    listResourceItemsMock.mockResolvedValue([]);
+  });
+
+  it('returns no actions when security-vulnerabilities flag is off', () => {
+    isOnFeatureFlagMock.mockReturnValue(false);
+    const { result } = renderHook(() =>
+      useViewVulnerabilitiesActionLazy(makePlr({ [APPLICATION_LABEL]: 'test-app' })),
+    );
+    expect(result.current[0].some((a) => a.id === 'view-vulnerabilities')).toBe(false);
+  });
+
+  it('returns enabled action with correct href when flag on and scan TaskRun exists', async () => {
+    isOnFeatureFlagMock.mockReturnValue(true);
+    listResourceItemsMock.mockResolvedValueOnce([makeScanTr('tr1', '2024-01-01T00:00:00Z')]);
+
+    const { result } = renderHook(() =>
+      useViewVulnerabilitiesActionLazy(makePlr({ [APPLICATION_LABEL]: 'test-app' })),
+    );
+
+    await act(async () => {
+      result.current[1](true);
+      await Promise.resolve();
+    });
+
+    const action = result.current[0].find((a) => a.id === 'view-vulnerabilities');
+    expect(action?.disabled).toBe(false);
+    expect(action?.cta).toEqual({
+      href:
+        TASKRUN_DETAILS_PATH.createPath({
+          workspaceName: 'test-ns',
+          applicationName: 'test-app',
+          taskRunName: 'tr1',
+        }) + '/vulnerabilities',
+    });
+  });
+
+  it('picks the earliest scan TaskRun by creationTimestamp', async () => {
+    isOnFeatureFlagMock.mockReturnValue(true);
+    listResourceItemsMock.mockResolvedValueOnce([
+      makeScanTr('b-tr', '2024-01-02T00:00:00Z'),
+      makeScanTr('a-tr', '2024-01-01T00:00:00Z'),
+    ]);
+
+    const { result } = renderHook(() =>
+      useViewVulnerabilitiesActionLazy(makePlr({ [APPLICATION_LABEL]: 'test-app' })),
+    );
+
+    await act(async () => {
+      result.current[1](true);
+      await Promise.resolve();
+    });
+
+    const action = result.current[0].find((a) => a.id === 'view-vulnerabilities');
+    expect((action?.cta as { href: string }).href).toContain('/a-tr/');
+  });
+
+  it('breaks timestamp ties by name (picks alphabetically earlier)', async () => {
+    isOnFeatureFlagMock.mockReturnValue(true);
+    listResourceItemsMock.mockResolvedValueOnce([
+      makeScanTr('z-tr', '2024-01-01T00:00:00Z'),
+      makeScanTr('a-tr', '2024-01-01T00:00:00Z'),
+    ]);
+
+    const { result } = renderHook(() =>
+      useViewVulnerabilitiesActionLazy(makePlr({ [APPLICATION_LABEL]: 'test-app' })),
+    );
+
+    await act(async () => {
+      result.current[1](true);
+      await Promise.resolve();
+    });
+
+    const action = result.current[0].find((a) => a.id === 'view-vulnerabilities');
+    expect((action?.cta as { href: string }).href).toContain('/a-tr/');
+  });
+
+  it('is disabled with tooltip when no scan TaskRun found', async () => {
+    isOnFeatureFlagMock.mockReturnValue(true);
+    listResourceItemsMock.mockResolvedValueOnce([]);
+
+    const { result } = renderHook(() =>
+      useViewVulnerabilitiesActionLazy(makePlr({ [APPLICATION_LABEL]: 'test-app' })),
+    );
+
+    await act(async () => {
+      result.current[1](true);
+      await Promise.resolve();
+    });
+
+    const action = result.current[0].find((a) => a.id === 'view-vulnerabilities');
+    expect(action?.disabled).toBe(true);
+    expect(action?.disabledTooltip).toBe('No vulnerability report available');
+  });
+
+  it('is disabled with tooltip when application label is missing', async () => {
+    isOnFeatureFlagMock.mockReturnValue(true);
+    listResourceItemsMock.mockResolvedValueOnce([makeScanTr('tr1', '2024-01-01T00:00:00Z')]);
+
+    const { result } = renderHook(() => useViewVulnerabilitiesActionLazy(makePlr({})));
+
+    await act(async () => {
+      result.current[1](true);
+      await Promise.resolve();
+    });
+
+    const action = result.current[0].find((a) => a.id === 'view-vulnerabilities');
+    expect(action?.disabled).toBe(true);
+    expect(action?.disabledTooltip).toBe('Application not resolved for this pipeline run');
   });
 });

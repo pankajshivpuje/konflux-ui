@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { TrackEvents } from '~/analytics';
 import { useTrackAnalyticsEvent } from '~/analytics/hooks';
 import { useSnapshot } from '~/hooks/useSnapshots';
-import { PIPELINE_RUNS_LIST_PATH } from '~/routes/paths';
+import { PIPELINE_RUNS_LIST_PATH, TASKRUN_DETAILS_PATH } from '~/routes/paths';
 import { useNamespace } from '~/shared/providers/Namespace';
 import { downloadYamlAction } from '~/utils/common-utils';
 import {
@@ -13,13 +13,15 @@ import {
   runStatus,
 } from '../../../consts/pipelinerun';
 import { useComponent } from '../../../hooks/useComponents';
-import { K8sQueryPatchResource, k8sQueryGetResource } from '../../../k8s';
-import { ComponentModel, PipelineRunModel, SnapshotModel } from '../../../models';
+import { K8sQueryListResourceItems, K8sQueryPatchResource, k8sQueryGetResource } from '../../../k8s';
+import { ComponentModel, PipelineRunModel, SnapshotModel, TaskRunModel } from '../../../models';
 import { Action } from '../../../shared/components/action-menu/types';
 import { useLazyActionMenu, composeLazyActions, LazyActionHookResult } from '../../../shared/hooks';
-import { ComponentKind, PipelineRunKind } from '../../../types';
+import { ComponentKind, PipelineRunKind, TaskRunKind, TektonResourceLabel } from '../../../types';
 import { Snapshot } from '../../../types/coreBuildService';
 import { startNewBuild } from '../../../utils/component-utils';
+import { getScanTaskRuns } from '../../../utils/scan/scan-utils';
+import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
 import { pipelineRunCancel, pipelineRunStop } from '../../../utils/pipeline-actions';
 import { pipelineRunStatus } from '../../../utils/pipeline-utils';
 import { useAccessReviewForModel } from '../../../utils/rbac';
@@ -464,12 +466,84 @@ export const useDownloadYamlActionLazy = (
   });
 };
 
+export const useViewVulnerabilitiesActionLazy = (
+  pipelineRun: PipelineRunKind,
+): LazyActionHookResult<Action> => {
+  const namespace = useNamespace();
+  const isVulnFlagOn = useIsOnFeatureFlag('security-vulnerabilities');
+  const labels = pipelineRun?.metadata?.labels ?? {};
+  const applicationName = labels[PipelineRunLabel.APPLICATION];
+  const pipelineRunName = pipelineRun?.metadata?.name;
+
+  return useLazyActionMenu({
+    loadContext: async (): Promise<{ scanTaskRun: TaskRunKind | null }> => {
+      if (!isVulnFlagOn || !pipelineRunName) {
+        return { scanTaskRun: null };
+      }
+      try {
+        const taskRuns = await K8sQueryListResourceItems<TaskRunKind[]>({
+          model: TaskRunModel,
+          queryOptions: {
+            ns: namespace,
+            queryParams: {
+              labelSelector: {
+                matchLabels: { [TektonResourceLabel.pipelinerun]: pipelineRunName },
+              },
+            },
+          },
+        });
+        const scanTaskRuns = getScanTaskRuns(taskRuns ?? []);
+        const scanTaskRun =
+          [...scanTaskRuns].sort((a, b) => {
+            const at = a.metadata?.creationTimestamp ?? '';
+            const bt = b.metadata?.creationTimestamp ?? '';
+            if (at !== bt) return at < bt ? -1 : 1;
+            return (a.metadata?.name ?? '') < (b.metadata?.name ?? '') ? -1 : 1;
+          })[0] ?? null;
+        return { scanTaskRun };
+      } catch {
+        return { scanTaskRun: null };
+      }
+    },
+    buildActions: (ctx): Action[] => {
+      if (!isVulnFlagOn) {
+        return [];
+      }
+      const scanTaskRun =
+        (ctx as { scanTaskRun: TaskRunKind | null } | null)?.scanTaskRun ?? null;
+      const taskRunName = scanTaskRun?.metadata?.name;
+      const href =
+        applicationName && taskRunName
+          ? `${TASKRUN_DETAILS_PATH.createPath({
+              workspaceName: namespace,
+              applicationName,
+              taskRunName,
+            })}/vulnerabilities`
+          : undefined;
+      return [
+        {
+          id: 'view-vulnerabilities',
+          label: 'View vulnerabilities',
+          cta: href ? { href } : () => Promise.resolve(),
+          disabled: !href,
+          disabledTooltip: !applicationName
+            ? 'Application not resolved for this pipeline run'
+            : !taskRunName
+              ? 'No vulnerability report available'
+              : null,
+        },
+      ];
+    },
+  });
+};
+
 export const usePipelinerunActionsLazy = (
   pipelineRun: PipelineRunKind,
 ): LazyActionHookResult<Action> => {
   const rerunHook = useRerunActionLazy(pipelineRun);
   const stopCancelHook = useStopCancelActionsLazy(pipelineRun);
+  const viewVulnerabilitiesHook = useViewVulnerabilitiesActionLazy(pipelineRun);
   const downloadYamlHook = useDownloadYamlActionLazy(pipelineRun);
 
-  return composeLazyActions(rerunHook, stopCancelHook, downloadYamlHook);
+  return composeLazyActions(rerunHook, stopCancelHook, viewVulnerabilitiesHook, downloadYamlHook);
 };
