@@ -81,6 +81,16 @@ const InternalFLAGS = {
       visibleInFeatureFlagPanel: true,
     },
   },
+  'security-vulnerabilities': {
+    key: 'security-vulnerabilities',
+    description: 'Show roxctl CVE Vulnerabilities tab and application Security page',
+    defaultEnabled: false,
+    status: 'wip',
+    guard: {
+      failureReason: 'Security vulnerabilities view is work in progress',
+      visibleInFeatureFlagPanel: true,
+    },
+  },
   'taskruns-kubearchive': {
     key: 'taskruns-kubearchive',
     description: 'Use KubeArchive as data source for TaskRuns instead of Tekton Results',

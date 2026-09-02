@@ -34,6 +34,8 @@ export const APPLICATION_ACTIVITY_PATH = APPLICATION_DETAILS_PATH.extend('activi
 export const APPLICATION_CONFORMA_RESULTS_PATH =
   APPLICATION_DETAILS_PATH.extend('conforma-results');
 
+export const APPLICATION_SECURITY_PATH = APPLICATION_DETAILS_PATH.extend('security');
+
 export const COMPONENTS_PATH = WORKSPACE_PATH.extend('components');
 
 export const COMPONENT_DETAILS_V2_PATH = COMPONENTS_PATH.extend(`:${RouterParams.componentName}`);
@@ -140,6 +142,8 @@ export const TASKRUN_LIST_PATH = APPLICATION_DETAILS_PATH.extend('taskruns');
 export const TASKRUN_DETAILS_PATH = TASKRUN_LIST_PATH.extend(`:${RouterParams.taskRunName}`);
 
 export const TASKRUN_LOGS_PATH = TASKRUN_DETAILS_PATH.extend('logs');
+
+export const TASKRUN_VULNERABILITIES_PATH = TASKRUN_DETAILS_PATH.extend('vulnerabilities');
 
 // Pipelinerun routes
 
