@@ -21,7 +21,7 @@ describe('vulnerabilities-table-config', () => {
     const cols = getBaseColumns(false);
     const severityCol = cols.find((c) => c.id === 'severity');
     expect(severityCol?.sortFn).toBeDefined();
-    const cmp = severityCol!.sortFn!(
+    const cmp = severityCol.sortFn(
       { original: row({ severity: 'low' }) } as never,
       { original: row({ severity: 'critical' }) } as never,
       'severity',

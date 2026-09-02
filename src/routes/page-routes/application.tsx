@@ -6,9 +6,9 @@ import {
   ApplicationOverviewTab,
 } from '~/components/ApplicationDetails';
 import { applicationPageLoader, ApplicationListView } from '~/components/Applications';
+import { ApplicationSecurityTab } from '~/components/ApplicationSecurity/ApplicationSecurityTab';
 import { ComponentListTab, componentsTabLoader } from '~/components/Components/ComponentsListView';
 import { ConformaResultsTab } from '~/components/Conforma/ConformaResultsTab/ConformaResultsTab';
-import { ApplicationSecurityTab } from '~/components/ApplicationSecurity/ApplicationSecurityTab';
 import { FilterContextProvider } from '~/components/Filter/generic/FilterContext';
 import {
   integrationListPageLoader,

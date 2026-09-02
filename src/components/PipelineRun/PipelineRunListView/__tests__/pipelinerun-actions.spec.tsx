@@ -3,9 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { renderHook, act } from '@testing-library/react-hooks';
 import { DataState, testPipelineRuns } from '~/__data__/pipelinerun-data';
 import { TrackEvents } from '~/analytics';
-import { downloadYaml } from '~/utils/common-utils';
 import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
 import { TASKRUN_DETAILS_PATH } from '~/routes/paths';
+import { downloadYaml } from '~/utils/common-utils';
 import { PipelineRunEventType, PipelineRunLabel, runStatus } from '../../../../consts/pipelinerun';
 import { useComponent } from '../../../../hooks/useComponents';
 import { useSnapshot } from '../../../../hooks/useSnapshots';
@@ -1471,11 +1471,11 @@ describe('useViewVulnerabilitiesActionLazy', () => {
     expect(action?.disabled).toBe(false);
     expect(action?.cta).toEqual({
       href:
-        TASKRUN_DETAILS_PATH.createPath({
+        `${TASKRUN_DETAILS_PATH.createPath({
           workspaceName: 'test-ns',
           applicationName: 'test-app',
           taskRunName: 'tr1',
-        }) + '/vulnerabilities',
+        })  }/vulnerabilities`,
     });
   });
 

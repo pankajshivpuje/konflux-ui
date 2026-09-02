@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { AppVulnerabilityRow } from '~/components/Vulnerabilities/vulnerabilities-table-config';
 import { PipelineRunLabel } from '~/consts/pipelinerun';
 import { useComponents } from '~/hooks/useComponents';
 import { useTaskRunsV2 } from '~/hooks/useTaskRunsV2';
@@ -14,7 +15,6 @@ import {
   ScanStatus,
   VulnerabilitySeverity,
 } from '~/utils/scan/scan-utils';
-import { AppVulnerabilityRow } from '~/components/Vulnerabilities/vulnerabilities-table-config';
 
 /** Multiplier for per-component TaskRun headroom in the bounded batch (arch variants, retries). */
 const BATCH_LIMIT_PER_COMPONENT = 3;

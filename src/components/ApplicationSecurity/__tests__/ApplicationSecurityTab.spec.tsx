@@ -3,8 +3,8 @@ import {
   renderWithQueryClientAndRouter,
   setupVirtualizerMock,
 } from '~/unit-test-utils';
-import { useApplicationVulnerabilities } from '../useApplicationVulnerabilities';
 import { ApplicationSecurityTab } from '../ApplicationSecurityTab';
+import { useApplicationVulnerabilities } from '../useApplicationVulnerabilities';
 
 jest.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: jest.fn(),

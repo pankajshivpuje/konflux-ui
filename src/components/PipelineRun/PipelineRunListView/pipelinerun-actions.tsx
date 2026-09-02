@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { TrackEvents } from '~/analytics';
 import { useTrackAnalyticsEvent } from '~/analytics/hooks';
+import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
 import { useSnapshot } from '~/hooks/useSnapshots';
 import { PIPELINE_RUNS_LIST_PATH, TASKRUN_DETAILS_PATH } from '~/routes/paths';
 import { useNamespace } from '~/shared/providers/Namespace';
@@ -20,11 +21,10 @@ import { useLazyActionMenu, composeLazyActions, LazyActionHookResult } from '../
 import { ComponentKind, PipelineRunKind, TaskRunKind, TektonResourceLabel } from '../../../types';
 import { Snapshot } from '../../../types/coreBuildService';
 import { startNewBuild } from '../../../utils/component-utils';
-import { getScanTaskRuns } from '../../../utils/scan/scan-utils';
-import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
 import { pipelineRunCancel, pipelineRunStop } from '../../../utils/pipeline-actions';
 import { pipelineRunStatus } from '../../../utils/pipeline-utils';
 import { useAccessReviewForModel } from '../../../utils/rbac';
+import { getScanTaskRuns } from '../../../utils/scan/scan-utils';
 
 export const BUILD_REQUEST_LABEL = 'test.appstudio.openshift.io/run';
 const PIPELINE_RUN_CANCELLING_MESSAGE = 'Cannot rerun while the pipeline run is being cancelled';
