@@ -15,7 +15,10 @@ const TaskRunVulnerabilitiesTabContent: React.FC = () => {
   const { taskRunName } = useParams<RouterParams>();
   const namespace = useNamespace();
   const [taskRun, loaded, error] = useTaskRunV2(namespace, taskRunName);
-  const { images, status } = useVulnerabilityReport(taskRun);
+  const { images, status, loaded: reportLoaded, error: reportError } = useVulnerabilityReport(taskRun);
+
+  const isLoaded = loaded && reportLoaded;
+  const reportOrTaskError = error ?? reportError;
 
   const rows = React.useMemo<AppVulnerabilityRow[]>(() => {
     const plrName = taskRun?.metadata?.labels?.[TektonResourceLabel.pipelinerun] ?? '';
@@ -33,10 +36,10 @@ const TaskRunVulnerabilitiesTabContent: React.FC = () => {
 
   const multiImage = images.length > 1;
 
-  if (error) {
-    return getErrorState(error, loaded, 'vulnerabilities');
+  if (reportOrTaskError) {
+    return getErrorState(reportOrTaskError, isLoaded, 'vulnerabilities');
   }
-  if (!loaded || status === 'running') {
+  if (!isLoaded || status === 'running') {
     return (
       <PageSection>
         <Bullseye>
@@ -64,7 +67,7 @@ const TaskRunVulnerabilitiesTabContent: React.FC = () => {
     <PageSection isFilled>
       <VulnerabilitiesTable
         rows={rows}
-        loaded={loaded}
+        loaded={isLoaded}
         showImage={multiImage}
         ariaLabel="Task run vulnerabilities"
       />
