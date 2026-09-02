@@ -9,6 +9,7 @@ import { StatusIconWithTextLabel } from '~/components/topology/StatusIcon';
 import { PipelineRunLabel, runStatus } from '~/consts/pipelinerun';
 import { CONFORMA_TASK, ROXCTL_SCAN_TASK } from '~/consts/security';
 import { FeatureFlagIndicator } from '~/feature-flags/FeatureFlagIndicator';
+import { useIsOnFeatureFlag } from '~/feature-flags/hooks';
 import { usePipelineRunV2 } from '~/hooks/usePipelineRunsV2';
 import { useStatusOnFavicon } from '~/hooks/useStatusOnFavicon';
 import { useTaskRunV2 } from '~/hooks/useTaskRunsV2';
@@ -24,6 +25,7 @@ import { TektonResourceLabel } from '~/types';
 import { downloadYamlAction } from '~/utils/common-utils';
 import { isResourceEnterpriseContract } from '~/utils/conforma-utils';
 import { getDisplayNameFromChildReferences, taskRunStatus } from '~/utils/pipeline-utils';
+import { hasVulnerabilityReport } from '~/utils/scan/scan-utils';
 
 export const TaskRunDetailsView: React.FC = () => {
   const { taskRunName } = useParams<RouterParams>();
@@ -32,6 +34,7 @@ export const TaskRunDetailsView: React.FC = () => {
   const params = useParams();
   const navigate = useNavigate();
   const [taskRun, loaded, error] = useTaskRunV2(namespace, taskRunName);
+  const isVulnFlagOn = useIsOnFeatureFlag('security-vulnerabilities');
 
   const trStatus = React.useMemo(
     () => (loaded && taskRun && !error ? taskRunStatus(taskRun) : null),
@@ -75,8 +78,7 @@ export const TaskRunDetailsView: React.FC = () => {
     isResourceEnterpriseContract(taskRun) ||
     taskRun.metadata?.labels?.[TektonResourceLabel.pipelineTask] === CONFORMA_TASK;
 
-  const showVulnerabilitiesTab =
-    taskRun.metadata?.labels?.[TektonResourceLabel.pipelineTask] === ROXCTL_SCAN_TASK;
+  const showVulnerabilitiesTab = isVulnFlagOn && !!taskRun && hasVulnerabilityReport(taskRun);
 
   return (
     <DetailsPage
@@ -147,6 +149,7 @@ export const TaskRunDetailsView: React.FC = () => {
               {
                 key: 'vulnerabilities',
                 label: 'Vulnerabilities',
+                isFilled: true,
               },
             ]
           : []),
