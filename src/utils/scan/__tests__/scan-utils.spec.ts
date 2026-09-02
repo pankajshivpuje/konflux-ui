@@ -5,6 +5,7 @@ import {
   getScanStatus,
   getScanTaskRuns,
   hasVulnerabilityReport,
+  normalizeSeverity,
   parseVulnerabilityReport,
 } from '../scan-utils';
 
@@ -38,11 +39,62 @@ const validReport = JSON.stringify({
   ],
 });
 
+describe('normalizeSeverity', () => {
+  it('passes through valid severities unchanged', () => {
+    expect(normalizeSeverity('critical')).toBe('critical');
+    expect(normalizeSeverity('important')).toBe('important');
+    expect(normalizeSeverity('moderate')).toBe('moderate');
+    expect(normalizeSeverity('low')).toBe('low');
+    expect(normalizeSeverity('unknown')).toBe('unknown');
+  });
+
+  it('maps out-of-vocabulary strings to unknown', () => {
+    expect(normalizeSeverity('high')).toBe('unknown');
+    expect(normalizeSeverity('medium')).toBe('unknown');
+    expect(normalizeSeverity('CRITICAL')).toBe('unknown');
+    expect(normalizeSeverity('')).toBe('unknown');
+  });
+
+  it('maps non-string values to unknown', () => {
+    expect(normalizeSeverity(null)).toBe('unknown');
+    expect(normalizeSeverity(undefined)).toBe('unknown');
+    expect(normalizeSeverity(42)).toBe('unknown');
+  });
+});
+
 describe('parseVulnerabilityReport', () => {
   it('parses a valid multi-image report', () => {
     const report = parseVulnerabilityReport(validReport);
     expect(report.images).toHaveLength(2);
     expect(report.images[0].vulnerabilities[0].cveId).toBe('CVE-1');
+  });
+
+  it('preserves a valid severity unchanged', () => {
+    const report = parseVulnerabilityReport(validReport);
+    expect(report.images[0].vulnerabilities[0].severity).toBe('critical');
+  });
+
+  it('normalizes an out-of-vocabulary severity to unknown', () => {
+    const raw = JSON.stringify({
+      images: [
+        {
+          digest: 'sha256:ccc',
+          vulnerabilities: [
+            { cveId: 'CVE-999', severity: 'high', packageName: 'curl', packageVersion: '7.0.0' },
+          ],
+        },
+      ],
+    });
+    const report = parseVulnerabilityReport(raw);
+    expect(report.images[0].vulnerabilities[0].severity).toBe('unknown');
+  });
+
+  it('coerces a non-array vulnerabilities field to []', () => {
+    const raw = JSON.stringify({
+      images: [{ digest: 'sha256:ddd', vulnerabilities: null }],
+    });
+    const report = parseVulnerabilityReport(raw);
+    expect(report.images[0].vulnerabilities).toEqual([]);
   });
 
   it('returns empty images on malformed JSON', () => {

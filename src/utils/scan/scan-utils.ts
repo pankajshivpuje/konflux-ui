@@ -47,7 +47,27 @@ export type ScanResults = {
 export const CVE_SCAN_REPORT = 'CVE_SCAN_REPORT';
 
 /** Severity levels reported by the ACS/roxctl image scan, mapped to CVSS bands. */
-export type VulnerabilitySeverity = 'critical' | 'important' | 'moderate' | 'low' | 'unknown';
+export const VULNERABILITY_SEVERITIES = [
+  'critical',
+  'important',
+  'moderate',
+  'low',
+  'unknown',
+] as const;
+
+export type VulnerabilitySeverity = (typeof VULNERABILITY_SEVERITIES)[number];
+
+/**
+ * Maps an arbitrary string (or unknown value) from JSON to a valid
+ * {@link VulnerabilitySeverity}. Returns `'unknown'` for any out-of-vocabulary
+ * or non-string input (e.g. raw roxctl `'high'`/`'medium'` strings, `null`,
+ * missing fields). This is the single validation boundary so all downstream
+ * consumers receive only canonical severity values.
+ */
+export const normalizeSeverity = (raw: unknown): VulnerabilitySeverity =>
+  typeof raw === 'string' && (VULNERABILITY_SEVERITIES as readonly string[]).includes(raw)
+    ? (raw as VulnerabilitySeverity)
+    : 'unknown';
 
 /** A single vulnerability (CVE) affecting an OS package inside a scanned image. */
 export type VulnerabilityEntry = {
@@ -88,7 +108,17 @@ export const parseVulnerabilityReport = (rawValue: string | undefined): CVEScanR
   }
   try {
     const report = JSON.parse(rawValue) as CVEScanReport;
-    return { images: Array.isArray(report?.images) ? report.images : [] };
+    if (!Array.isArray(report?.images)) {
+      return { images: [] };
+    }
+    return {
+      images: report.images.map((image) => ({
+        ...image,
+        vulnerabilities: Array.isArray(image?.vulnerabilities)
+          ? image.vulnerabilities.map((v) => ({ ...v, severity: normalizeSeverity(v?.severity) }))
+          : [],
+      })),
+    };
   } catch {
     return { images: [] };
   }
