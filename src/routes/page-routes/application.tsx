@@ -8,6 +8,7 @@ import {
 import { applicationPageLoader, ApplicationListView } from '~/components/Applications';
 import { ComponentListTab, componentsTabLoader } from '~/components/Components/ComponentsListView';
 import { ConformaResultsTab } from '~/components/Conforma/ConformaResultsTab/ConformaResultsTab';
+import { ApplicationSecurityTab } from '~/components/ApplicationSecurity/ApplicationSecurityTab';
 import { FilterContextProvider } from '~/components/Filter/generic/FilterContext';
 import {
   integrationListPageLoader,
@@ -100,6 +101,18 @@ const applicationRoutes = [
         },
         errorElement: <RouteErrorBoundry />,
         element: <ApplicationDependencyTab />,
+      },
+      {
+        path: 'security',
+        loader: createLoaderWithAccessCheck(
+          () => {
+            ensureFeatureFlagOnLoader('security-vulnerabilities');
+            return null;
+          },
+          { model: TaskRunModel, verb: 'list' },
+        ),
+        errorElement: <RouteErrorBoundry />,
+        element: <ApplicationSecurityTab />,
       },
     ],
   },

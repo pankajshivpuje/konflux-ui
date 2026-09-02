@@ -51,6 +51,7 @@ export const ApplicationDetails: React.FC<React.PropsWithChildren> = () => {
   const track = useTrackEvent();
   const isConformaPolicyEnabled = useIsOnFeatureFlag('conforma-policy');
   const isMintMakerEnabled = useIsOnFeatureFlag('mintmaker');
+  const isSecurityVulnFlagOn = useIsOnFeatureFlag('security-vulnerabilities');
   const appDisplayName = application?.spec?.displayName || application?.metadata?.name || '';
   const applicationBreadcrumbs = useApplicationBreadcrumbs(appDisplayName, false);
 
@@ -216,6 +217,15 @@ export const ApplicationDetails: React.FC<React.PropsWithChildren> = () => {
             : []),
           ...(isMintMakerEnabled
             ? [{ key: 'dep-updates', label: 'Dependency updates', isFilled: true }]
+            : []),
+          ...(isSecurityVulnFlagOn
+            ? [
+                {
+                  key: 'security',
+                  label: 'Security',
+                  isFilled: true,
+                },
+              ]
             : []),
         ]}
       />
