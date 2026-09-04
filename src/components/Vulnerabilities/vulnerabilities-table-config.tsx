@@ -154,6 +154,18 @@ export const getBaseColumns = (showImage: boolean): ColumnDefinition<AppVulnerab
     },
   },
   {
+    id: 'cvssScore',
+    header: 'CVSS',
+    accessorFn: (row) => row.cvssScore,
+    size: 1,
+    sortable: true,
+    sortFn: (a, b) => (a.original.cvssScore ?? -1) - (b.original.cvssScore ?? -1),
+    cell: (info) => {
+      const score = info.getValue() as number | undefined;
+      return typeof score === 'number' ? score.toFixed(1) : '—';
+    },
+  },
+  {
     id: 'package',
     header: 'Package',
     accessorFn: (row) => row.packageName,
@@ -165,6 +177,14 @@ export const getBaseColumns = (showImage: boolean): ColumnDefinition<AppVulnerab
     header: 'Package version',
     accessorFn: (row) => row.packageVersion,
     size: 2,
+  },
+  {
+    id: 'componentSource',
+    header: 'Component source',
+    accessorFn: (row) => row.componentSource ?? '',
+    size: 2,
+    sortable: true,
+    cell: (info) => (info.getValue() as string) || '—',
   },
   {
     id: 'fixedInVersion',

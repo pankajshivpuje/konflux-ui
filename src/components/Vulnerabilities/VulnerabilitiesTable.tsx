@@ -12,6 +12,7 @@ import {
   statusFilterOptions,
   VULNERABILITIES_LIST_COLUMN_STATE_KEY,
 } from './vulnerabilities-table-config';
+import { VulnerabilityRowDetails } from './VulnerabilityRowDetails';
 
 export type VulnerabilitiesTableProps = {
   rows: AppVulnerabilityRow[];
@@ -93,6 +94,8 @@ export const VulnerabilitiesTable: React.FC<VulnerabilitiesTableProps> = ({
         }
         aria-label={ariaLabel}
         enableSorting
+        enableExpansion
+        expandedContent={(row) => <VulnerabilityRowDetails vulnerability={row} />}
         columnStateKey={columnStateKey}
       />
     </TableContainer>
