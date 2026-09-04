@@ -61,6 +61,17 @@ repomix-output.xml
 # Playwright MCP browser profile / captures
 .playwright-mcp/
 
+# Local environment config (may hold URLs/secrets). Commit .env.example instead.
+.env
+.env.*
+!.env.example
+
+# Local screenshots / captures at repo root
+/*.png
+
+# Local-only Claude skill workspace (scratch, not source)
+.claude/skills/precommit-secret-guard-workspace/
+
 # Webpack build output emitted at repo root (regenerate with: yarn build)
 /*.woff2
 /*.js.map
