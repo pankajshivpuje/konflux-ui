@@ -113,6 +113,27 @@ const mockPipelineRuns = [
     spec: { pipelineRef: { name: 'docker-build' }, params: [], workspaces: [] },
     status: { conditions: [{ type: 'Succeeded', status: 'Unknown', reason: 'Running', message: 'Tasks Completed: 3', lastTransitionTime: '2026-04-22T09:20:00Z' }], startTime: '2026-04-22T09:15:30Z', pipelineSpec: { tasks: [] } },
   },
+  {
+    apiVersion: 'tekton.dev/v1',
+    kind: 'PipelineRun',
+    metadata: { name: 'frontend-app-nginx-proxy-build-def34', namespace: MOCK_NAMESPACE, uid: 'plr-uid-002', creationTimestamp: '2026-04-22T08:04:00Z', labels: { 'appstudio.openshift.io/application': 'frontend-app', 'appstudio.openshift.io/component': 'nginx-proxy', 'pipelines.appstudio.openshift.io/type': 'build' } },
+    spec: { pipelineRef: { name: 'docker-build' }, params: [], workspaces: [] },
+    status: { conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded', message: 'Tasks Completed: 6', lastTransitionTime: '2026-04-22T08:08:00Z' }], startTime: '2026-04-22T08:04:30Z', completionTime: '2026-04-22T08:08:00Z', pipelineSpec: { tasks: [] } },
+  },
+  {
+    apiVersion: 'tekton.dev/v1',
+    kind: 'PipelineRun',
+    metadata: { name: 'backend-api-worker-service-build-jkl78', namespace: MOCK_NAMESPACE, uid: 'plr-uid-004', creationTimestamp: '2026-04-22T09:28:00Z', labels: { 'appstudio.openshift.io/application': 'backend-api', 'appstudio.openshift.io/component': 'worker-service', 'pipelines.appstudio.openshift.io/type': 'build' } },
+    spec: { pipelineRef: { name: 'docker-build' }, params: [], workspaces: [] },
+    status: { conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded', message: 'Tasks Completed: 6', lastTransitionTime: '2026-04-22T09:32:00Z' }], startTime: '2026-04-22T09:28:30Z', completionTime: '2026-04-22T09:32:00Z', pipelineSpec: { tasks: [] } },
+  },
+  {
+    apiVersion: 'tekton.dev/v1',
+    kind: 'PipelineRun',
+    metadata: { name: 'data-pipeline-etl-processor-build-mno90', namespace: MOCK_NAMESPACE, uid: 'plr-uid-005', creationTimestamp: '2026-04-22T09:58:00Z', labels: { 'appstudio.openshift.io/application': 'data-pipeline', 'appstudio.openshift.io/component': 'etl-processor', 'pipelines.appstudio.openshift.io/type': 'build' } },
+    spec: { pipelineRef: { name: 'docker-build' }, params: [], workspaces: [] },
+    status: { conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded', message: 'Tasks Completed: 6', lastTransitionTime: '2026-04-22T10:02:00Z' }], startTime: '2026-04-22T09:58:30Z', completionTime: '2026-04-22T10:02:00Z', pipelineSpec: { tasks: [] } },
+  },
 ];
 
 // Per-image CVE scan reports from roxctl image-scan task. Each build run produces
@@ -195,41 +216,117 @@ const vulnReportByRun = {
   },
 };
 
+// Ecosystem each mock package belongs to, surfaced as the "Component source"
+// column. Anything not listed falls back to 'OS'.
+const COMPONENT_SOURCE_BY_PACKAGE = {
+  nodejs: 'Node.js', braces: 'Node.js', axios: 'Node.js', 'tough-cookie': 'Node.js',
+  'follow-redirects': 'Node.js', webpack: 'Node.js', semver: 'Node.js', 'nth-check': 'Node.js',
+  'golang.org/x/net': 'Go',
+  idna: 'Python', cryptography: 'Python', urllib3: 'Python', setuptools: 'Python',
+};
+
+// Representative CVSS base score per severity band, used only to populate the
+// mock's CVSS column with plausible values.
+const CVSS_BY_SEVERITY = { critical: 9.8, important: 7.5, moderate: 5.4, low: 3.1, unknown: 0 };
+
+// Decorate each vulnerability with the extended roxctl fields (CVSS, description,
+// component source, reference links, dates, advisory) so the Vulnerabilities tab
+// and its expandable-row detail have content. Real roxctl reports carry these
+// natively; the mock derives them deterministically from the base entry.
+const enrichVulnerability = (v) => ({
+  ...v,
+  cvssScore: v.cvssScore ?? CVSS_BY_SEVERITY[v.severity] ?? 0,
+  description:
+    v.description ??
+    `${v.cveId}: a ${v.severity}-severity flaw in ${v.packageName} ${v.packageVersion}` +
+      `${v.fixedInVersion ? `, addressed in ${v.fixedInVersion}` : ' with no fix currently available'}.`,
+  componentSource: v.componentSource ?? COMPONENT_SOURCE_BY_PACKAGE[v.packageName] ?? 'OS',
+  link: v.link ?? `https://nvd.nist.gov/vuln/detail/${v.cveId}`,
+  publishedDate: v.publishedDate ?? '2024-01-15',
+  updatedDate: v.updatedDate ?? '2024-03-02',
+  // Advisory data only exists for the higher-severity CVEs in newer scans.
+  ...(v.severity === 'critical' || v.severity === 'important'
+    ? {
+        advisory: v.advisory ?? `RHSA-2024:${v.cveId.slice(-4)}`,
+        advisoryLink:
+          v.advisoryLink ?? `https://access.redhat.com/errata/RHSA-2024:${v.cveId.slice(-4)}`,
+      }
+    : {}),
+});
+
+const enrichReport = (report) => ({
+  images: (report?.images ?? []).map((image) => ({
+    ...image,
+    vulnerabilities: (image.vulnerabilities ?? []).map(enrichVulnerability),
+  })),
+});
+
+// Reports with the extended fields applied; used to build the scan TaskRun results.
+const enrichedReportByRun = Object.fromEntries(
+  Object.entries(vulnReportByRun).map(([run, report]) => [run, enrichReport(report)]),
+);
+
+// Aggregate the detailed per-image report into the ScanResults count shape the
+// PipelineRun list's "Fixable vulnerabilities" column reads from the
+// CVE_SCAN_RESULT task result. Maps roxctl severities to the Clair vocabulary
+// the ScanResults type uses (important -> high, moderate -> medium).
+const SEVERITY_TO_SCAN_COUNT = { critical: 'critical', important: 'high', moderate: 'medium', low: 'low', unknown: 'unknown' };
+const toScanResult = (report) => {
+  const vulnerabilities = { critical: 0, high: 0, medium: 0, low: 0, unknown: 0 };
+  (report?.images ?? []).forEach((image) => {
+    (image.vulnerabilities ?? []).forEach((v) => {
+      const key = SEVERITY_TO_SCAN_COUNT[v.severity] ?? 'unknown';
+      vulnerabilities[key] += 1;
+    });
+  });
+  return { vulnerabilities };
+};
+
+// Build the results array for a scan TaskRun: the detailed per-image report
+// (drives the Vulnerabilities tab) plus the aggregate counts (drives the list).
+const scanTaskRunResults = (runName) => {
+  const report = enrichedReportByRun[runName] ?? { images: [] };
+  return [
+    { name: 'CVE_SCAN_RESULT', value: JSON.stringify(toScanResult(report)) },
+    { name: 'CVE_SCAN_REPORT', value: JSON.stringify(report) },
+  ];
+};
+
 const mockTaskRuns = [
   {
     apiVersion: 'tekton.dev/v1',
     kind: 'TaskRun',
     metadata: { name: 'frontend-app-react-ui-build-abc12-init', namespace: MOCK_NAMESPACE, uid: 'tr-uid-001', creationTimestamp: '2026-04-22T08:00:30Z', labels: { 'tekton.dev/pipelineRun': 'frontend-app-react-ui-build-abc12', 'tekton.dev/pipelineTask': 'init', 'appstudio.openshift.io/application': 'frontend-app', 'appstudio.openshift.io/component': 'react-ui' } },
     spec: { taskRef: { name: 'init' } },
-    status: { podName: 'init-pod', startTime: '2026-04-22T08:00:30Z', completionTime: '2026-04-22T08:01:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['frontend-app-react-ui-build-abc12'] ?? { images: [] }) }] },
+    status: { podName: 'init-pod', startTime: '2026-04-22T08:00:30Z', completionTime: '2026-04-22T08:01:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: scanTaskRunResults('frontend-app-react-ui-build-abc12') },
   },
   {
     apiVersion: 'tekton.dev/v1',
     kind: 'TaskRun',
     metadata: { name: 'frontend-app-nginx-proxy-build-def34-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-002', creationTimestamp: '2026-04-22T08:05:00Z', labels: { 'tekton.dev/pipelineRun': 'frontend-app-nginx-proxy-build-def34', 'tekton.dev/pipelineTask': 'scan', 'appstudio.openshift.io/application': 'frontend-app', 'appstudio.openshift.io/component': 'nginx-proxy' } },
     spec: { taskRef: { name: 'scan-image' } },
-    status: { podName: 'scan-pod-002', startTime: '2026-04-22T08:05:00Z', completionTime: '2026-04-22T08:06:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['frontend-app-nginx-proxy-build-def34'] ?? { images: [] }) }] },
+    status: { podName: 'scan-pod-002', startTime: '2026-04-22T08:05:00Z', completionTime: '2026-04-22T08:06:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: scanTaskRunResults('frontend-app-nginx-proxy-build-def34') },
   },
   {
     apiVersion: 'tekton.dev/v1',
     kind: 'TaskRun',
     metadata: { name: 'backend-api-api-server-build-ghi56-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-003', creationTimestamp: '2026-04-22T09:20:00Z', labels: { 'tekton.dev/pipelineRun': 'backend-api-api-server-build-ghi56', 'tekton.dev/pipelineTask': 'scan', 'appstudio.openshift.io/application': 'backend-api', 'appstudio.openshift.io/component': 'api-server' } },
     spec: { taskRef: { name: 'scan-image' } },
-    status: { podName: 'scan-pod-003', startTime: '2026-04-22T09:20:00Z', completionTime: '2026-04-22T09:21:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['backend-api-api-server-build-ghi56'] ?? { images: [] }) }] },
+    status: { podName: 'scan-pod-003', startTime: '2026-04-22T09:20:00Z', completionTime: '2026-04-22T09:21:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: scanTaskRunResults('backend-api-api-server-build-ghi56') },
   },
   {
     apiVersion: 'tekton.dev/v1',
     kind: 'TaskRun',
     metadata: { name: 'backend-api-worker-service-build-jkl78-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-004', creationTimestamp: '2026-04-22T09:30:00Z', labels: { 'tekton.dev/pipelineRun': 'backend-api-worker-service-build-jkl78', 'tekton.dev/pipelineTask': 'scan', 'appstudio.openshift.io/application': 'backend-api', 'appstudio.openshift.io/component': 'worker-service' } },
     spec: { taskRef: { name: 'scan-image' } },
-    status: { podName: 'scan-pod-004', startTime: '2026-04-22T09:30:00Z', completionTime: '2026-04-22T09:31:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['backend-api-worker-service-build-jkl78'] ?? { images: [] }) }] },
+    status: { podName: 'scan-pod-004', startTime: '2026-04-22T09:30:00Z', completionTime: '2026-04-22T09:31:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: scanTaskRunResults('backend-api-worker-service-build-jkl78') },
   },
   {
     apiVersion: 'tekton.dev/v1',
     kind: 'TaskRun',
     metadata: { name: 'data-pipeline-etl-processor-build-mno90-scan', namespace: MOCK_NAMESPACE, uid: 'tr-uid-005', creationTimestamp: '2026-04-22T10:00:00Z', labels: { 'tekton.dev/pipelineRun': 'data-pipeline-etl-processor-build-mno90', 'tekton.dev/pipelineTask': 'scan', 'appstudio.openshift.io/application': 'data-pipeline', 'appstudio.openshift.io/component': 'etl-processor' } },
     spec: { taskRef: { name: 'scan-image' } },
-    status: { podName: 'scan-pod-005', startTime: '2026-04-22T10:00:00Z', completionTime: '2026-04-22T10:01:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: [{ name: 'CVE_SCAN_REPORT', value: JSON.stringify(vulnReportByRun['data-pipeline-etl-processor-build-mno90'] ?? { images: [] }) }] },
+    status: { podName: 'scan-pod-005', startTime: '2026-04-22T10:00:00Z', completionTime: '2026-04-22T10:01:00Z', conditions: [{ type: 'Succeeded', status: 'True', reason: 'Succeeded' }], steps: [], results: scanTaskRunResults('data-pipeline-etl-processor-build-mno90') },
   },
 ];
 
@@ -402,6 +499,49 @@ export function setupMockK8sMiddleware(app) {
 
   app.delete('/api/k8s/*', (_req, res) => {
     res.json({ kind: 'Status', apiVersion: 'v1', status: 'Success', code: 200 });
+  });
+
+  // Emulate the Tekton Results records API. The PipelineRun list's "Fixable
+  // vulnerabilities" column reads scan results from tekton-results (not the k8s
+  // TaskRun API), because a task result is only present on completed runs. Only
+  // the CVE scan TaskRun records are emulated; other record/log queries return
+  // empty (the client treats that the same as the previous 404).
+  const CVE_SCAN_RESULT_FIELDS = [
+    'CLAIR_SCAN_RESULT',
+    'CLAIR_SCAN_RESULTS',
+    'CVE_SCAN_RESULT',
+    'TEKTON_SCAN_RESULTS',
+    'SCAN_OUTPUT',
+  ];
+  app.get('/api/k8s/plugins/tekton-results/*', (req, res) => {
+    const path = req.originalUrl.split('?')[0];
+    if (!path.endsWith('/records')) {
+      return res.status(404).json({ kind: 'Status', apiVersion: 'v1', status: 'Failure', message: `not found: ${path}`, code: 404 });
+    }
+    const filter = typeof req.query.filter === 'string' ? req.query.filter : '';
+    const isScanTaskRunQuery =
+      /TaskRun/.test(filter) && CVE_SCAN_RESULT_FIELDS.some((f) => filter.includes(f));
+    if (!isScanTaskRunQuery) {
+      return res.json({ nextPageToken: null, records: [] });
+    }
+    // Scan TaskRuns carry a CVE_SCAN_RESULT result. Restrict to the PipelineRuns
+    // named in the label filter (their names appear verbatim in the filter string).
+    const scanTaskRuns = mockTaskRuns.filter((tr) =>
+      (tr.status?.results ?? []).some((r) => CVE_SCAN_RESULT_FIELDS.includes(r.name)),
+    );
+    const matched = scanTaskRuns.filter((tr) => {
+      const plr = tr.metadata?.labels?.['tekton.dev/pipelineRun'];
+      return plr && filter.includes(plr);
+    });
+    const records = matched.map((tr) => ({
+      name: `${tr.metadata.namespace}/results/${tr.metadata.uid}/records/${tr.metadata.uid}`,
+      uid: tr.metadata.uid,
+      data: {
+        type: 'tekton.dev/v1.TaskRun',
+        value: Buffer.from(JSON.stringify(tr)).toString('base64'),
+      },
+    }));
+    return res.json({ nextPageToken: null, records });
   });
 
   // Handle GET (list and get)
