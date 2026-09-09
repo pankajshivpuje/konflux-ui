@@ -121,12 +121,9 @@ describe('parseVulnerabilityReport', () => {
               packageName: 'openssl',
               packageVersion: '3.0.5',
               fixedInVersion: '3.0.7',
-              cvssScore: 7.5,
               description: 'A buffer overflow in the parser.',
               componentSource: 'OS',
               link: 'https://nvd.nist.gov/vuln/detail/CVE-2024-0001',
-              publishedDate: '2024-01-10',
-              updatedDate: '2024-02-01',
               advisory: 'RHSA-2024:0123',
               advisoryLink: 'https://access.redhat.com/errata/RHSA-2024:0123',
             },
@@ -136,12 +133,9 @@ describe('parseVulnerabilityReport', () => {
     });
     const v = parseVulnerabilityReport(raw).images[0].vulnerabilities[0];
     expect(v).toMatchObject({
-      cvssScore: 7.5,
       description: 'A buffer overflow in the parser.',
       componentSource: 'OS',
       link: 'https://nvd.nist.gov/vuln/detail/CVE-2024-0001',
-      publishedDate: '2024-01-10',
-      updatedDate: '2024-02-01',
       advisory: 'RHSA-2024:0123',
       advisoryLink: 'https://access.redhat.com/errata/RHSA-2024:0123',
     });

@@ -77,18 +77,12 @@ export type VulnerabilityEntry = {
   packageVersion: string;
   /** Version the fix landed in. Absent means no fix is available yet. */
   fixedInVersion?: string;
-  /** CVSS base score (0.0–10.0) reported by the scanner, when available. */
-  cvssScore?: number;
   /** Human-readable CVE summary. */
   description?: string;
   /** Ecosystem the affected component comes from, e.g. `OS`, `Python`, `Java`. */
   componentSource?: string;
   /** Canonical reference link for the CVE (e.g. an NVD URL). */
   link?: string;
-  /** ISO-8601 date the CVE was first published. */
-  publishedDate?: string;
-  /** ISO-8601 date the CVE record was last updated. */
-  updatedDate?: string;
   /** Security advisory identifier (e.g. `RHSA-2024:0123`). Newer scans only. */
   advisory?: string;
   /** Link to the security advisory. Newer scans only. */

@@ -225,25 +225,18 @@ const COMPONENT_SOURCE_BY_PACKAGE = {
   idna: 'Python', cryptography: 'Python', urllib3: 'Python', setuptools: 'Python',
 };
 
-// Representative CVSS base score per severity band, used only to populate the
-// mock's CVSS column with plausible values.
-const CVSS_BY_SEVERITY = { critical: 9.8, important: 7.5, moderate: 5.4, low: 3.1, unknown: 0 };
-
-// Decorate each vulnerability with the extended roxctl fields (CVSS, description,
-// component source, reference links, dates, advisory) so the Vulnerabilities tab
+// Decorate each vulnerability with the extended roxctl fields (description,
+// component source, reference links, advisory) so the Vulnerabilities tab
 // and its expandable-row detail have content. Real roxctl reports carry these
 // natively; the mock derives them deterministically from the base entry.
 const enrichVulnerability = (v) => ({
   ...v,
-  cvssScore: v.cvssScore ?? CVSS_BY_SEVERITY[v.severity] ?? 0,
   description:
     v.description ??
     `${v.cveId}: a ${v.severity}-severity flaw in ${v.packageName} ${v.packageVersion}` +
       `${v.fixedInVersion ? `, addressed in ${v.fixedInVersion}` : ' with no fix currently available'}.`,
   componentSource: v.componentSource ?? COMPONENT_SOURCE_BY_PACKAGE[v.packageName] ?? 'OS',
   link: v.link ?? `https://nvd.nist.gov/vuln/detail/${v.cveId}`,
-  publishedDate: v.publishedDate ?? '2024-01-15',
-  updatedDate: v.updatedDate ?? '2024-03-02',
   // Advisory data only exists for the higher-severity CVEs in newer scans.
   ...(v.severity === 'critical' || v.severity === 'important'
     ? {

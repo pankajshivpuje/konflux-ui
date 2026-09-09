@@ -44,20 +44,9 @@ describe('vulnerabilities-table-config', () => {
     ]);
   });
 
-  it('includes CVSS and Component source columns', () => {
+  it('includes a Component source column but no CVSS column', () => {
     const ids = getBaseColumns(false).map((c) => c.id);
-    expect(ids).toContain('cvssScore');
     expect(ids).toContain('componentSource');
-  });
-
-  it('CVSS sort orders higher scores after lower (ascending)', () => {
-    const cvssCol = getBaseColumns(false).find((c) => c.id === 'cvssScore');
-    expect(cvssCol?.sortFn).toBeDefined();
-    const cmp = cvssCol.sortFn(
-      { original: row({ cvssScore: 3.1 }) } as never,
-      { original: row({ cvssScore: 9.8 }) } as never,
-      'cvssScore',
-    );
-    expect(cmp).toBeLessThan(0);
+    expect(ids).not.toContain('cvssScore');
   });
 });
