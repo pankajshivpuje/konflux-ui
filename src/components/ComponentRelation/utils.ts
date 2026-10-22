@@ -1,7 +1,8 @@
 import { differenceBy, union } from 'lodash-es';
 import * as yup from 'yup';
 import { K8sQueryPatchResource } from '../../k8s';
-import { ComponentModel } from '../../models';
+import { ComponentModel, NUDGE_CONFIG_NAME, NudgeConfigModel } from '../../models';
+import { NudgeConfigNudge } from '../../types/nudge-config';
 import { NudgeStats } from '../../types';
 import {
   ComponentRelationFormikValue,
@@ -32,9 +33,14 @@ export const componentRelationValidationSchema = yup.mixed().test(
               .object()
               .shape({
                 source: yup.string(),
-
                 nudgeType: yup.string().required(),
                 target: yup.array().of(yup.string()),
+                mode: yup.string().oneOf(['immediate', 'validated']).required(),
+                gatingGroup: yup.string().when('mode', {
+                  is: 'validated',
+                  then: (s) => s.required('Gating group is required for validated mode'),
+                  otherwise: (s) => s.optional(),
+                }),
               })
               .test('duplicate-relation-test', DUPLICATE_RELATONSHIP, (value) => {
                 const filteredValue = values.relations.filter(
@@ -79,6 +85,59 @@ export const computeNudgeDataChanges = (
   return [...values, ...removedSources];
 };
 
+/**
+ * Converts form relation values into the flat `NudgeConfigNudge[]` format expected by ADR 0067.
+ * Each (source, target) pair with a shared mode/gatingGroup becomes a separate nudge entry.
+ */
+export const toNudgeConfigNudges = (values: ComponentRelationValue[]): NudgeConfigNudge[] => {
+  const nudges: NudgeConfigNudge[] = [];
+  for (const { source, nudgeType, target, mode, gatingGroup } of values) {
+    if (!source || !target.length) continue;
+
+    const pairs =
+      nudgeType === ComponentRelationNudgeType.NUDGES
+        ? target.map((to) => ({ from: source, to }))
+        : target.map((from) => ({ from, to: source }));
+
+    for (const pair of pairs) {
+      const nudge: NudgeConfigNudge = { ...pair, mode };
+      if (mode === 'validated' && gatingGroup) {
+        nudge.gatingGroup = gatingGroup;
+      }
+      nudges.push(nudge);
+    }
+  }
+  return nudges;
+};
+
+/**
+ * Writes nudge relationships to the NudgeConfig singleton (ADR 0067 model).
+ * Replaces the entire `spec.nudges` array in one patch operation.
+ */
+export const updateNudgeConfig = async (
+  values: ComponentRelationValue[],
+  namespace: string,
+  dryRun?: boolean,
+) => {
+  const nudges = toNudgeConfigNudges(values);
+  return K8sQueryPatchResource({
+    model: NudgeConfigModel,
+    queryOptions: {
+      name: NUDGE_CONFIG_NAME,
+      ns: namespace,
+      ...(dryRun && { queryParams: { dryRun: 'All' } }),
+    },
+    patches: [
+      {
+        op: 'replace',
+        path: '/spec/nudges',
+        value: nudges,
+      },
+    ],
+  });
+};
+
+/** @deprecated Use updateNudgeConfig (ADR 0067). Patches individual Component CRs. */
 export const updateNudgeDependencies = async (
   values: ComponentRelationValue[],
   initialValues: ComponentRelationValue[],

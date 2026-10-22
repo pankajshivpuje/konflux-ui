@@ -34,6 +34,7 @@ import { DUPLICATE_RELATONSHIP } from './utils';
 type DefineComponentRelationModalProps = Omit<Pick<RawComponentProps, 'modalProps'>, 'onClose'> & {
   componentNames: string[];
   sortedGroupedComponents: { [application: string]: string[] };
+  componentGroupNames: string[];
   onCancel: () => void;
 };
 
@@ -42,6 +43,7 @@ export const DefineComponentRelationModal: React.FC<DefineComponentRelationModal
   modalProps,
   componentNames,
   sortedGroupedComponents,
+  componentGroupNames,
 }) => {
   const { values, handleSubmit, isSubmitting, dirty, errors, status } =
     useFormikContext<ComponentRelationFormikValue>();
@@ -79,6 +81,7 @@ export const DefineComponentRelationModal: React.FC<DefineComponentRelationModal
                         <ComponentRelation
                           componentNames={componentNames}
                           sortedGroupedComponents={sortedGroupedComponents}
+                          componentGroupNames={componentGroupNames}
                           index={index}
                           removeProps={{
                             disableRemove:
@@ -91,6 +94,7 @@ export const DefineComponentRelationModal: React.FC<DefineComponentRelationModal
                                     source: '',
                                     nudgeType: ComponentRelationNudgeType.NUDGES,
                                     target: [],
+                                    mode: 'immediate',
                                   })
                                 : arrayHelpers.remove(index),
                           }}
@@ -119,6 +123,7 @@ export const DefineComponentRelationModal: React.FC<DefineComponentRelationModal
                           source: '',
                           nudgeType: ComponentRelationNudgeType.NUDGES,
                           target: [],
+                          mode: 'immediate',
                         })
                       }
                       type="button"

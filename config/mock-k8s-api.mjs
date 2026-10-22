@@ -338,6 +338,22 @@ const mockNamespaces = [
   { apiVersion: 'v1', kind: 'Namespace', metadata: { name: MOCK_NAMESPACE, uid: 'ns-uid-001', labels: { 'konflux.ci/type': 'user' } } },
 ];
 
+const mockNudgeConfig = [
+  {
+    apiVersion: 'appstudio.redhat.com/v1alpha1',
+    kind: 'NudgeConfig',
+    metadata: { name: 'nudge-config', namespace: MOCK_NAMESPACE },
+    spec: {
+      nudges: [
+        { from: 'react-ui', to: 'nginx-proxy', mode: 'immediate' },
+        { from: 'react-ui', to: 'api-server', mode: 'validated', gatingGroup: 'frontend-stack' },
+        { from: 'worker-service', to: 'react-ui', mode: 'validated', gatingGroup: 'backend-stack' },
+      ],
+    },
+    status: { conditions: [] },
+  },
+];
+
 // Registry: key = "group/version/plural"
 const registry = {
   'appstudio.redhat.com/v1alpha1/applications': mockApplications,
@@ -360,6 +376,7 @@ const registry = {
   'core/v1/namespaces': mockNamespaces,
   'core/v1/serviceaccounts': [],
   'results.tekton.dev/v1alpha2/logs': [],
+  'appstudio.redhat.com/v1alpha1/nudgeconfigs': mockNudgeConfig,
 };
 
 // /api/k8s/apis/{group}/{version}/namespaces/{ns}/{plural}[/{name}]

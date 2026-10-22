@@ -10,10 +10,12 @@ export const ComponentRelationStatusIcon: React.FC<{
   component: ComponentKind;
   className?: string;
   style?: { [key: string]: unknown };
-}> = ({ component, className, style }) => {
-  const isInRelationship = !!(
-    component.spec?.['build-nudges-ref']?.length ?? component.status?.['build-nudged-by']?.length
-  );
+  /** When provided, takes precedence over reading the deprecated Component CR fields. */
+  isInRelationship?: boolean;
+}> = ({ component, className, style, isInRelationship: isInRelationshipProp }) => {
+  const isInRelationship =
+    isInRelationshipProp ??
+    !!(component.spec?.['build-nudges-ref']?.length ?? component.status?.['build-nudged-by']?.length);
 
   return isInRelationship ? (
     <Tooltip content="This component is in a relationship">

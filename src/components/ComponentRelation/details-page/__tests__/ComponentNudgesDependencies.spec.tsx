@@ -1,122 +1,118 @@
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { ComponentKind, NudgeStats } from '../../../../types';
+import { ComponentKind } from '../../../../types';
 import { mockNamespaceHooks } from '../../../../unit-test-utils/mock-namespace';
 import { routerRenderer } from '../../../../utils/test-utils';
+import { mockNudgeConfig, mockNudgeConfigWithStaleRef, mockEmptyNudgeConfig } from '../../__data__/mockNudgeConfig';
 import ComponentNudgesDependencies from '../ComponentNudgesDependencies';
 
 const mockComponent = {
-  metadata: { name: 'component' },
+  metadata: { name: 'component-a' },
   spec: { application: 'application' },
 } as ComponentKind;
 
 const mockAllComponents = [
-  { metadata: { name: 'cmp1' }, spec: { application: 'app1' } },
-  { metadata: { name: 'cmp2' }, spec: { application: 'app2' } },
-  { metadata: { name: 'cmp3' }, spec: { application: 'app3' } },
-  { metadata: { name: 'cmp4' }, spec: { application: 'app4' } },
-  { metadata: { name: 'cmp5' }, spec: { application: 'app5' } },
+  { metadata: { name: 'component-b' }, spec: { application: 'app1' } },
+  { metadata: { name: 'component-c' }, spec: { application: 'app2' } },
+  { metadata: { name: 'component-d' }, spec: { application: 'app1' } },
 ] as ComponentKind[];
 
 jest.mock('../../../../hooks/useComponents', () => ({
   useAllComponents: jest.fn(() => [mockAllComponents, true, undefined]),
 }));
 
+jest.mock('../../useNudgeConfig', () => ({
+  useNudgeConfig: jest.fn(),
+  useOutboundNudges: jest.fn(),
+  useInboundNudges: jest.fn(),
+}));
+
 mockNamespaceHooks('useNamespace', 'test-ns');
 
+const { useNudgeConfig, useOutboundNudges, useInboundNudges } = jest.requireMock('../../useNudgeConfig');
+
 describe('ComponentNudgesDependencies', () => {
-  it('should render empty state when no dependencies', () => {
+  beforeEach(() => {
+    const cfg = mockNudgeConfig();
+    useNudgeConfig.mockReturnValue([cfg, true, undefined]);
+    useOutboundNudges.mockReturnValue([cfg.spec.nudges.filter((n) => n.from === 'component-a'), true, undefined]);
+    useInboundNudges.mockReturnValue([[], true, undefined]);
+  });
+
+  it('renders empty state when no dependencies', () => {
+    const emptyCfg = mockEmptyNudgeConfig();
+    useNudgeConfig.mockReturnValue([emptyCfg, true, undefined]);
+    useOutboundNudges.mockReturnValue([[], true, undefined]);
+    useInboundNudges.mockReturnValue([[], true, undefined]);
+
     routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
-    screen.queryByTestId('nudges-empty-state');
+    expect(screen.getByTestId('nudges-empty-state')).toBeInTheDocument();
   });
 
-  it('should render 3 nudges dependencies', async () => {
-    const cmp = {
-      ...mockComponent,
-      spec: { [NudgeStats.NUDGES]: ['cmp1', 'cmp2', 'cmp3'] },
-    } as ComponentKind;
-    routerRenderer(<ComponentNudgesDependencies component={cmp} />);
+  it('renders outbound nudges (Nudges tab)', async () => {
+    routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
     fireEvent.click(screen.getByTestId('nudges-radio'));
     await waitFor(() => {
-      expect(screen.getByText('cmp1')).toBeInTheDocument();
-      expect(screen.getByText('cmp2')).toBeInTheDocument();
-      expect(screen.getByText('cmp3')).toBeInTheDocument();
+      expect(screen.getByText('component-b')).toBeInTheDocument();
+      expect(screen.getByText('component-c')).toBeInTheDocument();
     });
   });
 
-  it('should render 3 connectors', () => {
-    const cmp = {
-      ...mockComponent,
-      spec: { [NudgeStats.NUDGES]: ['cmp1', 'cmp2', 'cmp3'] },
-    } as ComponentKind;
-    routerRenderer(<ComponentNudgesDependencies component={cmp} />);
-
+  it('renders connectors for each outbound nudge', () => {
+    routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
     fireEvent.click(screen.getByTestId('nudges-radio'));
-
-    const connectors = screen.queryAllByTestId('nudges-connector');
-    expect(connectors.length).toBe(3);
+    expect(screen.getAllByTestId('nudges-connector')).toHaveLength(2);
   });
 
-  it('should render correct links', () => {
-    const cmp = {
-      ...mockComponent,
-      metadata: { name: 'test' },
-      spec: { application: 'testApp', [NudgeStats.NUDGES]: ['cmp1', 'cmp2', 'cmp3'] },
-    } as ComponentKind;
-    routerRenderer(<ComponentNudgesDependencies component={cmp} />);
-
+  it('renders links to the related component detail pages', () => {
+    routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
     fireEvent.click(screen.getByTestId('nudges-radio'));
-
-    const links = screen.queryAllByTestId('nudges-cmp-link');
-    expect(links.length).toBe(3);
-    expect(links[0].getAttribute('href')).toBe('/ns/test-ns/applications/app1/components/cmp1');
+    const links = screen.getAllByTestId('nudges-cmp-link');
+    expect(links[0]).toHaveAttribute('href', '/ns/test-ns/applications/app1/components/component-b');
   });
-});
 
-describe('ComponentNudgesDependencies nudged by', () => {
-  it('should render 4 nudged-by dependencies', async () => {
-    const cmp = {
-      ...mockComponent,
-      status: { [NudgeStats.NUDGED_BY]: ['cmp1', 'cmp2', 'cmp3', 'cmp4'] },
-    } as ComponentKind;
-    routerRenderer(<ComponentNudgesDependencies component={cmp} />);
-
-    fireEvent.click(screen.getByTestId('nudged-by-radio'));
-
+  it('renders mode badges for each nudge', async () => {
+    routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
+    fireEvent.click(screen.getByTestId('nudges-radio'));
     await waitFor(() => {
-      expect(screen.getByText('cmp1')).toBeInTheDocument();
-      expect(screen.getByText('cmp2')).toBeInTheDocument();
-      expect(screen.getByText('cmp3')).toBeInTheDocument();
-      expect(screen.getByText('cmp4')).toBeInTheDocument();
+      expect(screen.getByTestId('nudge-mode-badge-immediate')).toBeInTheDocument();
+      expect(screen.getByTestId('nudge-mode-badge-validated')).toBeInTheDocument();
     });
   });
 
-  it('should render 4 connectors', () => {
-    const cmp = {
-      ...mockComponent,
-      status: { [NudgeStats.NUDGED_BY]: ['cmp1', 'cmp2', 'cmp3', 'cmp4'] },
-      spec: { application: 'testApp' },
-    } as ComponentKind;
-    routerRenderer(<ComponentNudgesDependencies component={cmp} />);
+  it('renders inbound nudges (Is nudged by tab)', async () => {
+    useInboundNudges.mockReturnValue([
+      [{ from: 'component-b', to: 'component-a', mode: 'immediate' }],
+      true,
+      undefined,
+    ]);
 
+    routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
     fireEvent.click(screen.getByTestId('nudged-by-radio'));
-
-    const connectors = screen.queryAllByTestId('nudges-connector');
-    expect(connectors.length).toBe(4);
+    await waitFor(() => {
+      expect(screen.getByText('component-b')).toBeInTheDocument();
+    });
   });
 
-  it('should render correct links', () => {
-    const cmp = {
-      ...mockComponent,
-      metadata: { name: 'test' },
-      status: { [NudgeStats.NUDGED_BY]: ['cmp1', 'cmp2'] },
-      spec: { application: 'testApp' },
-    } as ComponentKind;
-    routerRenderer(<ComponentNudgesDependencies component={cmp} />);
+  it('shows a warning when NudgeConfig has stale conditions', () => {
+    const staleCfg = mockNudgeConfigWithStaleRef();
+    useNudgeConfig.mockReturnValue([staleCfg, true, undefined]);
 
-    fireEvent.click(screen.getByTestId('nudged-by-radio'));
+    routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
+    expect(screen.getByTestId('nudge-stale-warning')).toBeInTheDocument();
+    expect(screen.getByText(/component-d.*does not exist/i)).toBeInTheDocument();
+  });
 
-    const links = screen.queryAllByTestId('nudged-by-cmp-link');
-    expect(links.length).toBe(2);
-    expect(links[1].getAttribute('href')).toBe('/ns/test-ns/applications/app2/components/cmp2');
+  it('shows an error alert when outbound nudges fail to load', () => {
+    useOutboundNudges.mockReturnValue([[], true, new Error('API error')]);
+
+    routerRenderer(<ComponentNudgesDependencies component={mockComponent} />);
+    expect(screen.getByTestId('nudge-load-error')).toBeInTheDocument();
+  });
+
+  it('returns null when component is not provided', () => {
+    const { container } = routerRenderer(
+      <ComponentNudgesDependencies component={null as unknown as ComponentKind} />,
+    );
+    expect(container).toBeEmptyDOMElement();
   });
 });

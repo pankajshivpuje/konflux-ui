@@ -22,3 +22,4 @@ export * from './image-repository';
 export * from './conforma';
 export * from './event';
 export * from './namespace';
+export * from './nudge-config';

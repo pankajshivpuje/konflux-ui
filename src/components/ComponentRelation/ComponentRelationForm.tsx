@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   FlexItem,
+  FormGroup,
   Label,
   LabelGroup,
   Truncate,
@@ -19,6 +20,8 @@ import { ComponentRelationNudgeType } from './type';
 type ComponentRelationProps = {
   componentNames: string[];
   sortedGroupedComponents: { [application: string]: string[] };
+  /** Available ComponentGroup names for the gating group dropdown. */
+  componentGroupNames: string[];
   index?: number;
   removeProps: {
     disableRemove: boolean;
@@ -27,6 +30,21 @@ type ComponentRelationProps = {
 };
 
 const TARGET_LABELS_VISIBLE = 3;
+
+const getModeToggleOptions = (index?: number) => [
+  {
+    value: 'immediate',
+    label: 'Immediate',
+    tooltip: 'The nudge fires as soon as the source build completes.',
+    id: `mode-immediate-${index}`,
+  },
+  {
+    value: 'validated',
+    label: 'Validated',
+    tooltip: 'The nudge is gated on a ComponentGroup passing its tests.',
+    id: `mode-validated-${index}`,
+  },
+];
 
 const getNudgeToggleOptions = (index?: number) => [
   {
@@ -47,15 +65,22 @@ export const ComponentRelation: React.FC<ComponentRelationProps> = ({
   index,
   componentNames,
   sortedGroupedComponents,
+  componentGroupNames,
   removeProps: { disableRemove, onRemove },
 }) => {
   const sourceName = `relations.${index.toString()}.source`;
   const nudgeName = `relations.${index.toString()}.nudgeType`;
   const targetName = `relations.${index.toString()}.target`;
+  const modeName = `relations.${index.toString()}.mode`;
+  const gatingGroupName = `relations.${index.toString()}.gatingGroup`;
   const [{ value: sourceValue }] = useField(sourceName);
   const [{ value: nudgeValue }, , { setValue: setNudgeValue }] = useField(nudgeName);
   const [{ value: targetValue }, , { setValue: setTargetValue }] = useField<string[]>(targetName);
+  const [{ value: modeValue }, , { setValue: setModeValue }] = useField<'immediate' | 'validated'>(modeName);
+  const [, , { setValue: setGatingGroupValue }] = useField<string | undefined>(gatingGroupName);
   const [isTargetMenuOpen, setIsTargetMenuOpen] = React.useState(false);
+
+  const gatingGroupOptions = React.useMemo(() => [...componentGroupNames].sort(), [componentGroupNames]);
 
   const visibleTargetValues = React.useMemo(
     () => targetValue.slice(0, TARGET_LABELS_VISIBLE),
@@ -141,6 +166,35 @@ export const ComponentRelation: React.FC<ComponentRelationProps> = ({
           ) : null}
         </Flex>
       </FlexItem>
+      <FlexItem>
+        <FormGroup label="Nudge mode" fieldId={`nudge-mode-${index}`}>
+          <SegmentedToggle
+            aria-label="Nudge mode"
+            value={modeValue}
+            onChange={(value) => {
+              void setModeValue(value as 'immediate' | 'validated');
+              if (value === 'immediate') {
+                void setGatingGroupValue(undefined);
+              }
+            }}
+            options={getModeToggleOptions(index)}
+          />
+        </FormGroup>
+      </FlexItem>
+      {modeValue === 'validated' ? (
+        <FlexItem>
+          <FormGroup
+            label="Gating group"
+            fieldId={`gating-group-${index}`}
+            isRequired
+          >
+            <SingleSelectComponentDropdown
+              name={gatingGroupName}
+              componentNames={gatingGroupOptions}
+            />
+          </FormGroup>
+        </FlexItem>
+      ) : null}
     </Flex>
   );
 };

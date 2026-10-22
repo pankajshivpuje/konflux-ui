@@ -20,6 +20,7 @@ describe('useNudgeData', () => {
         source: 'nodejs',
         nudgeType: ComponentRelationNudgeType.NUDGES,
         target: ['basic-node-js'],
+        mode: 'immediate',
       },
     ]);
   });
@@ -28,7 +29,7 @@ describe('useNudgeData', () => {
     mockUseComponent.mockReturnValue([componentCRMocks, true, null]);
     const { result } = renderHook(() => useNudgeData('application'));
     expect(result.current[0]).toEqual([
-      { nudgeType: 'nudges', source: 'nodejs', target: ['basic-node-js'] },
+      { nudgeType: 'nudges', source: 'nodejs', target: ['basic-node-js'], mode: 'immediate' },
     ]);
   });
 });

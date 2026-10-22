@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Formik, FormikHelpers } from 'formik';
 import { logger } from '~/monitoring/logger';
+import { useComponentGroups } from '../../hooks/useComponentGroups';
 import { useComponents, useSortedGroupComponents } from '../../hooks/useComponents';
 import { useNamespace } from '../../shared/providers/Namespace';
-import { ComponentKind } from '../../types';
 import { TrackEvents, useTrackEvent } from '../../utils/analytics';
 import { RawComponentProps, createRawModalLauncher } from '../modal/createModalLauncher';
 import {
@@ -13,7 +13,7 @@ import {
 } from './cr-modals';
 import { ComponentRelationFormikValue, ComponentRelationNudgeType } from './type';
 import { useNudgeData } from './useNudgeData';
-import { componentRelationValidationSchema, updateNudgeDependencies } from './utils';
+import { componentRelationValidationSchema, updateNudgeConfig } from './utils';
 
 type ComponentRelationProps = { application: string };
 
@@ -28,6 +28,7 @@ export const ComponentRelationModal: React.FC<ComponentRelationModalProps> = ({
   const [showSubmissionModal, setShowSubmissionModal] = React.useState<boolean>(false);
   const [nudgeData, loaded, error] = useNudgeData(application);
   const namespace = useNamespace();
+  const [componentGroups, groupsLoaded] = useComponentGroups(namespace);
 
   const handleSubmitError = (
     e: unknown,
@@ -50,6 +51,10 @@ export const ComponentRelationModal: React.FC<ComponentRelationModalProps> = ({
     return cnLoaded && !cnError ? components.map((c) => c.metadata.name) : [];
   }, [cnError, cnLoaded, components]);
 
+  const componentGroupNames: string[] = React.useMemo(() => {
+    return groupsLoaded ? componentGroups.map((g) => g.metadata.name) : [];
+  }, [componentGroups, groupsLoaded]);
+
   const onSaveRelationships = React.useCallback(() => {
     setShowSubmissionModal(true);
   }, []);
@@ -67,8 +72,8 @@ export const ComponentRelationModal: React.FC<ComponentRelationModalProps> = ({
     return {
       relations:
         loaded && !error && nudgeData.length > 0
-          ? nudgeData
-          : [{ source: '', nudgeType: ComponentRelationNudgeType.NUDGES, target: [] }],
+          ? nudgeData.map((r) => ({ mode: 'immediate' as const, ...r }))
+          : [{ source: '', nudgeType: ComponentRelationNudgeType.NUDGES, target: [], mode: 'immediate' as const }],
     };
   }, [error, loaded, nudgeData]);
 
@@ -82,19 +87,16 @@ export const ComponentRelationModal: React.FC<ComponentRelationModalProps> = ({
         app_name: application,
       });
       try {
-        await updateNudgeDependencies(values.relations, initialValues.relations, namespace, true);
+        await updateNudgeConfig(values.relations, namespace, true);
       } catch (e: unknown) {
         handleSubmitError(e, helpers);
         return;
       }
-      return updateNudgeDependencies(values.relations, initialValues.relations, namespace)
-        .then((compResults: ComponentKind[]) => {
-          compResults.forEach((c) => {
-            track('Component relationship updated', {
-              component_name: c.metadata.name,
-              app_name: application,
-              namespace,
-            });
+      return updateNudgeConfig(values.relations, namespace)
+        .then(() => {
+          track('Component relationship updated', {
+            app_name: application,
+            namespace,
           });
           onSaveRelationships();
         })
@@ -128,6 +130,7 @@ export const ComponentRelationModal: React.FC<ComponentRelationModalProps> = ({
               ? sortedGroupedComponents
               : ({} as { [application: string]: string[] })
           }
+          componentGroupNames={componentGroupNames}
           modalProps={modalProps}
           onCancel={onCancelSaveRelationships}
         />

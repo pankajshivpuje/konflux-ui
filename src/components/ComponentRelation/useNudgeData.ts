@@ -18,6 +18,7 @@ export const useNudgeData = (application: string): [ComponentRelationValue[], bo
               target: val.spec[NudgeStats.NUDGES]?.filter(
                 (cname) => !!allComponents?.find((co) => co?.metadata?.name === cname),
               ),
+              mode: 'immediate',
             };
             return [...acc, data];
           }

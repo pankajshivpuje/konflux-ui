@@ -27,3 +27,4 @@ export * from './config-map';
 export * from './event';
 export * from './image-repository';
 export * from './namespace';
+export * from './nudge-config';

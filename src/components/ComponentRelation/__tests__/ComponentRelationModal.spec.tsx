@@ -10,7 +10,7 @@ import {
 } from '../ComponentRelationModal';
 import { ComponentRelationNudgeType, ComponentRelationValue } from '../type';
 import { useNudgeData } from '../useNudgeData';
-import { updateNudgeDependencies } from '../utils';
+import { updateNudgeConfig } from '../utils';
 
 configure({ testIdAttribute: 'id' });
 
@@ -36,6 +36,11 @@ jest.mock('../../../utils/analytics', () => ({
 jest.mock('../utils', () => ({
   ...jest.requireActual('../utils'),
   updateNudgeDependencies: jest.fn(),
+  updateNudgeConfig: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useComponentGroups', () => ({
+  useComponentGroups: jest.fn(() => [[], true, null]),
 }));
 
 jest.mock('../useNudgeData', () => ({
@@ -61,17 +66,19 @@ const mockComponentRelations: ComponentRelationValue[] = [
     source: 'a',
     nudgeType: ComponentRelationNudgeType.NUDGES,
     target: ['b'],
+    mode: 'immediate',
   },
   {
     source: 'c',
     nudgeType: ComponentRelationNudgeType.NUDGES,
     target: ['d'],
+    mode: 'immediate',
   },
 ];
 
 window.ResizeObserver = MockResizeObserver;
 const useNudgeDataMock = useNudgeData as jest.Mock;
-const updateNudgeDependenciesMock = updateNudgeDependencies as jest.Mock;
+const updateNudgeConfigMock = updateNudgeConfig as jest.Mock;
 const useComponentsMock = useComponents as jest.Mock;
 const useSortedGroupComponentsMock = useSortedGroupComponents as jest.Mock;
 
@@ -82,7 +89,7 @@ describe('ComponentRelationModal', () => {
     useNudgeDataMock.mockReturnValue([[], true, null]);
     useComponentsMock.mockReturnValue([[componentCRMocks[0]], true, null]);
     useSortedGroupComponentsMock.mockReturnValue([sortedGroupedComponentsMocks, true, null]);
-    updateNudgeDependenciesMock.mockResolvedValue(componentCRMocks);
+    updateNudgeConfigMock.mockResolvedValue({});
   });
 
   it('should render modal', () => {
@@ -149,7 +156,7 @@ describe('ComponentRelationModal', () => {
 
   it('should show confirmation modal on relationship save', async () => {
     useNudgeDataMock.mockReturnValue([mockComponentRelations, true, null]);
-    updateNudgeDependenciesMock.mockResolvedValue(componentCRMocks);
+    updateNudgeConfigMock.mockResolvedValue({});
     let isOpen = true;
     const onClose = () => {
       isOpen = false;
@@ -178,7 +185,7 @@ describe('ComponentRelationModal', () => {
 
   it('should display an error on failure', async () => {
     useNudgeDataMock.mockReturnValue([mockComponentRelations, true, null]);
-    updateNudgeDependenciesMock.mockRejectedValue(new Error('error'));
+    updateNudgeConfigMock.mockRejectedValue(new Error('error'));
     let isOpen = true;
     const onClose = () => {
       isOpen = false;
@@ -199,8 +206,8 @@ describe('ComponentRelationModal', () => {
 
   it('should display an error when validation passes but save fails', async () => {
     useNudgeDataMock.mockReturnValue([mockComponentRelations, true, null]);
-    updateNudgeDependenciesMock
-      .mockResolvedValueOnce([])
+    updateNudgeConfigMock
+      .mockResolvedValueOnce({})
       .mockRejectedValueOnce(new Error('save failed'));
     render(<ComponentRelationModal modalProps={{ isOpen: true }} application="apps" />);
     fireEvent.click(screen.getByTestId('nudged-by-0'));
@@ -217,7 +224,7 @@ describe('ComponentRelationModal', () => {
 
   it('should display a string error when rejection is not an Error instance', async () => {
     useNudgeDataMock.mockReturnValue([mockComponentRelations, true, null]);
-    updateNudgeDependenciesMock.mockRejectedValue('plain error');
+    updateNudgeConfigMock.mockRejectedValue('plain error');
     render(<ComponentRelationModal modalProps={{ isOpen: true }} application="apps" />);
     fireEvent.click(screen.getByTestId('nudged-by-0'));
     const saveButton = screen.getByRole('button', { name: 'Save relationships' });

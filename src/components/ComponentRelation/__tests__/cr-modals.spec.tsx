@@ -25,11 +25,13 @@ const duplicateRelations = {
       source: 'component-a',
       nudgeType: ComponentRelationNudgeType.NUDGES,
       target: ['component-b'],
+      mode: 'immediate' as const,
     },
     {
       source: 'component-a',
       nudgeType: ComponentRelationNudgeType.NUDGES,
       target: ['component-c'],
+      mode: 'immediate' as const,
     },
   ],
 };
@@ -51,6 +53,7 @@ const renderDefineModal = (
         sortedGroupedComponents={{
           app: ['component-a', 'component-b', 'component-c'],
         }}
+        componentGroupNames={[]}
         onCancel={jest.fn()}
       />
     </Formik>,
@@ -76,11 +79,13 @@ describe('cr-modals', () => {
           source: 'component-a',
           nudgeType: ComponentRelationNudgeType.NUDGES,
           target: ['component-b'],
+          mode: 'immediate' as const,
         },
         {
           source: 'component-c',
           nudgeType: ComponentRelationNudgeType.NUDGES,
           target: ['component-b'],
+          mode: 'immediate' as const,
         },
       ],
     });

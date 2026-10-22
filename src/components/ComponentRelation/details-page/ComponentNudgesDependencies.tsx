@@ -1,7 +1,9 @@
 import * as React from 'react';
-import { ExpandableSection, Radio, Tooltip } from '@patternfly/react-core';
+import { Alert, ExpandableSection, Radio, Tooltip } from '@patternfly/react-core';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons/dist/esm/icons/outlined-question-circle-icon';
-import { ComponentKind, NudgeStats } from '../../../types';
+import { useNamespace } from '../../../shared/providers/Namespace';
+import { ComponentKind } from '../../../types';
+import { useInboundNudges, useNudgeConfig, useOutboundNudges } from '../useNudgeConfig';
 import ComponentNudgesSVG, { NudgeRadios } from './ComponentNudges';
 
 import './ComponentNudgesDependencies.scss';
@@ -15,13 +17,21 @@ const ComponentBuildSettings: React.FC<React.PropsWithChildren<ComponentBuildSet
 }) => {
   const [radioChecked, setRadioChecked] = React.useState<string>(NudgeRadios.NUDGES);
   const [expanded, setExpanded] = React.useState<boolean>(true);
+  const namespace = useNamespace();
+  const componentName = component?.metadata?.name;
+
+  const [nudgeConfig] = useNudgeConfig(namespace);
+  const [outboundNudges, , outboundError] = useOutboundNudges(namespace, componentName);
+  const [inboundNudges, , inboundError] = useInboundNudges(namespace, componentName);
+
+  const staleConditions = React.useMemo(
+    () => (nudgeConfig?.status?.conditions ?? []).filter((c) => c.status === 'False'),
+    [nudgeConfig],
+  );
 
   if (!component) {
     return null;
   }
-
-  const nudges = component.spec?.[NudgeStats.NUDGES];
-  const nudgedBy = component.status?.[NudgeStats.NUDGED_BY];
 
   const setNudgeRadio = (radio: NudgeRadios) => {
     radioChecked !== radio && setRadioChecked(radio);
@@ -29,6 +39,28 @@ const ComponentBuildSettings: React.FC<React.PropsWithChildren<ComponentBuildSet
 
   return (
     <div className="component-nudges" data-test="component-nudges-dependencies">
+      {staleConditions.length > 0 && (
+        <Alert
+          variant="warning"
+          isInline
+          title="Some nudge references are stale"
+          className="pf-v6-u-mb-md"
+          data-test="nudge-stale-warning"
+        >
+          {staleConditions.map((c, i) => (
+            <p key={i}>{c.message}</p>
+          ))}
+        </Alert>
+      )}
+      {(outboundError || inboundError) && (
+        <Alert
+          variant="danger"
+          isInline
+          title="Failed to load nudge configuration"
+          className="pf-v6-u-mb-md"
+          data-test="nudge-load-error"
+        />
+      )}
       <ExpandableSection
         isExpanded={expanded}
         toggleContent="Show related components"
@@ -69,7 +101,7 @@ const ComponentBuildSettings: React.FC<React.PropsWithChildren<ComponentBuildSet
           />
           <ComponentNudgesSVG
             radioChecked={radioChecked}
-            nudgeComponents={radioChecked === NudgeRadios.NUDGES ? nudges : nudgedBy}
+            nudgeComponents={radioChecked === NudgeRadios.NUDGES ? outboundNudges : inboundNudges}
             component={component}
           />
         </div>

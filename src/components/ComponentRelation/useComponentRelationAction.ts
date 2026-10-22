@@ -1,5 +1,5 @@
 import { useAllComponents, useComponents } from '../../hooks/useComponents';
-import { ComponentModel } from '../../models';
+import { ComponentModel, NudgeConfigModel } from '../../models';
 import { useNamespace } from '../../shared/providers/Namespace';
 import { useAccessReviewForModel } from '../../utils/rbac';
 import { useModalLauncher } from '../modal/ModalProvider';
@@ -9,8 +9,13 @@ export const useComponentRelationAction = (application: string) => {
   const showModal = useModalLauncher();
   const namespace = useNamespace();
   const [components, loaded, error] = useComponents(namespace, application);
-  const [canUpdateComponent] = useAccessReviewForModel(ComponentModel, 'patch');
   const [allComponents, allLoaded, allErrors] = useAllComponents(namespace);
+
+  // Check both models during migration: NudgeConfig (ADR 0067) and Component (legacy).
+  // Access is granted when the user can patch either resource.
+  const [canPatchNudgeConfig] = useAccessReviewForModel(NudgeConfigModel, 'patch');
+  const [canPatchComponent] = useAccessReviewForModel(ComponentModel, 'patch');
+  const canUpdateRelationships = canPatchNudgeConfig || canPatchComponent;
 
   return () => ({
     key: 'component-relation-modal',
@@ -20,13 +25,13 @@ export const useComponentRelationAction = (application: string) => {
     },
     // The nudge feature supports for all components in the namespace.
     isDisabled:
-      !canUpdateComponent ||
+      !canUpdateRelationships ||
       (loaded && allLoaded && !error && !allErrors
-        ? // For no component of the app or sigle component of the namespace,
+        ? // For no component of the app or single component of the namespace,
           // the nudge feature should be disabled.
           components.length < 1 || allComponents.length < 2
         : null),
-    disabledTooltip: !canUpdateComponent
+    disabledTooltip: !canUpdateRelationships
       ? `You don't have access to define component relationships`
       : null,
   });

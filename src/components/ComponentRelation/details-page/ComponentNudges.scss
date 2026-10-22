@@ -1,7 +1,7 @@
 .component-nudge {
   --spacing: 3.5rem;
   --diff: 1rem;
-  --guide-color: var(--pf-global--Color--400);
+  --guide-color: var(--pf-t--global--border--color--nonstatus--gray--default);
   --stroke-width: 2px;
 
   margin-left: var(--pf-t--global--spacer--lg);
@@ -23,26 +23,22 @@
       position: relative;
       padding-left: calc(1.5 * var(--spacing) - var(--diff) - 2px);
       padding-top: var(--diff);
-    }
-
-    & ul li {
       border-left: var(--stroke-width) solid var(--guide-color);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: -2px;
+        width: calc(var(--spacing));
+        height: calc(var(--spacing) / 3.5 + var(--diff));
+        border: solid var(--guide-color);
+        border-width: 0 0 var(--stroke-width) var(--stroke-width);
+      }
     }
 
-    & ul li:last-child {
+    & li:last-child {
       border-left: var(--stroke-width) solid transparent;
-    }
-
-    & ul li::before {
-      content: '';
-      display: block;
-      position: absolute;
-      top: -1px;
-      left: -2px;
-      width: calc(var(--spacing));
-      height: calc(var(--spacing) / 3.5 + var(--diff));
-      border: solid var(--guide-color);
-      border-width: 0 0 var(--stroke-width) var(--stroke-width);    
     }
   }
 
